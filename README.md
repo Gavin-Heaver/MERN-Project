@@ -25,4 +25,4 @@ This project was made with assistance from Generative Artificial Intelligence.
   <li> Use: </li>
 </ul>
 
-All AI-generated code implemented in the LAMP project was reviewed, tested, understood, and altered to meet all requirements. The final product acts as an accurate reflection of our knowledge. 
+All AI-generated code implemented in the MERN project was reviewed, tested, understood, and altered to meet all requirements. The final product acts as an accurate reflection of our knowledge. 
