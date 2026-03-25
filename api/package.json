@@ -1,10 +1,10 @@
 {
-  "name": "api",
+  "name": "@uknighted/api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "commonjs",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -19,7 +19,6 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.2",
-    "openai": "^6.32.0",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
@@ -28,8 +27,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.12.0",
-    "nodemon": "^3.1.14",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.3"
   }
 }
