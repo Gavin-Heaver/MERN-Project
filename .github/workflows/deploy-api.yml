@@ -1,0 +1,14 @@
+name: Deploy API
+
+on:
+    push:
+        branches: [mail]
+        paths:
+            - 'api/**'
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Trigger Render deploy
+              run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
