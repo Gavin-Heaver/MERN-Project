@@ -17,5 +17,7 @@ export const api = {
             client.post<Post>('/posts', data).then(r => r.data),
         addComment: (postId: string, body: string) =>
             client.post<Post>(`/posts/${postId}/comments`, { body }).then(r => r.data),
+        delete: (id: string) =>
+            client.delete(`/posts/${id}`).then(r => r.data),
     }
 }

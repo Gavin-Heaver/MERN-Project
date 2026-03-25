@@ -33,7 +33,8 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
     const { title, body } = req.body
     if (!title || !body) { res.status(400).json({ message: 'Title and body are required' }); return }
     try {
-        const post = await Post.create({ title, body, author: req.user.id })
+        const created = await Post.create({ title, body, author: req.user.id })
+        const post = await Post.findById(created._id).populate('author', 'displayName email')
         res.status(201).json(post)
     } catch (err) {
         console.error('Create post error:', err)
@@ -59,6 +60,25 @@ router.post('/:id/comments', authenticate, async (req: Request, res: Response): 
         res.status(201).json(post)
     } catch (err) {
         console.error('Add comment error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+})
+
+router.delete('/:id', authenticate, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const post = await Post.findById(req.params.id)
+        if (!post) { res.status(404).json({ message: 'Post not found' }); return }
+
+        // Only the author can delete their own post
+        if (post.author.toString() !== req.user.id) {
+            res.status(403).json({ message: 'Not authorized '})
+            return
+        }
+        
+        await post.deleteOne()
+        res.json({ message: 'Post deleted' })
+    } catch (err) {
+        console.error('Delete post error:', err)
         res.status(500).json({ message: 'Server error' })
     }
 })
