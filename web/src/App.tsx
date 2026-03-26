@@ -6,7 +6,7 @@ import RegisterPage from './pages/RegisterPage'
 import FeedPage from './pages/FeedPage'
 import PeoplePage from './pages/PeoplePage'
 import MessagesPage from './pages/MessagesPage'
-import ProfilePage from './pages/ProfilePage'
+import AccountPage from './pages/AccountPage'
 import Navbar from './components/Navbar'
 
 function PrivateRoute({ children }: { children: ReactNode }) {
@@ -24,7 +24,7 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/account" element={<AccountPage />} />
           <Route path="/" element={<PrivateRoute><FeedPage /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
