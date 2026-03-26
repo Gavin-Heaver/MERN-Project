@@ -7,6 +7,7 @@ import FeedPage from './pages/FeedPage'
 import PeoplePage from './pages/PeoplePage'
 import MessagesPage from './pages/MessagesPage'
 import ProfilePage from './pages/ProfilePage'
+import Navbar from './components/Navbar'
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { token } = useAuth()
@@ -16,15 +17,18 @@ function PrivateRoute({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/people" element={<PeoplePage />} />
-        <Route path="/messages" element={<MessagesPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/" element={<PrivateRoute><FeedPage /></PrivateRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Navbar />
+      <main className="pb-16 md:pt-16">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/people" element={<PeoplePage />} />
+          <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/" element={<PrivateRoute><FeedPage /></PrivateRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
     </BrowserRouter>
   )
 }
