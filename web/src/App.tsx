@@ -4,6 +4,9 @@ import type { ReactNode } from 'react'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import FeedPage from './pages/FeedPage'
+import PeoplePage from './pages/PeoplePage'
+import MessagesPage from './pages/MessagesPage'
+import ProfilePage from './pages/ProfilePage'
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { token } = useAuth()
