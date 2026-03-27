@@ -22,7 +22,7 @@ app.set('io', io)
 app.use(cors({ origin: config.clientUrl }))
 app.use(express.json())
 
-app.get('/health', (_req, res) => res.json({ status: 'ok' }))
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/posts', postRoutes)
