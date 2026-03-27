@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { useSocket } from "../hooks/useSocket"
 import { useEffect, useState } from "react"
-import type { Post } from "../types"
+import type { Post, User } from "../types"
 import { api } from "../api"
 import axios from "axios"
 
@@ -65,11 +65,13 @@ export default function FeedPage() {
         <div style={{ maxWidth: '600px', margin: '0 auto', padding: '24px' }}>
             <div>
                 <h1>Campus Board</h1>
-                <span>Hi, {user?.displayName}</span>
-                <button onClick={() => {logout(); navigate('/login') }}>Log out</button>
+                <div className="flex flex-col">
+                    <span>Hi, {user?.displayName}</span>
+                    <button onClick={() => {logout(); navigate('/login') }} className="">Log out</button>
+                </div>
             </div>
 
-            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '20em' }}>
+            <form onSubmit={handleCreate} className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '20em' }}>
                 <h2>New post</h2>
                 <input
                     type="text"
@@ -95,18 +97,37 @@ export default function FeedPage() {
             {posts.length === 0
                 ? <p>No posts yet.</p>
                 : posts.map(post => (
-                    <div key={post._id}>
-                        <h2>{post.title}</h2>
-                        <p>{post.body}</p>
-                        <small>by {post.author.displayName}</small>
-                        {post.author._id === user?.id && (
-                            <button onClick={() => handleDelete(post._id)}>
-                                Delete
-                            </button>
-                        )}
-                    </div>
+                    <PostView key={post._id} user={user} post={post} onDelete={handleDelete} />
                 ))
             }
+        </div>
+    )
+}
+
+interface PostViewProps {
+    user: User | null
+    post: Post
+    onDelete: (id: string) => void
+}
+
+function PostView({ user, post, onDelete }: PostViewProps) {
+
+    return(
+        <div>
+            <div className="border rounded-xl m-6" key={post._id}>
+                <h2 className="text-3xl font-bold">{post.title}</h2>
+                <p>{post.body}</p>
+                <small>by {post.author.displayName}</small>
+
+                {post.author._id === user?.id && (
+                    <div>
+                        <div className="border-solid h-1 bg-white rounded m-2" />
+                        <button className="border-solid border-gray-500 rounded" onClick={() => onDelete(post._id)}>
+                            Delete
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
