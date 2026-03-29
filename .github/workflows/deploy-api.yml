@@ -9,7 +9,11 @@ on:
 
 jobs:
     deploy:
+        name: Deploy to Render
         runs-on: ubuntu-latest
         steps:
-            - name: Trigger Render deploy
-              run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+            - uses: JorgeLNJunior/render-deploy@v1.5.0
+              with:
+                service_id: ${{ secrets.RENDER_SERVICE_ID }}
+                api_key: ${{ secrets.RENDER_API_KEY }}
+                wait_deploy: true
