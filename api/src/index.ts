@@ -9,6 +9,9 @@ import { connectMongo } from './config/db'
 import { registerSocketHandlers } from './sockets/index'
 import authRoutes from './routes/auth'
 import postRoutes from './routes/posts'
+import usersRoutes from './routes/users'
+import interactionsRoutes from './routes/interactions'
+import matchesRoutes from './routes/matches'
 import { config } from './config/env'
 
 const app = express()
@@ -26,6 +29,10 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/posts', postRoutes)
+app.use('/api/users', usersRoutes)
+app.use('/api/interactions', interactionsRoutes)
+app.use('/api/matches', matchesRoutes)
+
 
 registerSocketHandlers(io)
 
