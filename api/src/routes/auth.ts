@@ -6,9 +6,9 @@ import { config } from "../config/env";
 const router: Router = Router()
 
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
-    const { email, password, displayName } = req.body
+    const { email, password, displayName, basicInfo } = req.body
 
-    if (!email || !password || !displayName) {
+    if (!email || !password || !displayName || !basicInfo) {
         res.status(400).json({ message: 'All fields are required' })
         return
     }
@@ -20,7 +20,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
             return
         }
 
-        const user = await User.create({ email, password, displayName })
+        const user = await User.create({ email, password, displayName, basicInfo })
         const token = jwt.sign(
             { id: user._id, email: user.email },
             config.jwtSecret,
