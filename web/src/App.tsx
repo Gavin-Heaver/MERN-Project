@@ -8,6 +8,8 @@ import PeoplePage from './pages/PeoplePage'
 import MessagesPage from './pages/MessagesPage'
 import AccountPage from './pages/AccountPage'
 import Navbar from './components/Navbar'
+import VerifyEmail from './pages/VerifyEmail'
+import AccountSetup from './pages/AccountSetup'
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { token } = useAuth()
@@ -25,6 +27,9 @@ export default function App() {
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/account-setup" element={<AccountSetup />} />
+
           <Route path="/" element={<PrivateRoute><FeedPage /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
