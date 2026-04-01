@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'login_screen.dart';
+import 'package:mobile/login.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -58,7 +58,7 @@ class _FeedScreenState extends State<FeedScreen> {
             itemBuilder: (_, i) => ListTile(
               title: Text(_posts[i]['title'] as String),
               subtitle: Text(
-                (_posts[i]['author']['basicInfo']?['firstName'] ?? 'Unknown') as String
+                (_posts[i]['author']?['basicInfo']?['firstName'] ?? 'Unknown') as String
               ),
             ),
           )
