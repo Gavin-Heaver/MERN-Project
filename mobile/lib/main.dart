@@ -1,25 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/screens/feed_screen.dart';
+import 'services/api_service.dart';
 import 'login.dart';
 import 'signup.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const UKnightedApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class UKnightedApp extends StatelessWidget {
+  const UKnightedApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Uknighted',
+      title: 'UKnighted',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const TitleScreen(), // Set the TitleScreen as the starting point
+      home: const AuthGate(), // Set the TitleScreen as the starting point
       debugShowCheckedModeBanner: false, // Hides the annoying debug banner
     );
+  }
+}
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  bool _checking = true;
+  bool _loggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ApiService.getToken().then((token) {
+      setState(() {
+        _loggedIn = token != null;
+        _checking = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_checking) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    return _loggedIn ? const FeedScreen() : const TitleScreen();
   }
 }
 

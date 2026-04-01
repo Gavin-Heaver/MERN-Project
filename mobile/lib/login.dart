@@ -1,8 +1,38 @@
-//Login
 import 'package:flutter/material.dart';
+import 'screens/feed_screen.dart';
+import 'services/api_service.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  bool _loading = false;
+  String? _error;
+
+  Future<void> _submit() async {
+    setState(() { _error = null; _loading = true; });
+    try {
+      await ApiService.login(
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text
+      );
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const FeedScreen())
+        );
+      }
+    } catch (e) {
+      setState(() { _error = e.toString(); });
+    } finally {
+      setState(() { _loading = false; });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +57,7 @@ class LoginScreen extends StatelessWidget {
               height: 250,
             ),
             const SizedBox(height: 0),
-           
+
             const Text(
               'Login',
               style: TextStyle(
@@ -41,6 +71,7 @@ class LoginScreen extends StatelessWidget {
             
             // Email Text Field
             TextField(
+              controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: 'Email',
@@ -54,6 +85,7 @@ class LoginScreen extends StatelessWidget {
             
             // Password Text Field
             TextField(
+              controller: _passwordCtrl,
               obscureText: true, // Hides the password characters
               decoration: InputDecoration(
                 labelText: 'Password',
@@ -63,14 +95,18 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)
+              ),
+
             const SizedBox(height: 40),
             
             // Submit Button
             ElevatedButton(
-              onPressed: () {
-                // TODO: Handle actual login logic later
-                print("Submit Login Credentials");
-              },
+              onPressed: _loading ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.pinkAccent,
                 foregroundColor: Colors.white,
@@ -79,8 +115,8 @@ class LoginScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
-              child: const Text(
-                'Log In',
+              child: Text(
+                _loading ? 'Logging in...' : 'Log In',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
