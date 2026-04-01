@@ -153,12 +153,6 @@ const userSchema = new mongoose.Schema(
             required: true,
             select: false
         },
-        displayName:
-        {
-            type: String,
-            required: true,
-            trim: true
-        },
         accountStatus:
         {
             type: String,
@@ -188,19 +182,16 @@ const userSchema = new mongoose.Schema(
             firstName:
             {
                 type: String,
-                required: true,
                 trim: true
             },
             lastName:
             {
                 type: String,
-                required: true,
                 trim: true
             },
             age:
             {
                 type: Number,
-                required: true,
                 min: 18,
                 max: 99
             },
@@ -222,14 +213,12 @@ const userSchema = new mongoose.Schema(
             major:
             {
                 type: String,
-                enum: MAJOR_LIST,
-                required: true
+                enum: MAJOR_LIST
             },
             classYear:
             {
                 type: String,
-                enum: CLASS_YEAR_OPTIONS,
-                required: true
+                enum: CLASS_YEAR_OPTIONS
             }
         },
         profile:
