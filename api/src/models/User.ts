@@ -167,6 +167,14 @@ const userSchema = new mongoose.Schema(
         },
         verification:
         {
+            verificationCode:
+            {
+                type: String,
+                required: true,
+                // Ensures exactly 6 digits, allowing leading zeros
+                match: [/^\d{6}$/, "Verification code must be exactly 6 digits"],
+                default: "000000"
+            },
             emailVerified:
             {
                 type: Boolean,
