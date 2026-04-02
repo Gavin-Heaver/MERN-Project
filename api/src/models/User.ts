@@ -183,11 +183,6 @@ const userSchema = new mongoose.Schema(
                 type: Boolean,
                 default: false
             },
-            eduVerified:
-            {
-                type: Boolean,
-                default: false
-            },
             verifiedAt:
             {
                 type: Date,
@@ -197,6 +192,11 @@ const userSchema = new mongoose.Schema(
         },
         basicInfo:
         {
+            basicInfoComplete:
+            {
+                type: Boolean,
+                default: false
+            },
             firstName:
             {
                 type: String,
