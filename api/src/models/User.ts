@@ -83,11 +83,6 @@ const userSchema = new mongoose.Schema(
                 type: Boolean,
                 default: false
             },
-            eduVerified:
-            {
-                type: Boolean,
-                default: false
-            },
             verifiedAt:
             {
                 type: Date,
