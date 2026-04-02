@@ -6,9 +6,9 @@ import { config } from "../config/env";
 const router: Router = Router()
 
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
-    const { email, password, displayName, basicInfo } = req.body
+    const { email, password } = req.body
 
-    if (!email || !password || !displayName || !basicInfo) {
+    if (!email || !password) {
         res.status(400).json({ message: 'All fields are required' })
         return
     }
@@ -20,7 +20,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
             return
         }
 
-        const user = await User.create({ email, password, displayName, basicInfo })
+        const user = await User.create({ email, password })
         const token = jwt.sign(
             { id: user._id, email: user.email },
             config.jwtSecret,
@@ -29,7 +29,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 
         res.status(201).json({
             token,
-            user: { id: user._id, email: user.email, displayName: user.displayName }
+            user: { id: user._id, email: user.email }
         })
     } catch (err: any) {
         if (err.name === 'ValidationError') {
@@ -64,7 +64,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
         res.json({
             token,
-            user: { id: user._id, email: user.email, displayName: user.displayName }
+            user: { id: user._id, email: user.email }
         })
     } catch (err) {
         console.error('Login error:', err)

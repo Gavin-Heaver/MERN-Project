@@ -1,96 +1,6 @@
 import mongoose, { InferSchemaType, Model } from 'mongoose'
 import bcrypt from 'bcryptjs'
-
-const MAJOR_LIST = [
-    "Accounting",
-    "Actuarial Science",
-    "Advertising/Public Relations",
-    "Aerospace Engineering",
-    "Anthropology",
-    "Art",
-    "Bachelor of Design in Architecture",
-    "Biology",
-    "Biomedical Sciences",
-    "Biotechnology",
-    "Business Economics",
-    "Career and Technical Education",
-    "Chemistry",
-    "Civil Engineering",
-    "Communication",
-    "Communication and Conflict",
-    "Communication Sciences and Disorders",
-    "Computer Engineering",
-    "Computer Science",
-    "Construction Engineering",
-    "Criminal Justice",
-    "Data Science",
-    "Digital Media",
-    "Early Childhood Development and Education",
-    "Economics",
-    "Electrical Engineering",
-    "Elementary Education",
-    "Emergency Management",
-    "Emerging Media",
-    "English",
-    "Entertainment Management",
-    "Environmental Engineering",
-    "Environmental Science",
-    "Environmental Studies",
-    "Event Management",
-    "Exceptional Student Education",
-    "Film",
-    "Finance",
-    "Forensic Science",
-    "French and Francophone Studies",
-    "General Health Studies",
-    "Health Informatics",
-    "Health Informatics and Information Management",
-    "Health Sciences",
-    "History",
-    "Hospitality Management",
-    "Industrial Engineering",
-    "Information Technology",
-    "Integrative General Studies",
-    "Interdisciplinary Studies",
-    "International and Global Studies",
-    "Journalism",
-    "Latin American, Caribbean and Latinx Studies",
-    "Legal Studies",
-    "Lifestyle Community Management",
-    "Lodging and Restaurant Management",
-    "Management",
-    "Marketing",
-    "Materials Science and Engineering",
-    "Mathematics",
-    "Mechanical Engineering",
-    "Medical Laboratory Sciences",
-    "Molecular and Cellular Biology",
-    "Molecular Microbiology",
-    "Music",
-    "Nonprofit Management",
-    "Nursing",
-    "Philosophy",
-    "Photonic Science and Engineering",
-    "Physics",
-    "Political Science",
-    "Psychology",
-    "Public Administration",
-    "Real Estate",
-    "Religion and Cultural Studies",
-    "Risk Management and Insurance",
-    "Secondary Education",
-    "Social Sciences",
-    "Social Work",
-    "Sociology",
-    "Spanish",
-    "Statistics",
-    "Theatre",
-    "Theatre Studies",
-    "Writing and Rhetoric"
-] as const
-
-const GENDER_OPTIONS = ["Woman", "Man", "Non-Binary", "Other", "Unspecified"] as const
-const CLASS_YEAR_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate", "Other"] as const
+import { CLASS_YEAR_OPTIONS, GENDER_OPTIONS, MAJOR_LIST } from '../constants/userConstants'
 
 interface IUserMethods {
     comparePassword(candidate: string): Promise<boolean>
@@ -153,12 +63,6 @@ const userSchema = new mongoose.Schema(
             required: true,
             select: false
         },
-        displayName:
-        {
-            type: String,
-            required: true,
-            trim: true
-        },
         accountStatus:
         {
             type: String,
@@ -196,19 +100,16 @@ const userSchema = new mongoose.Schema(
             firstName:
             {
                 type: String,
-                required: true,
                 trim: true
             },
             lastName:
             {
                 type: String,
-                required: true,
                 trim: true
             },
             age:
             {
                 type: Number,
-                required: true,
                 min: 18,
                 max: 99
             },
@@ -230,14 +131,12 @@ const userSchema = new mongoose.Schema(
             major:
             {
                 type: String,
-                enum: MAJOR_LIST,
-                required: true
+                enum: MAJOR_LIST
             },
             classYear:
             {
                 type: String,
-                enum: CLASS_YEAR_OPTIONS,
-                required: true
+                enum: CLASS_YEAR_OPTIONS
             }
         },
         profile:

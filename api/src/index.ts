@@ -38,7 +38,7 @@ registerSocketHandlers(io)
 
 ;(async () => {
     await connectMongo()
-    httpServer.listen(config.port, () => {
+    httpServer.listen(config.port, '0.0.0.0', () => {
         console.log(`API running on http://localhost:${config.port}`)
     })
 })()
