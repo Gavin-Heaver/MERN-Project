@@ -167,6 +167,17 @@ const userSchema = new mongoose.Schema(
         },
         verification:
         {
+            verificationCode:
+            {
+                type: Number,
+                max:999999,
+                default: null,
+            },
+            verificationExpiry:
+            {
+                type: Date,
+                default: null
+            },
             emailVerified:
             {
                 type: Boolean,
@@ -182,6 +193,7 @@ const userSchema = new mongoose.Schema(
                 type: Date,
                 default: null
             }
+
         },
         basicInfo:
         {
