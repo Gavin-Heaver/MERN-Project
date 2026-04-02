@@ -1,6 +1,5 @@
 import mongoose, { InferSchemaType, Model } from 'mongoose'
 import bcrypt from 'bcryptjs'
-import { CLASS_YEAR_OPTIONS, GENDER_OPTIONS, MAJOR_LIST } from '../constants/userConstants'
 
 interface IUserMethods {
     comparePassword(candidate: string): Promise<boolean>
@@ -97,7 +96,7 @@ const userSchema = new mongoose.Schema(
         },
         basicInfo:
         {
-            firstName:
+            firstName:  
             {
                 type: String,
                 trim: true
@@ -115,28 +114,18 @@ const userSchema = new mongoose.Schema(
             },
             gender:
             {
-                identity:
-                {
-                    type: String,
-                    enum: GENDER_OPTIONS,
-                    default: "Unspecified"
-                },
-                custom:
-                {
-                    type: String,
-                    trim: true,
-                    default: ""
-                }
+                type: String,
+                default: ""
             },
             major:
             {
                 type: String,
-                enum: MAJOR_LIST
+                default: ""
             },
             classYear:
             {
                 type: String,
-                enum: CLASS_YEAR_OPTIONS
+                default: ""
             }
         },
         profile:
@@ -187,7 +176,7 @@ const userSchema = new mongoose.Schema(
             {
                 type: [{
                     type: String,
-                    enum: GENDER_OPTIONS
+                    default: ""
                 }],
                 default: []
             },
