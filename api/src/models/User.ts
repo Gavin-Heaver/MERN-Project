@@ -153,11 +153,15 @@ const userSchema = new mongoose.Schema(
             required: true,
             select: false
         },
-        displayName:
+        passwordResetToken:
         {
             type: String,
-            required: true,
-            trim: true
+            default: null
+        },
+        passwordResetExpiry:
+        {
+            type: Date,
+            default: null
         },
         accountStatus:
         {
@@ -200,19 +204,16 @@ const userSchema = new mongoose.Schema(
             firstName:
             {
                 type: String,
-                required: true,
                 trim: true
             },
             lastName:
             {
                 type: String,
-                required: true,
                 trim: true
             },
             age:
             {
                 type: Number,
-                required: true,
                 min: 18,
                 max: 99
             },
@@ -235,13 +236,11 @@ const userSchema = new mongoose.Schema(
             {
                 type: String,
                 enum: MAJOR_LIST,
-                required: true
             },
             classYear:
             {
                 type: String,
                 enum: CLASS_YEAR_OPTIONS,
-                required: true
             }
         },
         profile:

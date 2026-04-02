@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken"
 import { User } from "../models/User";
 import { config } from "../config/env";
 import { Resend } from 'resend';
+import crypto from 'crypto';
+import { authenticate } from '../middleware/auth'
 
 const router: Router = Router()
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -30,7 +32,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
             verificationExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000), emailVerified: false, eduVerified:false, verifiedAt: null  } }) 
         
         try {
-                const { data, error } = await resend.emails.send({
+                const { error } = await resend.emails.send({
                     from: 'noreply@uknighted.xyz',
                     to: email, 
                     subject: 'Verify Your Account - UKnighted MERN Demo',
@@ -87,7 +89,7 @@ router.post("/verify", async (req: Request, res: Response): Promise<void> => {
 
     if (!user.verification.verificationExpiry || user.verification.verificationExpiry < new Date()) {
         res.status(400).json({ message: "Verification code has expired" });
-    return;
+        return;
     }
     
     if (user.verification.emailVerified) {
@@ -157,7 +159,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     }
 })
 
-router.patch('/complete-profile', async (req: Request, res: Response): Promise<void> => {
+router.patch('/complete-profile', authenticate, async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.id
 
     if (!userId) {
@@ -235,7 +237,7 @@ router.post('/resend-verification', async (req: Request, res: Response): Promise
         user.verification.verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
         await user.save()
 
-         const { data, error } = await resend.emails.send({
+         const { error } = await resend.emails.send({
                     from: 'noreply@uknighted.xyz',
                     to: email, 
                     subject: 'Verify Your Account - UKnighted MERN Demo',
@@ -262,6 +264,92 @@ router.post('/resend-verification', async (req: Request, res: Response): Promise
     }
 })
 
+
+router.post('/forgot-password', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email } = req.body
+
+        if (!email) {
+            res.status(400).json({ message: 'Email is required' })
+            return
+        }
+
+        const user = await User.findOne({ email: email.trim() })
+
+        if (user) {
+            const rawToken = crypto.randomBytes(32).toString('hex')
+            const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex')
+
+            user.passwordResetToken = hashedToken
+            user.passwordResetExpiry = new Date(Date.now() + 1000 * 60 * 30) // 30 min
+            await user.save()
+
+            const resetLink = `${config.clientUrl}/reset-password?token=${rawToken}`
+
+            const { error } = await resend.emails.send({
+                    from: 'noreply@uknighted.xyz',
+                    to: email, 
+                    subject: 'Reset Password Link - UKnighted MERN Demo',
+                    html: `
+                        <h2>Ready to look for love?</h2>
+                        <p></p>
+                        <p>We received a request to reset your password. Click the button below — it expires in 30 minutes.</p>
+                        <p>Reset Link:</p>
+                        <h1 style="color: #4CAF50; letter-spacing: 5px;">${resetLink}</h1>
+                        <p>This link will expire in 30 minutes.</p>
+                    `
+                });
+
+                if (error) {
+                console.error('Resend error:', error)
+                res.status(500).json({ message: 'Failed to send verification email' })
+                return
+                }
+
+            console.log('Reset link:', resetLink) // send email here with resetLink
+        }
+
+            res.json({
+            message: 'If an account exists for that email, a reset link was sent.'
+        })
+    } catch (err) {
+        console.error('Forgot password error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+})
+
+router.post('/reset-password', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { token, newPassword } = req.body
+
+        if (!token || !newPassword) {
+            res.status(400).json({ message: 'Token and newPassword are required' })
+            return
+        }
+
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+
+        const user = await User.findOne({
+            passwordResetToken: hashedToken,
+            passwordResetExpiry: { $gt: new Date() }
+        }).select('+password')
+
+        if (!user) {
+            res.status(400).json({ message: 'Invalid or expired reset token' })
+            return
+        }
+
+        user.password = newPassword
+        user.passwordResetToken = null
+        user.passwordResetExpiry = null
+        await user.save()
+
+        res.json({ message: 'Password reset successful' })
+    } catch (err) {
+        console.error('Reset password error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+});
 
 
 export default router
