@@ -192,6 +192,7 @@ const userSchema = new mongoose.Schema(
                 type: [{
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Tag"
+                    default: ""
                 }],
                 default: []
             },
