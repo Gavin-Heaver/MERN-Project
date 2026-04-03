@@ -169,8 +169,8 @@ router.patch('/complete-profile', authenticate, async (req: Request, res: Respon
 
     const { firstName, lastName, age, gender, major, classYear } = req.body
 
-    if (!firstName || !lastName || !age || !major || !classYear) {
-        res.status(400).json({ message: 'firstName, lastName, age, major, and classYear are required' })
+    if (!firstName || !lastName || !age || !gender || !major || !classYear) {
+        res.status(400).json({ message: 'firstName, lastName, age, gender, major, and classYear are required' })
         return
     }
 
@@ -182,7 +182,7 @@ router.patch('/complete-profile', authenticate, async (req: Request, res: Respon
                     'basicInfo.firstName': firstName,
                     'basicInfo.lastName': lastName,
                     'basicInfo.age': age,
-                    'basicInfo.gender.identity': gender?.identity ?? 'Unspecified',
+                    'basicInfo.gender': gender,
                     'basicInfo.major': major,
                     'basicInfo.classYear': classYear,
                     'basicInfo.basicInfoComplete': true   // 👈 flip the flag
@@ -295,7 +295,10 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
                         <p></p>
                         <p>We received a request to reset your password. Click the button below — it expires in 30 minutes.</p>
                         <p>Reset Link:</p>
-                        <h1 style="color: #4CAF50; letter-spacing: 5px;">${resetLink}</h1>
+                       <a href="${resetLink}" 
+                        style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; letter-spacing: 1px;">
+                    Reset Password
+                     </a>
                         <p>This link will expire in 30 minutes.</p>
                     `
                 });
