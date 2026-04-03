@@ -60,7 +60,10 @@ const messageSchema = new Schema(
 
 messageSchema.pre("validate", function(next)
 {
-    if ((this.messageType === "text" || this.messageType === "system") && !this.text.trim())
+    if (
+        (this.messageType === "text" || this.messageType === "system") &&
+        !(this.text || "").trim()
+    )
     {
         return next(new Error("Text is required for messages."));
     }
