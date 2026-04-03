@@ -70,13 +70,17 @@ const userSchema = new mongoose.Schema(
         },
         verification:
         {
-            verificationCode:
+            code:
             {
                 type: String,
-                required: true,
-                // Ensures exactly 6 digits, allowing leading zeros
-                match: [/^\d{6}$/, "Verification code must be exactly 6 digits"],
-                default: "000000"
+                default: null,
+                // ensures 6 digits exactly, any order of digits
+                match: [/^\d{6}$/, "Verification code must be exactly 6 digits"]
+            },
+            codeCreatedAt:
+            {
+                type: Date,
+                default: null
             },
             emailVerified:
             {
@@ -167,10 +171,27 @@ const userSchema = new mongoose.Schema(
                 max: 99,
                 default: 99
             },
-            interestedIn:
+            interestedInGenders:
             {
                 type: [{
                     type: String,
+                    trim: true
+                }],
+                default: [],
+                validate:
+                {
+                    validator: function(values: string[])
+                    {
+                        return values.every(value => typeof value === "string" && value.trim().length > 0)
+                    },
+                    message: "interestedInGenders cannot contain empty values."
+                }
+            },
+            preferredInterestTagIds:
+            {
+                type: [{
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Tag"
                     default: ""
                 }],
                 default: []
@@ -197,56 +218,19 @@ const userSchema = new mongoose.Schema(
                 type: Boolean,
                 default: true
             }
-        },
-        bio:
-        {
-            type: String,
-            default: '',
-            trim: true,
-            maxLength: 500
-        },
-        age:
-        {
-            type: Number,
-            min: 18,
-            max: 100
-        },
-        major:
-        {
-            type: String,
-            default: '',
-            trim: true
-        },
-        year:
-        {
-            type: String,
-            default: '',
-            trim: true
         }
     },
     { timestamps: true }
 )
 
-userSchema.pre("validate", function() {
-    if (
-        this.basicInfo?.gender?.identity === "Other" &&
-        !this.basicInfo.gender.custom.trim()
-    ) {
-        throw new Error("Custom gender is required when gender identity is 'Other'.")
-    }
-
-    if (
-        this.basicInfo?.gender?.identity &&
-        this.basicInfo.gender.identity !== "Other"
-    ) {
-        this.basicInfo.gender.custom = "";
-    }
-
+userSchema.pre("validate", function ()
+{
     if (
         this.preferences?.ageMin !== undefined &&
         this.preferences?.ageMax !== undefined &&
         this.preferences.ageMin > this.preferences.ageMax
-    ) {
+    )
+    {
         throw new Error("preferences.ageMin cannot be greater than preferences.ageMax.")
     }
 })
