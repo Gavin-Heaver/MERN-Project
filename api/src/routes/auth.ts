@@ -28,8 +28,8 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
        
         const verificationCode = Math.floor(100000 + Math.random() * 900000);
 
-        const user = await User.create({ email, password, basicInfo: { basicInfoComplete: false }, verification: { verificationCode: verificationCode, 
-            verificationExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000), emailVerified: false, eduVerified:false, verifiedAt: null  } }) 
+        const user = await User.create({ email, password, basicInfo: { basicInfoComplete: false }, verification: { code: String(verificationCode), 
+            codeCreatedAt: Date.now(), emailVerified: false, eduVerified:false, verifiedAt: null  } }) 
         
         try {
                 const { error } = await resend.emails.send({
@@ -87,7 +87,7 @@ router.post("/verify", async (req: Request, res: Response): Promise<void> => {
         return;
     }
 
-    if (!user.verification.verificationExpiry || user.verification.verificationExpiry < new Date()) {
+    if (!user.verification.codeCreatedAt || user.verification.codeCreatedAt < new Date(Date.now() - 24 * 60 * 60 * 1000)) {
         res.status(400).json({ message: "Verification code has expired" });
         return;
     }
@@ -98,7 +98,7 @@ router.post("/verify", async (req: Request, res: Response): Promise<void> => {
     }
 
     // Compare as Number — matches schema type
-    if (user.verification.verificationCode !== Number(verificationCode)) {
+    if (user.verification.code != verificationCode) {
         res.status(400).json({ message: "Invalid verification code" });
         return;
     }
@@ -106,7 +106,7 @@ router.post("/verify", async (req: Request, res: Response): Promise<void> => {
     // Mark verified, clear the code
     user.verification.emailVerified = true;
     user.verification.verifiedAt = new Date();
-    user.verification.verificationCode = null;
+    user.verification.code = null;
     await user.save();
 
     const token = jwt.sign(
@@ -233,8 +233,8 @@ router.post('/resend-verification', async (req: Request, res: Response): Promise
 
         const verificationCode = Math.floor(100000 + Math.random() * 900000)
 
-        user.verification.verificationCode = verificationCode
-        user.verification.verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
+        user.verification.code = String(verificationCode)
+        user.verification.codeCreatedAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
         await user.save()
 
          const { error } = await resend.emails.send({
