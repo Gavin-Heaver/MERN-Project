@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/screens/feed_screen.dart';
-import 'services/api_service.dart';
-import 'login.dart';
-import 'signup.dart';
+import '../services/api_service.dart';
+import 'screens/login.dart';
+import 'screens/signup.dart';
 
 void main() {
   runApp(const UKnightedApp());
@@ -114,13 +114,13 @@ class TitleScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => SignupScreen(),
+                        builder: (context) => RegisterScreen(),
                       ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: Colors.pinkAccent,
+                    foregroundColor: const Color.fromARGB(255, 170, 57, 71),
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
@@ -150,7 +150,7 @@ class TitleScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: Colors.pinkAccent,
+                    foregroundColor: const Color.fromARGB(255, 170, 57, 71),
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
