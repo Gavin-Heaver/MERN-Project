@@ -68,6 +68,16 @@ const userSchema = new mongoose.Schema(
             enum: ["active", "suspended", "deleted"],
             default: "active"
         },
+        passwordResetToken:
+        {
+            type: String,
+            default: null
+        },
+        passwordResetExpiry:
+        {
+            type: Date,
+            default: null
+        },
         verification:
         {
             code:
@@ -95,6 +105,11 @@ const userSchema = new mongoose.Schema(
         },
         basicInfo:
         {
+            basicInfoComplete: 
+            { 
+                type: Boolean, 
+                default: false 
+            },
             firstName:  
             {
                 type: String,
@@ -192,7 +207,6 @@ const userSchema = new mongoose.Schema(
                 type: [{
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Tag"
-                    default: ""
                 }],
                 default: []
             },
