@@ -21,7 +21,11 @@ const conversationSchema = new Schema(
         {
             validator: function(value)
             {
-                return Array.isArray(value) && value.length === 2;
+                return (
+                    Array.isArray(value) &&
+                    value.length === 2 &&
+                    value[0].toString() !== value[1].toString()
+                );
             },
             message: "A conversation must have exactly 2 participants."
         },
@@ -45,5 +49,18 @@ const conversationSchema = new Schema(
     }
 },
 { timestamps: true });
+
+conversationSchema.pre("validate", function(next)
+{
+    if (Array.isArray(this.participantIds) && this.participantIds.length === 2)
+    {
+        this.participantIds = this.participantIds
+            .map(id => id.toString())
+            .sort()
+            .map(id => new Schema.Types.ObjectId(id));
+    }
+
+    next();
+});
 
 module.exports = mongoose.model("Conversation", conversationSchema);

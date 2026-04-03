@@ -34,7 +34,7 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
     if (!title || !body) { res.status(400).json({ message: 'Title and body are required' }); return }
     try {
         const created = await Post.create({ title, body, author: req.user.id })
-        const post = await Post.findById(created._id).populate('author', 'displayName email')
+        const post = await Post.findById(created._id).populate('author', 'email basicInfo')
         res.status(201).json(post)
     } catch (err) {
         console.error('Create post error:', err)

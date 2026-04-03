@@ -29,7 +29,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         const verificationCode = Math.floor(100000 + Math.random() * 900000);
 
         const user = await User.create({ email, password, basicInfo: { basicInfoComplete: false }, verification: { code: String(verificationCode), 
-            codeCreatedAt: Date.now(), emailVerified: false, eduVerified:false, verifiedAt: null  } }) 
+            codeCreatedAt: Date.now(), emailVerified: false, verifiedAt: null  } }) 
         
         try {
                 const { error } = await resend.emails.send({
