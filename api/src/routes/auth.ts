@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import { authenticate } from '../middleware/auth'
 
 const router: Router = Router()
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(config.resendKey);
 console.log('Resend email service ready');
 
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
