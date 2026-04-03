@@ -19,7 +19,7 @@ class UKnightedApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const AuthGate(), // Set the TitleScreen as the starting point
+      home: const TitleScreen(), // Set the TitleScreen as the starting point
       debugShowCheckedModeBanner: false, // Hides the annoying debug banner
     );
   }
@@ -138,9 +138,9 @@ class TitleScreen extends StatelessWidget {
               // Login Button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: OutlinedButton(
+                child: ElevatedButton(
                   onPressed: () {
-                    // Go to login 
+                    // Go to signup 
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -157,7 +157,7 @@ class TitleScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Log In',
+                    'Login',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),

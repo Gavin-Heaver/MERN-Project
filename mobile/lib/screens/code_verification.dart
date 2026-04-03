@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'navigation.dart'; //import 'code_verification';
+import 'set_preferences.dart'; //import 'code_verification';
 import '../services/api_service.dart';
 
 class VerificationScreen extends StatelessWidget {
@@ -92,7 +92,7 @@ class VerificationScreen extends StatelessWidget {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const MainNavigation(),
+                        builder: (context) => const PreferenceScreen(),
                       ),
                     );
                     

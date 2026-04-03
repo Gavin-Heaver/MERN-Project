@@ -43,7 +43,7 @@ class _MainNavigationState extends State<MainNavigation> {
         backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        selectedItemColor: Colors.pinkAccent, // Brand color for active tab
+        selectedItemColor:const Color.fromARGB(255, 170, 57, 71), // Brand color for active tab
         unselectedItemColor: Colors.grey,     // Grey for inactive tabs
         showSelectedLabels: false,            // Hiding labels makes it look cleaner
         showUnselectedLabels: false,
