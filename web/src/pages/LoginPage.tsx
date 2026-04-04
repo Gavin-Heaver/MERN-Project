@@ -19,7 +19,7 @@ export default function LoginPage() {
         try {
             const { token, user } = await api.auth.login({ email, password })
             login(token, user)
-            navigate('/')
+            navigate('/people')
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setError(err.response?.data?.message ?? 'Login failed')
@@ -35,9 +35,24 @@ export default function LoginPage() {
         <div>
             <h1>Log in</h1>
             <form onSubmit={handleSubmit}>
-                <input type="email" placeholder="id@ucf.edu" value={email} onChange={e => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+                <input 
+                    type="email" 
+                    placeholder="id@ucf.edu" 
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)} 
+                    required 
+                />
+
+                <input 
+                    type="password" 
+                    placeholder="Password" 
+                    value={password} 
+                    onChange={e => setPassword(e.target.value)} 
+                    required 
+                />
+                
                 {error && <p style={{ color: 'red' }}>{error}</p>}
+                
                 <button type="submit" disabled={loading}>
                     {loading ? 'Logging in...' : 'Log in'}
                 </button>

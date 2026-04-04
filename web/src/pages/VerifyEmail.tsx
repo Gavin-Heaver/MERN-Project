@@ -1,23 +1,23 @@
-import { useState } from "react"
+import React, { useState } from "react"
 import { api } from "../api"
+import axios from "axios"
 
 export default function VerifyEmail() {
             
     const [loading, setLoading] = useState(false)
     const [code, setCode] = useState("")
-    const [error, setError] = useState(null)
+    const [error, setError] = useState<null|string>(null)
 
-    async function handleSubmit(e: React.SyntheticEvent) {
-        // e.preventDefault()
-        // setError(null)
-        // setLoading(true)
+        async function handleSubmit(e: React.SyntheticEvent) {
+        e.preventDefault()
+        setError(null)
+        setLoading(true)
         // try {
-        //     const { token, user } = await api.auth.verifyEmail({ email, code })
-        //     login(token, user)
-        //     navigate('/')
+        //     await api.auth.verifyEmail({ email, code })
+        //     navigate('/account-setup')
         // } catch (err) {
         //     if (axios.isAxiosError(err)) {
-        //         setError(err.response?.data?.message ?? 'Login failed')
+        //         setError(err.response?.data?.message ?? 'Verification failed')
         //     } else {
         //         setError('Incorrect code!')
         //     }
@@ -33,12 +33,12 @@ export default function VerifyEmail() {
 
             <form onSubmit={handleSubmit}>
                 <input 
-                    type="email" placeholder="6-digit code" 
+                    type="text" placeholder="6-digit code" 
                     value={code} 
                     onChange={e => setCode(e.target.value)} 
                     required 
                 />
-
+                {error && <p style={{ color: 'red' }}>{error}</p>}
                 <button type="submit" disabled={loading}>
                     {loading ? 'Verifying...' : 'Verify'}
                 </button>
