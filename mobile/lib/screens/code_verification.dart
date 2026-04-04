@@ -18,7 +18,6 @@ class VerificationScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.pinkAccent),
       ),
       body: Container(
-        
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40.0),

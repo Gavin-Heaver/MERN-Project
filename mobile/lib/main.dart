@@ -63,10 +63,13 @@ class TitleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       // A Scaffold provides the high-level visual structure
       body: Container(
         width: double.infinity, // Take up full width
+        height: double.infinity, // CRUCIAL: Forces the gradient background to cover the whole screen even if scrolling
         decoration: const BoxDecoration(
           // gradient background
           gradient: LinearGradient(
@@ -79,91 +82,98 @@ class TitleScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea( // Keeps UI out of the phone's notches/status bars
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(), // Pushes the logo to the center
-              
-              // App Logo 
-              Image.asset(
-                'assets/Logo_V1.png',
-                width: 500,
-                height: 500,
-              ),
-              const SizedBox(height: 20),
-              
-              // App Name
-              const Text(
-                'UKnighted', // Replace with your actual app name
-                style: TextStyle(
-                  fontSize: 56,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.5,
+          // THE FIX: Wrap the Column in a SingleChildScrollView
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // REPLACED Spacer: Added a bit of fixed breathing room at the very top
+                SizedBox(height: screenHeight * 0.05), 
+                
+                // App Logo 
+                Image.asset(
+                  'assets/Logo_V1.png',
+                  width: 500, // Leaving this large will easily let you test the new scrolling!
+                  height: 500,
                 ),
-              ),
-              
-              const Spacer(), // Pushes the buttons to the bottom
-              
-              // Sign Up Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Go to signup 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RegisterScreen(),
+                const SizedBox(height: 20),
+                
+                // App Name
+                const Text(
+                  'UKnighted', 
+                  style: TextStyle(
+                    fontSize: 56,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                
+                // REPLACED Spacer: Fixed gap between the title and the buttons
+                const SizedBox(height: 50), 
+                
+                // Register Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Go to register 
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RegisterScreen(), // Added 'const' for better performance
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color.fromARGB(255, 170, 57, 71),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color.fromARGB(255, 170, 57, 71),
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                 ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Login Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Go to signup 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoginScreen(),
+                
+                const SizedBox(height: 20),
+                
+                // Login Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Go to login 
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(), // Added 'const'
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color.fromARGB(255, 170, 57, 71),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color.fromARGB(255, 170, 57, 71),
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                 ),
-              ),
-              const SizedBox(height: 40), // Bottom padding
-            ],
+                
+                // Bottom padding to ensure the scroll goes all the way past the lowest button
+                const SizedBox(height: 60), 
+              ],
+            ),
           ),
         ),
       ),
