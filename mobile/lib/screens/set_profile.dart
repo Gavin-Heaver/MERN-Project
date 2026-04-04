@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'set_profile.dart';
+import 'navigation.dart';
 
-class PreferenceScreen extends StatelessWidget {
-  const PreferenceScreen({super.key});
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
  @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class PreferenceScreen extends StatelessWidget {
                   height: 100,
                 ),
                 const Text(
-                  "Who are you looking for?",
+                  "Tell us about yourself",
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
                   textAlign: TextAlign.center,
                 ),
@@ -41,20 +41,17 @@ class PreferenceScreen extends StatelessWidget {
                 // --- PLACEHOLDERS TO TEST SCROLLING ---
                 // You will replace these with your actual dropdowns, buttons, and text fields later!
                 
-                _buildPlaceholderBox("Min Age Range"),
-                const SizedBox(height: 20),
-
-                _buildPlaceholderBox("Max Age Range"),
-                const SizedBox(height: 20),
-
-                _buildPlaceholderBox("Sexuality"),
+                _buildPlaceholderBox("Bio"),
                 const SizedBox(height: 20),
                 
-                _buildPlaceholderBox("Preferred Interests"),
+                _buildPlaceholderBox("Photos"),
+                const SizedBox(height: 20),
+                
+                _buildPlaceholderBox("Prompt Answers"),
                 const SizedBox(height: 20),
 
-                _buildPlaceholderBox("DealBreaker Interests"),
-                const SizedBox(height: 20),
+                _buildPlaceholderBox("interest tag IDs"),
+                const SizedBox(height: 40),
                 
                 // Continue Button at the very bottom
                 ElevatedButton(
@@ -63,7 +60,7 @@ class PreferenceScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ProfileScreen(),
+                        builder: (context) => MainNavigation(),
                       ),
                     );
                   },
@@ -73,7 +70,7 @@ class PreferenceScreen extends StatelessWidget {
                     minimumSize: const Size(double.infinity, 55),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                   ),
-                  child: const Text('Next, your Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: const Text('Save', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 20), // Bottom padding so the button doesn't hug the absolute edge
               ],

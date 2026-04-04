@@ -50,8 +50,8 @@ class _MainNavigationState extends State<MainNavigation> {
         elevation: 10,                        // Adds a slight shadow above the bar
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.style_outlined, size: 30), // Cards/Deck icon
-            activeIcon: Icon(Icons.style, size: 30),    // Filled version when active
+            icon: Icon(Icons.check_circle_outline, size: 30), // Cards/Deck icon
+            activeIcon: Icon(Icons.check_circle, size: 30),    // Filled version when active
             label: 'Feed',
           ),
           BottomNavigationBarItem(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'set_preferences.dart'; //import 'code_verification';
+import 'set_basic_info.dart'; 
 import '../services/api_service.dart';
 
 class VerificationScreen extends StatelessWidget {
@@ -17,13 +17,12 @@ class VerificationScreen extends StatelessWidget {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.pinkAccent),
       ),
-      body: Container(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+      body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Icon for visual flair
                 const Icon(
@@ -91,7 +90,7 @@ class VerificationScreen extends StatelessWidget {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PreferenceScreen(),
+                        builder: (context) => const BasicInfoScreen(),
                       ),
                     );
                     
@@ -129,7 +128,6 @@ class VerificationScreen extends StatelessWidget {
               ],
             ),
           ),
-        ),
       ),
     );
   }

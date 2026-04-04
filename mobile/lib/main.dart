@@ -3,6 +3,7 @@ import 'package:mobile/screens/feed_screen.dart';
 import '../services/api_service.dart';
 import 'screens/login.dart';
 import 'screens/signup.dart';
+import 'screens/navigation.dart';
 
 void main() {
   runApp(const UKnightedApp());
@@ -19,7 +20,7 @@ class UKnightedApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const TitleScreen(), // Set the TitleScreen as the starting point
+      home: const MainNavigation(), // Set the TitleScreen as the starting point
       debugShowCheckedModeBanner: false, // Hides the annoying debug banner
     );
   }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'set_preferences.dart';
-
-class CharacteristicsScreen extends StatelessWidget {
-  const CharacteristicsScreen({super.key});
+ 
+class BasicInfoScreen extends StatelessWidget {
+  const BasicInfoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,16 +36,22 @@ class CharacteristicsScreen extends StatelessWidget {
                 // --- PLACEHOLDERS TO TEST SCROLLING ---
                 // You will replace these with your actual dropdowns, buttons, and text fields later!
                 
-                _buildPlaceholderBox("School"),
+                _buildPlaceholderBox("First Name"),
                 const SizedBox(height: 20),
                 
+                _buildPlaceholderBox("Last"),
+                const SizedBox(height: 20),
+
                 _buildPlaceholderBox("Age"),
                 const SizedBox(height: 20),
                 
                 _buildPlaceholderBox("Gender"),
                 const SizedBox(height: 20),
 
-                _buildPlaceholderBox("Picture"),
+                _buildPlaceholderBox("Major"),
+                const SizedBox(height: 40),
+
+                _buildPlaceholderBox("Class Year"),
                 const SizedBox(height: 40),
                 
                 // Continue Button at the very bottom
