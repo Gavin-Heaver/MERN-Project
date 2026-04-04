@@ -159,6 +159,14 @@ const userSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
+        passwordResetToken: {
+            type: String,
+            default: null
+        },
+        passwordResetExpires: {
+            type: Date,
+            default: null
+        },
         accountStatus:
         {
             type: String,

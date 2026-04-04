@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import jwt from "jsonwebtoken"
 import { User } from "../models/User";
 import { config } from "../config/env";
+import crypto from 'crypto';
 
 const router: Router = Router()
 
@@ -71,5 +72,76 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ message: 'Server error'})
     }
 })
+
+router.post('/verify-email', async (req: Request, res: Response): Promise<void> => {
+
+
+})
+
+router.post('/forgot-password', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email } = req.body
+
+        if (!email) {
+            res.status(400).json({ message: 'Email is required' })
+            return
+        }
+
+        const user = await User.findOne({ email: email.trim().toLowerCase() })
+
+        if (user) {
+            const rawToken = crypto.randomBytes(32).toString('hex')
+            const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex')
+
+            user.passwordResetToken = hashedToken
+            user.passwordResetExpires = new Date(Date.now() + 1000 * 60 * 30) // 30 min
+            await user.save()
+
+            const resetLink = `${config.clientUrl}/reset-password?token=${rawToken}`
+
+            console.log('Reset link:', resetLink) // send email here with resetLink
+        }
+
+            res.json({
+            message: 'If an account exists for that email, a reset link was sent.'
+        })
+    } catch (err) {
+        console.error('Forgot password error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+})
+
+router.post('/reset-password', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { token, newPassword } = req.body
+
+        if (!token || !newPassword) {
+            res.status(400).json({ message: 'Token and newPassword are required' })
+            return
+        }
+
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+
+        const user = await User.findOne({
+            passwordResetToken: hashedToken,
+            passwordResetExpires: { $gt: new Date() }
+        }).select('+password')
+
+        if (!user) {
+            res.status(400).json({ message: 'Invalid or expired reset token' })
+            return
+        }
+
+        user.password = newPassword
+        user.passwordResetToken = null
+        user.passwordResetExpires = null
+        await user.save()
+
+        res.json({ message: 'Password reset successful' })
+    } catch (err) {
+        console.error('Reset password error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+});
 
 export default router
