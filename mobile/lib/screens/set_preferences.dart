@@ -39,13 +39,6 @@ class PreferenceScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 
                 // --- PLACEHOLDERS TO TEST SCROLLING ---
-                // You will replace these with your actual dropdowns, buttons, and text fields later!
-                
-                _buildPlaceholderBox("Min Age Range"),
-                const SizedBox(height: 20),
-
-                _buildPlaceholderBox("Max Age Range"),
-                const SizedBox(height: 20),
 
                 _buildPlaceholderBox("Sexuality"),
                 const SizedBox(height: 20),
@@ -54,7 +47,7 @@ class PreferenceScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 _buildPlaceholderBox("DealBreaker Interests"),
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
                 
                 // Continue Button at the very bottom
                 ElevatedButton(

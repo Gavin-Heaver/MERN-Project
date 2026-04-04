@@ -3,7 +3,8 @@ import 'package:mobile/screens/feed_screen.dart';
 import '../services/api_service.dart';
 import 'screens/login.dart';
 import 'screens/signup.dart';
-import 'screens/navigation.dart';
+import 'screens/code_verification.dart';
+
 
 void main() {
   runApp(const UKnightedApp());
@@ -20,7 +21,7 @@ class UKnightedApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const MainNavigation(), // Set the TitleScreen as the starting point
+      home: const VerificationScreen(), // Set the TitleScreen as the starting point
       debugShowCheckedModeBanner: false, // Hides the annoying debug banner
     );
   }
@@ -69,8 +70,8 @@ class TitleScreen extends StatelessWidget {
     return Scaffold(
       // A Scaffold provides the high-level visual structure
       body: Container(
-        width: double.infinity, // Take up full width
-        height: double.infinity, // CRUCIAL: Forces the gradient background to cover the whole screen even if scrolling
+        width: double.infinity, 
+        height: double.infinity, 
         decoration: const BoxDecoration(
           // gradient background
           gradient: LinearGradient(
@@ -83,7 +84,6 @@ class TitleScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea( // Keeps UI out of the phone's notches/status bars
-          // THE FIX: Wrap the Column in a SingleChildScrollView
           child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

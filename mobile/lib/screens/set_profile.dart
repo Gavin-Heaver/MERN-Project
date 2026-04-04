@@ -41,13 +41,28 @@ class ProfileScreen extends StatelessWidget {
                 // --- PLACEHOLDERS TO TEST SCROLLING ---
                 // You will replace these with your actual dropdowns, buttons, and text fields later!
                 
+                _buildPlaceholderBox("Major"),
+                const SizedBox(height: 20),
+
+                _buildPlaceholderBox("Class Year"),
+                const SizedBox(height: 20),
+                
                 _buildPlaceholderBox("Bio"),
                 const SizedBox(height: 20),
                 
                 _buildPlaceholderBox("Photos"),
                 const SizedBox(height: 20),
-                
-                _buildPlaceholderBox("Prompt Answers"),
+
+                _buildPlaceholderBox("Work"),
+                const SizedBox(height: 20),
+
+                _buildPlaceholderBox("Religion"),
+                const SizedBox(height: 20),
+
+                _buildPlaceholderBox("Politics"),
+                const SizedBox(height: 20),
+
+                _buildPlaceholderBox("dating intention"),
                 const SizedBox(height: 20),
 
                 _buildPlaceholderBox("interest tag IDs"),

@@ -44,14 +44,14 @@ class BasicInfoScreen extends StatelessWidget {
 
                 _buildPlaceholderBox("Age"),
                 const SizedBox(height: 20),
-                
+
                 _buildPlaceholderBox("Gender"),
                 const SizedBox(height: 20),
+                
+                _buildPlaceholderBox("Height"),
+                const SizedBox(height: 20),
 
-                _buildPlaceholderBox("Major"),
-                const SizedBox(height: 40),
-
-                _buildPlaceholderBox("Class Year"),
+                _buildPlaceholderBox("Ethnicity"),
                 const SizedBox(height: 40),
                 
                 // Continue Button at the very bottom
