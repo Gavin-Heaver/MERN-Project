@@ -274,7 +274,7 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
             return
         }
 
-        const user = await User.findOne({ email: email.trim() })
+        const user = await User.findOne({ email: email.trim().toLowerCase() })
 
         if (user) {
             const rawToken = crypto.randomBytes(32).toString('hex')
