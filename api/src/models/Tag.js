@@ -32,4 +32,14 @@ const tagSchema = new Schema(
 },
 { timestamps: true });
 
+tagSchema.pre("validate", function(next)
+{
+    if (this.name)
+    {
+        this.normalizedName = this.name.trim().toLowerCase();
+    }
+
+    next();
+});
+
 module.exports = mongoose.model("Tag", tagSchema);
