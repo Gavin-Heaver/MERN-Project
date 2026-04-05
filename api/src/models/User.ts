@@ -158,6 +158,11 @@ const userSchema = new mongoose.Schema(
         },
         profile:
         {
+            profileComplete: 
+            { 
+                type: Boolean, 
+                default: false 
+            },          
             bio:
             {
                 type: String,
@@ -186,6 +191,11 @@ const userSchema = new mongoose.Schema(
 
         preferences:
         {
+            preferencesComplete: 
+            { 
+                type: Boolean, 
+                default: false 
+            },
             ageMin:
             {
                 type: Number,
@@ -220,7 +230,8 @@ const userSchema = new mongoose.Schema(
             {
                 type: [{
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: "Tag"
+                    ref: "Tag",
+                    default: ""
                 }],
                 default: []
             },

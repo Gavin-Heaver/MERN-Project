@@ -158,58 +158,6 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ message: 'Server error'})
     }
 })
-
-router.patch('/complete-profile', authenticate, async (req: Request, res: Response): Promise<void> => {
-    const userId = req.user?.id
-
-    if (!userId) {
-        res.status(401).json({ message: 'Unauthorized' })
-        return
-    }
-
-    const { firstName, lastName, age, gender, major, classYear } = req.body
-
-    if (!firstName || !lastName || !age || !gender || !major || !classYear) {
-        res.status(400).json({ message: 'firstName, lastName, age, gender, major, and classYear are required' })
-        return
-    }
-
-    try {
-        const user = await User.findByIdAndUpdate(
-            userId,
-            {
-                $set: {
-                    'basicInfo.firstName': firstName,
-                    'basicInfo.lastName': lastName,
-                    'basicInfo.age': age,
-                    'basicInfo.gender': gender,
-                    'basicInfo.major': major,
-                    'basicInfo.classYear': classYear,
-                    'basicInfo.basicInfoComplete': true   // 👈 flip the flag
-                }
-            },
-            { new: true, runValidators: true }
-        )
-
-        if (!user || !user.basicInfo) { res.status(404).json({ message: 'User not found' }); return }
-
-        res.json({
-            message: 'Profile completed',
-            user: {
-                id: user._id,
-                email: user.email,
-                basicInfoComplete: user.basicInfo.basicInfoComplete
-            }
-        })
-    } catch (err: any) {
-        if (err.name === 'ValidationError') {
-            res.status(400).json({ message: err.message })
-            return
-        }
-        console.error('Complete profile error:', err)
-        res.status(500).json({ message: 'Server error' })
-    }
-})
 router.post('/resend-verification', async (req: Request, res: Response): Promise<void> => {
     const { email } = req.body
 
@@ -234,7 +182,7 @@ router.post('/resend-verification', async (req: Request, res: Response): Promise
         const verificationCode = Math.floor(100000 + Math.random() * 900000)
 
         user.verification.code = String(verificationCode)
-        user.verification.codeCreatedAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+        user.verification.codeCreatedAt = new Date();
         await user.save()
 
          const { error } = await resend.emails.send({
