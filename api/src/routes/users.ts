@@ -81,6 +81,11 @@ router.patch('/basic-info', authenticate, async (req: Request, res: Response): P
 
     const { firstName, lastName, age, gender, major, classYear } = req.body
 
+    if (age < 17 || age > 100) {
+    res.status(400).json({ message: 'Invalid age' });
+    return;
+    }
+
     if (!firstName || !lastName || !age || !gender || !major || !classYear) {
         res.status(400).json({ message: 'firstName, lastName, age, gender, major, and classYear are required' })
         return
@@ -148,7 +153,7 @@ router.patch('/preferences', authenticate, async (req: Request, res: Response): 
                     'preferences.interestedInGenders': interestedInGenders,
                     'preferences.preferredInterestTagIds': preferredInterestTagIds,
                     'preferences.dealbreakerTagIds': dealbreakerTagIds,
-                    'preferences.preferencesComplete': true   // 👈 flip the flag
+                    'preferences.preferencesComplete': true   
                 }
             },
             { new: true, runValidators: true }
@@ -198,7 +203,7 @@ router.patch('/profile', authenticate, async (req: Request, res: Response): Prom
                     'profile.photos': photos,
                     'profile.promptAnswers': promptAnswers,
                     'profile.interestTagIds': interestTagIds,
-                    'profile.profileComplete': true   // 👈 flip the flag
+                    'profile.profileComplete': true   
                 }
             },
             { new: true, runValidators: true }

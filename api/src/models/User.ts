@@ -82,16 +82,6 @@ const userSchema = new mongoose.Schema(
             enum: ["active", "suspended", "deleted"],
             default: "active"
         },
-        passwordResetToken:
-        {
-            type: String,
-            default: null
-        },
-        passwordResetExpiry:
-        {
-            type: Date,
-            default: null
-        },
         verification:
         {
             code:
