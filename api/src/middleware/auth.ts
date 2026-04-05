@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from 'jsonwebtoken'
 import { config } from '../config/env'
 
+
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
     const header = req.headers.authorization
 

@@ -12,7 +12,7 @@ export default function AccountSetup() {
     const [classYear, setClassYear] = useState("")
     const [loading, setLoading] = useState(false)
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault()
         setLoading(true)
         try {

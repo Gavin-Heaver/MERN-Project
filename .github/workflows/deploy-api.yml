@@ -8,8 +8,26 @@ on:
     workflow_dispatch:
 
 jobs:
+    build:
+        name: Build Check
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                node-version: 20
+            
+            - uses: pnpm/action-setup@v3
+              with:
+                node-version: 9
+            
+            - name: Install dependencies
+              run: pnpm --filter @uknighted/api build
+
     deploy:
         name: Deploy to Render
+        needs: build
         runs-on: ubuntu-latest
         steps:
             - uses: JorgeLNJunior/render-deploy@v1.5.0
