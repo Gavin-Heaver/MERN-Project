@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { CLASS_YEAR_OPTIONS, GENDER_OPTIONS, MAJOR_LIST } from "../constants/userConstants"
+
+import { GENDER_OPTIONS, MAJOR_LIST, CLASS_YEAR_OPTIONS } from "../constants/profileOptions"
 
 export default function AccountSetup() {
     const [firstName, setFirstName] = useState("")
