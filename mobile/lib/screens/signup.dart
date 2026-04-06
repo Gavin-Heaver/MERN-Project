@@ -10,13 +10,23 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _displayNameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   String? _error;
   bool _loading = false;
 
   Future<void> _submit() async {
+    if (_emailCtrl.text.trim().isEmpty || _passwordCtrl.text.isEmpty) {
+      setState(() { _error = "Please fill in all fields."; });
+      return; // Stops the function here
+    }
+
+    // 2. Optional: Enforce a university email requirement
+    if (!_emailCtrl.text.trim().toLowerCase().endsWith('.edu')) {
+      setState(() { _error = "You must use a valid university .edu email."; });
+      return;
+    }
+
     setState(() { _error = null; _loading = true; });
     try {
       await ApiService.register(
@@ -34,7 +44,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() { _loading = false; });
     }
   }
-
+  @override
+    void dispose() {
+      _emailCtrl.dispose();
+      _passwordCtrl.dispose();
+      super.dispose();
+    }
   @override
   Widget build(BuildContext context) {
 
@@ -74,18 +89,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-
-              TextField(
-                controller: _displayNameCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  prefixIcon: const Icon(Icons.person),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
 
               TextField(
                 controller: _emailCtrl,

@@ -3,7 +3,6 @@ import 'package:mobile/screens/feed_screen.dart';
 import '../services/api_service.dart';
 import 'screens/login.dart';
 import 'screens/signup.dart';
-import 'screens/code_verification.dart';
 
 
 void main() {
@@ -21,7 +20,7 @@ class UKnightedApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const VerificationScreen(), // Set the TitleScreen as the starting point
+      home: const TitleScreen(), // Set the TitleScreen as the starting point
       debugShowCheckedModeBanner: false, // Hides the annoying debug banner
     );
   }

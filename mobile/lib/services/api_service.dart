@@ -45,7 +45,14 @@ class ApiService {
 
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode == 201) {
-      await saveToken(data['token'] as String);
+      // THE FIX: Safely check for the token instead of forcing a String cast
+      final token = data['token'];
+      if (token != null) {
+        await saveToken(token.toString());
+      } else {
+        // This will show up in your debug console so you know exactly what the backend sent!
+        print("UKNIGHTED API WARNING: Registration successful, but no token was provided in response: $data");
+      }
       return data;
     }
     throw data['message'] ?? 'Registration failed';
@@ -65,7 +72,13 @@ class ApiService {
 
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode == 200) {
-      await saveToken(data['token'] as String);
+      // THE FIX: Safe extraction for login as well
+      final token = data['token'];
+      if (token != null) {
+        await saveToken(token.toString());
+      } else {
+        print("UKNIGHTED API WARNING: Login successful, but no token was provided in response: $data");
+      }
       return data;
     }
     throw data['message'] ?? 'Login failed';

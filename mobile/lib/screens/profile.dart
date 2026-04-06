@@ -15,10 +15,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _workController = TextEditingController(text: "Software Intern");
   
   // --- State Variables for Dropdowns ---
-  String _heightController = '6\'2"';
+  String _heightController = '6\' 2"';
   String _classYear = 'Junior';
   String _gender = 'Male';
-  String _attraction = 'Women';
+  String _sexualOrientation = 'Straight';
   String _datingIntentions = 'Long-term relationship';
   String _religion = 'Agnostic';
   String _politics = 'Moderate';
@@ -163,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
 
               _buildDropdown("Gender", _gender, ['Male', 'Female', 'Non-binary', 'Other'], (val) => setState(() => _gender = val!)),
-              _buildDropdown("Sexual Attraction", _attraction, ['Men', 'Women', 'Everyone'], (val) => setState(() => _attraction = val!)),
+              _buildDropdown("Sexual Orientation", _sexualOrientation, ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Other'], (val) => setState(() => _sexualOrientation = val!)),
               const SizedBox(height: 10),
 
               // --- 3. UNIVERSITY & WORK ---
