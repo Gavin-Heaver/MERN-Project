@@ -77,6 +77,31 @@ export interface PopulatedMatchUser {
     basicInfo?: BasicInfo
 }
 
+export interface ProfileData {
+    firstName: string
+    lastName: string
+    age: number
+    photos: string[]
+    prompts: { question: string; answer: string }[]
+    identity: {
+        gender: string
+        interestedIn: string[]
+    }
+    vitals: {
+        height: number
+        ethnicity: string
+        major: string
+        classYear: string
+    }
+    lifestyle: {
+        religion: string
+        politics: string
+        datingIntention: string
+        hometown: string
+        work: string
+    }
+}
+
 // Auth
 export interface AuthResponse {
     token: string

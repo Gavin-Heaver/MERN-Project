@@ -2,23 +2,19 @@ import React, { useState, useEffect, useRef } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import axios from "axios"
 import { api } from "../api"
-
-interface Message {
-    id: string
-    senderId: string
-    content: string
-    timestamp: string
-}
+import type { Message } from "../types"
+import { useAuth } from "../context/AuthContext"
 
 interface MatchProfile {
-    id: string
+    toUserId: string
     name: string
     // WIP: expand this once the profile schema is finalized
 }
 
 export default function MessagePage() {
+    const { user } = useAuth()
     const navigate = useNavigate()
-    const { chatId } = useParams()
+    const { chatId } = useParams<{ chatId: string }>()
 
     const [messages, setMessages] = useState<Message[]>([])
     const [matchProfile, setMatchProfile] = useState<MatchProfile | null>(null)
@@ -33,16 +29,21 @@ export default function MessagePage() {
 
     // Fetch messages and match profile on load
     useEffect(() => {
+        if (!chatId) return
         async function fetchData() {
             setError(null)
             try {
-                const [messagesData, profileData] = await Promise.all([
-                    api.messages.getMessages(chatId),
-                    api.matches.getMatchProfile(chatId)  
-                    // WIP: adjust to actual method
-                ])
-                setMessages(messagesData)
-                setMatchProfile(profileData)
+                const {conversation, messages: msgs} = await api.messages.getMessages(chatId!)
+                setMessages(msgs)
+                
+                const otherUserId = conversation.participantIds.find(id => id !== user?.id)
+                if (otherUserId) {
+                    const otherUser = await api.users.getById(otherUserId)
+                    setMatchProfile({
+                        toUserId: otherUserId,
+                        name: otherUser.basicInfo?.firstName ?? otherUser.email
+                    })
+                }
             } catch (err) {
                 if (axios.isAxiosError(err)) {
                     setError(err.response?.data?.message ?? 'Failed to load messages')
@@ -55,7 +56,7 @@ export default function MessagePage() {
         }
 
         fetchData()
-    }, [chatId])
+    }, [chatId, user?.id])
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -64,15 +65,10 @@ export default function MessagePage() {
 
     async function handleSend(e: React.SyntheticEvent) {
         e.preventDefault()
-        if (!newMessage.trim()) return
+        if (!newMessage.trim() || !matchProfile?.toUserId) return
         try {
-            await api.messages.sendMessage(chatId, { content: newMessage })
-            setMessages(prev => [...prev, {
-                id: Date.now().toString(),  // temp id until backend confirms
-                senderId: 'me',
-                content: newMessage,
-                timestamp: new Date().toISOString()
-            }])
+            const sent = await api.messages.send(matchProfile.toUserId, newMessage)
+            if(sent) setMessages(prev => [...prev, sent])
             setNewMessage("")
         } catch (err) {
             if (axios.isAxiosError(err)) {
@@ -84,9 +80,9 @@ export default function MessagePage() {
     }
 
     async function handleUnmatch() {
+        if (!chatId) return
         try {
-            await api.matches.unmatch(chatId)  
-            // WIP: adjust to actual method
+            await api.matches.unmatch(chatId)
             navigate('/messages')
         } catch (err) {
             if (axios.isAxiosError(err)) {
@@ -157,18 +153,18 @@ export default function MessagePage() {
                 ) : (
                     messages.map(message => (
                         <div
-                            key={message.id}
+                            key={message._id}
                             style={{
-                                alignSelf: message.senderId === 'me' ? 'flex-end' : 'flex-start',
-                                background: message.senderId === 'me' ? '#007bff' : '#e0e0e0',
-                                color: message.senderId === 'me' ? 'white' : 'black',
+                                alignSelf: message.senderId === user?.id ? 'flex-end' : 'flex-start',
+                                background: message.senderId === user?.id ? '#007bff' : '#e0e0e0',
+                                color: message.senderId === user?.id ? 'white' : 'black',
                                 padding: '0.5rem 1rem',
                                 borderRadius: '16px',
                                 maxWidth: '70%'
                             }}
                         >
-                            <p>{message.content}</p>
-                            <p style={{ fontSize: '0.75rem', opacity: 0.7 }}>{message.timestamp}</p>
+                            <p>{message.text}</p>
+                            <p style={{ fontSize: '0.75rem', opacity: 0.7 }}>{message.createdAt}</p>
                         </div>
                     ))
                 )}

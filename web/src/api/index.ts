@@ -8,7 +8,8 @@ import type {
     InteractionResponse,
     Match,
     Conversation,
-    Message
+    Message,
+    ProfileData
 } from '../types';
 
 export const api = {
@@ -45,9 +46,24 @@ export const api = {
             age: number
             major: string
             year: string
-        }>) => client.put<{ user: FullUser }>('/users/me', data).then(r => r.data.user),
+        }>) =>
+            client.put<{ user: FullUser }>('/users/me', data).then(r => r.data.user),
         discover: () =>
             client.get<{ users: FullUser[] }>('/users/discover').then(r => r.data.users),
+        getById: (id: string) =>
+            client.get<{ user: FullUser }>(`/users/${id}`).then(r => r.data.user),
+    },
+    profile: {
+        getProfile: () =>
+            client.get<ProfileData>('/users/me/profile').then(r => r.data),
+        updateProfile: (data: Partial<ProfileData>) =>
+            client.put<ProfileData>('/users/me/profile', data).then(r => r.data),
+
+        // WIP
+        uploadPhoto: (formData: FormData) =>
+            client.post<{ url: string }>('/users/me/photos', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            }).then(r => r.data),
     },
     interactions: {
         interact: (toUserId: string, type: 'like' | 'pass') =>
@@ -56,6 +72,8 @@ export const api = {
     matches: {
         getAll: () =>
             client.get<{ matches: Match[] }>('/matches').then(r => r.data.matches),
+        unmatch: (matchId: string) =>
+            client.delete<MessageResponse>(`/matches/${matchId}`).then(r => r.data),
     },
     messages: {
         getConversations: () =>

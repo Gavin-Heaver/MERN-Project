@@ -1,44 +1,12 @@
 import React, { useState, useEffect } from "react"
 import axios from "axios"
 import { api } from "../api"
-
+import type { ProfileData } from "../types"
 import { GENDER_OPTIONS, INTEREST_OPTIONS, ETHNICITY_OPTIONS, RELIGION_OPTIONS, POLITICS_OPTIONS, DATING_INTENTION_OPTIONS, MAJOR_LIST, CLASS_YEAR_OPTIONS, PROMPT_LIST } from "../constants/profileOptions"
-interface Prompt {
-    question: string
-    answer: string
-}
-
-interface Profile {
-    
-    firstName: string
-    lastName: string
-    age: number
-    photos: string[]
-    prompts: Prompt[]
-
-    identity: {
-        gender: string
-        genderCustom: string
-        interestedIn: string[]
-    }
-    vitals: {
-        height: number
-        ethnicity: string
-        major: string
-        classYear: string
-    }
-    lifestyle: {
-        religion: string
-        politics: string
-        datingIntention: string
-        hometown: string
-        work: string
-    }
-}
 
 export default function AccountPage() {
 
-    const [profile, setProfile] = useState<Profile | null>(null)
+    const [profile, setProfile] = useState<ProfileData | null>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<null | string>(null)
@@ -72,7 +40,7 @@ export default function AccountPage() {
         setError(null)
         setSuccessMessage(null)
         try {
-            await api.profile.updateProfile(profile)  // WIP: replace with real api path
+            await api.profile.updateProfile(profile!)  // WIP: replace with real api path
             setSuccessMessage('Profile saved!')
         } catch (err) {
             if (axios.isAxiosError(err)) {
@@ -86,7 +54,7 @@ export default function AccountPage() {
     }
 
     // Generic field updater to avoid rewriting setState for every field
-    function updateField(section: keyof Profile, field: string, value: string | string[] | number) {
+    function updateField(section: keyof ProfileData, field: string, value: string | string[] | number) {
         setProfile(prev => {
             if (!prev) return prev
             return {
@@ -258,16 +226,7 @@ export default function AccountPage() {
                             >
                                 {GENDER_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}
                             </select>
-
-                            {profile.identity.gender === "Other" && (
-                                <input
-                                    type="text"
-                                    placeholder="Describe your gender identity..."
-                                    value={profile.identity.genderCustom}
-                                    onChange={e => updateField('identity', 'genderCustom', e.target.value)}
-                                />
-                            )}
-
+                        
                         <label>Interested In</label>
                         <div>
                             {INTEREST_OPTIONS.map(option => (

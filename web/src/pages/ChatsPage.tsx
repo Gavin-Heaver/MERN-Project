@@ -53,7 +53,7 @@ export default function ChatsPage() {
                 chats.map(chat => (
                     <div
                         key={chat.id}
-                        onClick={() => navigate('/messages/${chat.id}')}
+                        onClick={() => navigate('/chat/${chat.id}')}
                         style={{ cursor: 'pointer' }}
                     >
                         <p>{chat.participantName}</p>
