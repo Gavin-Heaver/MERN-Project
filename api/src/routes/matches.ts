@@ -13,8 +13,8 @@ router.get('/', authenticate, async (req: Request, res: Response): Promise<void>
             $or: [{ userAId: userId }, { userBId: userId }],
             status: 'active'
         })
-        .populate('userAId', 'email displayName')
-        .populate('userBId', 'email displayName')
+        .populate('userAId', 'email firstName lastName')
+        .populate('userBId', 'email firstName lastName')
         .populate('conversationId');
 
         res.json({ matches });
