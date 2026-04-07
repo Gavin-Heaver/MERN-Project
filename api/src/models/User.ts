@@ -1,97 +1,6 @@
 import mongoose, { InferSchemaType, Model } from 'mongoose'
 import bcrypt from 'bcryptjs'
 
-const MAJOR_LIST = [
-    "Accounting",
-    "Actuarial Science",
-    "Advertising/Public Relations",
-    "Aerospace Engineering",
-    "Anthropology",
-    "Art",
-    "Bachelor of Design in Architecture",
-    "Biology",
-    "Biomedical Sciences",
-    "Biotechnology",
-    "Business Economics",
-    "Career and Technical Education",
-    "Chemistry",
-    "Civil Engineering",
-    "Communication",
-    "Communication and Conflict",
-    "Communication Sciences and Disorders",
-    "Computer Engineering",
-    "Computer Science",
-    "Construction Engineering",
-    "Criminal Justice",
-    "Data Science",
-    "Digital Media",
-    "Early Childhood Development and Education",
-    "Economics",
-    "Electrical Engineering",
-    "Elementary Education",
-    "Emergency Management",
-    "Emerging Media",
-    "English",
-    "Entertainment Management",
-    "Environmental Engineering",
-    "Environmental Science",
-    "Environmental Studies",
-    "Event Management",
-    "Exceptional Student Education",
-    "Film",
-    "Finance",
-    "Forensic Science",
-    "French and Francophone Studies",
-    "General Health Studies",
-    "Health Informatics",
-    "Health Informatics and Information Management",
-    "Health Sciences",
-    "History",
-    "Hospitality Management",
-    "Industrial Engineering",
-    "Information Technology",
-    "Integrative General Studies",
-    "Interdisciplinary Studies",
-    "International and Global Studies",
-    "Journalism",
-    "Latin American, Caribbean and Latinx Studies",
-    "Legal Studies",
-    "Lifestyle Community Management",
-    "Lodging and Restaurant Management",
-    "Management",
-    "Marketing",
-    "Materials Science and Engineering",
-    "Mathematics",
-    "Mechanical Engineering",
-    "Medical Laboratory Sciences",
-    "Molecular and Cellular Biology",
-    "Molecular Microbiology",
-    "Music",
-    "Nonprofit Management",
-    "Nursing",
-    "Philosophy",
-    "Photonic Science and Engineering",
-    "Physics",
-    "Political Science",
-    "Psychology",
-    "Public Administration",
-    "Real Estate",
-    "Religion and Cultural Studies",
-    "Risk Management and Insurance",
-    "Secondary Education",
-    "Social Sciences",
-    "Social Work",
-    "Sociology",
-    "Spanish",
-    "Statistics",
-    "Theatre",
-    "Theatre Studies",
-    "Writing and Rhetoric"
-] as const
-
-const GENDER_OPTIONS = ["Woman", "Man", "Non-Binary", "Other", "Unspecified"] as const
-const CLASS_YEAR_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate", "Other"] as const
-
 interface IUserMethods {
     comparePassword(candidate: string): Promise<boolean>
 }
@@ -153,12 +62,6 @@ const userSchema = new mongoose.Schema(
             required: true,
             select: false
         },
-        displayName:
-        {
-            type: String,
-            required: true,
-            trim: true
-        },
         passwordResetToken: {
             type: String,
             default: null
@@ -175,12 +78,19 @@ const userSchema = new mongoose.Schema(
         },
         verification:
         {
-            emailVerified:
+            code:
             {
-                type: Boolean,
-                default: false
+                type: String,
+                default: null,
+                // ensures 6 digits exactly, any order of digits
+                match: [/^\d{6}$/, "Verification code must be exactly 6 digits"]
             },
-            eduVerified:
+            codeCreatedAt:
+            {
+                type: Date,
+                default: null
+            },
+            emailVerified:
             {
                 type: Boolean,
                 default: false
@@ -193,55 +103,50 @@ const userSchema = new mongoose.Schema(
         },
         basicInfo:
         {
-            firstName:
+            basicInfoComplete: 
+            { 
+                type: Boolean, 
+                default: false 
+            },
+            firstName:  
             {
                 type: String,
-                required: true,
                 trim: true
             },
             lastName:
             {
                 type: String,
-                required: true,
                 trim: true
             },
             age:
             {
                 type: Number,
-                required: true,
                 min: 18,
                 max: 99
             },
             gender:
             {
-                identity:
-                {
-                    type: String,
-                    enum: GENDER_OPTIONS,
-                    default: "Unspecified"
-                },
-                custom:
-                {
-                    type: String,
-                    trim: true,
-                    default: ""
-                }
+                type: String,
+                default: ""
             },
             major:
             {
                 type: String,
-                enum: MAJOR_LIST,
-                required: true
+                default: ""
             },
             classYear:
             {
                 type: String,
-                enum: CLASS_YEAR_OPTIONS,
-                required: true
+                default: ""
             }
         },
         profile:
         {
+            profileComplete: 
+            { 
+                type: Boolean, 
+                default: false 
+            },          
             bio:
             {
                 type: String,
@@ -270,6 +175,11 @@ const userSchema = new mongoose.Schema(
 
         preferences:
         {
+            preferencesComplete: 
+            { 
+                type: Boolean, 
+                default: false 
+            },
             ageMin:
             {
                 type: Number,
@@ -284,11 +194,28 @@ const userSchema = new mongoose.Schema(
                 max: 99,
                 default: 99
             },
-            interestedIn:
+            interestedInGenders:
             {
                 type: [{
                     type: String,
-                    enum: GENDER_OPTIONS
+                    trim: true
+                }],
+                default: [],
+                validate:
+                {
+                    validator: function(values: string[])
+                    {
+                        return values.every(value => typeof value === "string" && value.trim().length > 0)
+                    },
+                    message: "interestedInGenders cannot contain empty values."
+                }
+            },
+            preferredInterestTagIds:
+            {
+                type: [{
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Tag",
+                    default: ""
                 }],
                 default: []
             },
@@ -314,56 +241,19 @@ const userSchema = new mongoose.Schema(
                 type: Boolean,
                 default: true
             }
-        },
-        bio:
-        {
-            type: String,
-            default: '',
-            trim: true,
-            maxLength: 500
-        },
-        age:
-        {
-            type: Number,
-            min: 18,
-            max: 100
-        },
-        major:
-        {
-            type: String,
-            default: '',
-            trim: true
-        },
-        year:
-        {
-            type: String,
-            default: '',
-            trim: true
         }
     },
     { timestamps: true }
 )
 
-userSchema.pre("validate", function() {
-    if (
-        this.basicInfo?.gender?.identity === "Other" &&
-        !this.basicInfo.gender.custom.trim()
-    ) {
-        throw new Error("Custom gender is required when gender identity is 'Other'.")
-    }
-
-    if (
-        this.basicInfo?.gender?.identity &&
-        this.basicInfo.gender.identity !== "Other"
-    ) {
-        this.basicInfo.gender.custom = "";
-    }
-
+userSchema.pre("validate", function ()
+{
     if (
         this.preferences?.ageMin !== undefined &&
         this.preferences?.ageMax !== undefined &&
         this.preferences.ageMin > this.preferences.ageMax
-    ) {
+    )
+    {
         throw new Error("preferences.ageMin cannot be greater than preferences.ageMax.")
     }
 })

@@ -1,12 +1,10 @@
-const mongoose = require("mongoose");
+import mongoose, { InferSchemaType } from "mongoose";
 
-const { Schema } = mongoose;
-
-const readBySchema = new Schema(
+const readBySchema = new mongoose.Schema(
 {
     userId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
@@ -18,17 +16,17 @@ const readBySchema = new Schema(
 },
 { _id: false });
 
-const messageSchema = new Schema(
+const messageSchema = new mongoose.Schema(
 {
     conversationId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Conversation",
         required: true
     },
     senderId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
@@ -58,14 +56,15 @@ const messageSchema = new Schema(
 },
 { timestamps: true });
 
-messageSchema.pre("validate", function(next)
+messageSchema.pre("validate", function()
 {
-    if ((this.messageType === "text" || this.messageType === "system") && !this.text.trim())
+    if (
+        (this.messageType === "text" || this.messageType === "system") &&
+        !(this.text || "").trim()
+    )
     {
-        return next(new Error("Text is required for messages."));
+        throw new Error("Text is required for messages.")
     }
-
-    next();
 });
 
 messageSchema.index({ conversationId: 1, createdAt: 1 });

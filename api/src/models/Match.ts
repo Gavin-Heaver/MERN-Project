@@ -1,18 +1,16 @@
-const mongoose = require("mongoose");
+import mongoose, { InferSchemaType } from 'mongoose'
 
-const { Schema } = mongoose;
-
-const matchSchema = new Schema(
+const matchSchema = new mongoose.Schema(
 {
     userAId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
     userBId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
@@ -24,7 +22,7 @@ const matchSchema = new Schema(
     },
     conversationId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Conversation",
         default: null
     },
@@ -36,16 +34,13 @@ const matchSchema = new Schema(
 },
 { timestamps: true });
 
-matchSchema.pre("validate", function(next)
+matchSchema.pre("validate", async function(next)
 {
-    if (!this.userAId || !this.userBId)
-    {
-        return next();
-    }
+    if (!this.userAId || !this.userBId) return
 
     if (this.userAId.equals(this.userBId))
     {
-        return next(new Error("A user cannot match with themselves."));
+        throw new Error("A user cannot match with themselves.");
     }
 
     if (String(this.userAId) > String(this.userBId))
@@ -54,8 +49,6 @@ matchSchema.pre("validate", function(next)
         this.userAId = this.userBId;
         this.userBId = temp;
     }
-
-    next();
 });
 
 matchSchema.index({ userAId: 1, userBId: 1 }, { unique: true });
