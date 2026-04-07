@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc && cp src/models/*.js dist/models/ 2>/dev/null || true",
+    "build": "tsc && (cp src/models/*.js dist/models/ 2>/dev/null || true)",
     "start": "node dist/index.js"
   },
   "keywords": [],
@@ -19,6 +19,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.2",
+    "resend": "^6.10.0",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

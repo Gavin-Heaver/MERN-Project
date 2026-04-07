@@ -66,7 +66,7 @@ export default function FeedPage() {
             <div>
                 <h1>Campus Board</h1>
                 <div className="flex flex-col">
-                    <span>Hi, {user?.displayName}</span>
+                    <span>Hi, {user?.basicInfo?.firstName}</span>
                     <button onClick={() => {logout(); navigate('/login') }} className="">Log out</button>
                 </div>
             </div>

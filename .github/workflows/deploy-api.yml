@@ -20,15 +20,20 @@ jobs:
             
             - uses: pnpm/action-setup@v3
               with:
-                node-version: 9
+                version: 9
             
             - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+            
+            - name: Build
               run: pnpm --filter @uknighted/api build
 
     deploy:
         name: Deploy to Render
         needs: build
         runs-on: ubuntu-latest
+        env:
+            FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         steps:
             - uses: JorgeLNJunior/render-deploy@v1.5.0
               with:

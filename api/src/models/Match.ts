@@ -36,7 +36,7 @@ const matchSchema = new Schema(
 },
 { timestamps: true });
 
-matchSchema.pre("validate", function(next)
+matchSchema.pre("validate", async function(next)
 {
     if (!this.userAId || !this.userBId)
     {
@@ -54,8 +54,6 @@ matchSchema.pre("validate", function(next)
         this.userAId = this.userBId;
         this.userBId = temp;
     }
-
-    next();
 });
 
 matchSchema.index({ userAId: 1, userBId: 1 }, { unique: true });

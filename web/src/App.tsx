@@ -4,11 +4,12 @@ import type { ReactNode } from 'react'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import PeoplePage from './pages/PeoplePage'
-import MessagesPage from './pages/MessagesPage'
+import ChatsPage from './pages/ChatsPage'
 import AccountPage from './pages/AccountPage'
 import Navbar from './components/Navbar'
 import VerifyEmail from './pages/VerifyEmail'
 import AccountSetup from './pages/AccountSetup'
+import MessagePage from './pages/MessagePage'
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { token } = useAuth()
@@ -40,13 +41,13 @@ export default function App() {
             <AuthenticatedLayout>
               <Routes>
                 <Route path="/people" element={<PeoplePage />} />
-                <Route path="/messages" element={<MessagesPage />} />
+                <Route path="/messages" element={<ChatsPage />} />
                 <Route path="/account" element={<AccountPage />} />
+                <Route path="/chat:chatId" element={<MessagePage />} />
               </Routes>
             </AuthenticatedLayout>
           </PrivateRoute>
         } />
-
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

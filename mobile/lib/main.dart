@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/screens/feed_screen.dart';
-import 'services/api_service.dart';
-import 'login.dart';
-import 'signup.dart';
+import '../services/api_service.dart';
+import 'screens/login.dart';
+import 'screens/signup.dart';
+
 
 void main() {
   runApp(const UKnightedApp());
@@ -19,7 +20,7 @@ class UKnightedApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const AuthGate(), // Set the TitleScreen as the starting point
+      home: const TitleScreen(), // Set the TitleScreen as the starting point
       debugShowCheckedModeBanner: false, // Hides the annoying debug banner
     );
   }
@@ -63,10 +64,13 @@ class TitleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       // A Scaffold provides the high-level visual structure
       body: Container(
-        width: double.infinity, // Take up full width
+        width: double.infinity, 
+        height: double.infinity, 
         decoration: const BoxDecoration(
           // gradient background
           gradient: LinearGradient(
@@ -79,91 +83,97 @@ class TitleScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea( // Keeps UI out of the phone's notches/status bars
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(), // Pushes the logo to the center
-              
-              // App Logo 
-              Image.asset(
-                'assets/Logo_V1.png',
-                width: 500,
-                height: 500,
-              ),
-              const SizedBox(height: 20),
-              
-              // App Name
-              const Text(
-                'UKnighted', // Replace with your actual app name
-                style: TextStyle(
-                  fontSize: 56,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.5,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // REPLACED Spacer: Added a bit of fixed breathing room at the very top
+                SizedBox(height: screenHeight * 0.05), 
+                
+                // App Logo 
+                Image.asset(
+                  'assets/Logo_V1.png',
+                  width: 500, // Leaving this large will easily let you test the new scrolling!
+                  height: 500,
                 ),
-              ),
-              
-              const Spacer(), // Pushes the buttons to the bottom
-              
-              // Sign Up Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Go to signup 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SignupScreen(),
+                const SizedBox(height: 20),
+                
+                // App Name
+                const Text(
+                  'UKnighted', 
+                  style: TextStyle(
+                    fontSize: 56,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                
+                // REPLACED Spacer: Fixed gap between the title and the buttons
+                const SizedBox(height: 50), 
+                
+                // Register Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Go to register 
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RegisterScreen(), // Added 'const' for better performance
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color.fromARGB(255, 170, 57, 71),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.pinkAccent,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                 ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Login Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: OutlinedButton(
-                  onPressed: () {
-                    // Go to login 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoginScreen(),
+                
+                const SizedBox(height: 20),
+                
+                // Login Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Go to login 
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(), // Added 'const'
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color.fromARGB(255, 170, 57, 71),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.pinkAccent,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: const Text(
-                    'Log In',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                 ),
-              ),
-              const SizedBox(height: 40), // Bottom padding
-            ],
+                
+                // Bottom padding to ensure the scroll goes all the way past the lowest button
+                const SizedBox(height: 60), 
+              ],
+            ),
           ),
         ),
       ),

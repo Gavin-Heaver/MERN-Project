@@ -12,6 +12,7 @@ import postRoutes from './routes/posts'
 import usersRoutes from './routes/users'
 import interactionsRoutes from './routes/interactions'
 import matchesRoutes from './routes/matches'
+import messagesRoutes from './routes/messages'  
 import { config } from './config/env'
 
 const app = express()
@@ -32,6 +33,7 @@ app.use('/api/posts', postRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/interactions', interactionsRoutes)
 app.use('/api/matches', matchesRoutes)
+app.use('/api/messages', messagesRoutes)   
 
 
 registerSocketHandlers(io)
