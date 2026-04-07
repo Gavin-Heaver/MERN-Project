@@ -1,8 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose, { InferSchemaType } from 'mongoose'
 
-const { Schema } = mongoose;
-
-const tagSchema = new Schema(
+const tagSchema = new mongoose.Schema(
 {
     name:
     {
@@ -20,7 +18,7 @@ const tagSchema = new Schema(
     },
     createdByUserId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         default: null
     },
@@ -32,14 +30,12 @@ const tagSchema = new Schema(
 },
 { timestamps: true });
 
-tagSchema.pre("validate", function(next)
+tagSchema.pre("validate", function()
 {
     if (this.name)
     {
         this.normalizedName = this.name.trim().toLowerCase();
     }
-
-    next();
 });
 
 module.exports = mongoose.model("Tag", tagSchema);
