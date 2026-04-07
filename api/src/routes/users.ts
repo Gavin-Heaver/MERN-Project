@@ -22,33 +22,37 @@ router.get('/me', authenticate, async (req: Request, res: Response): Promise<voi
     }
 });
 
-router.put('/me', authenticate, async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { bio, age, major, year } = req.body;
 
-        const updateData: any = {};
-        if (bio !== undefined) updateData.bio = bio;
-        if (age !== undefined) updateData.age = age;
-        if (major !== undefined) updateData.major = major;
-        if (year !== undefined) updateData.year = year;
+// We can just update the existing profile fields with the other routes instead of 
+// having this one, just leaving it here just in case
 
-        const user = await User.findByIdAndUpdate(
-            req.user?.id,
-            updateData,
-            { new: true, runValidators: true }
-        ).select('-password');
+// router.put('/me', authenticate, async (req: Request, res: Response): Promise<void> => {
+//     try {
+//         const { bio, age, major, year } = req.body;
 
-        if (!user) {
-            res.status(404).json({ message: 'User not found' });
-            return;
-        }
+//         const updateData: any = {};
+//         if (bio !== undefined) updateData.bio = bio;
+//         if (age !== undefined) updateData.age = age;
+//         if (major !== undefined) updateData.major = major;
+//         if (year !== undefined) updateData.year = year;
 
-        res.json({ user });
-    } catch (err) {
-        console.error('Update profile error:', err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+//         const user = await User.findByIdAndUpdate(
+//             req.user?.id,
+//             updateData,
+//             { new: true, runValidators: true }
+//         ).select('-password');
+
+//         if (!user) {
+//             res.status(404).json({ message: 'User not found' });
+//             return;
+//         }
+
+//         res.json({ user });
+//     } catch (err) {
+//         console.error('Update profile error:', err);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// });
 
 router.get('/discover', authenticate, async (req: Request, res: Response): Promise<void> => {
     try {
@@ -102,7 +106,7 @@ router.patch('/basic-info', authenticate, async (req: Request, res: Response): P
                     'basicInfo.gender': gender,
                     'basicInfo.major': major,
                     'basicInfo.classYear': classYear,
-                    'basicInfo.basicInfoComplete': true   // 👈 flip the flag
+                    'basicInfo.basicInfoComplete': true   
                 }
             },
             { new: true, runValidators: true }

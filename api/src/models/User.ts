@@ -62,12 +62,6 @@ const userSchema = new mongoose.Schema(
             required: true,
             select: false
         },
-        displayName:
-        {
-            type: String,
-            required: true,
-            trim: true
-        },
         passwordResetToken: {
             type: String,
             default: null
