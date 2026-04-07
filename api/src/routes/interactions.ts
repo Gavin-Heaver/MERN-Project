@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import mongoose from "mongoose";
 import { authenticate } from "../middleware/auth";
+import { User } from "../models/User";
 
 const Interaction = require('../models/Interaction');
 const Match = require('../models/Match');
@@ -15,6 +16,12 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
 
         if (!toUserId || !type) {
             res.status(400).json({ message: 'toUserId and type are required' });
+            return;
+        }
+
+        const targetUserExists = await User.exists({ _id: toUserId });
+        if (!targetUserExists) {
+            res.status(404).json({ message: 'The user you are trying to interact with does not exist' });
             return;
         }
 
@@ -88,5 +95,17 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+router.delete('/:matchId', authenticate, async (req: Request, res: Response) => {
+    try {
+        const { matchId } = req.params;
+        await Match.findByIdAndDelete(matchId);
+        res.json({ message: 'Unmatched successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 
 export default router;

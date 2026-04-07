@@ -281,7 +281,7 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
             const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex')
 
             user.passwordResetToken = hashedToken
-            user.passwordResetExpiry = new Date(Date.now() + 1000 * 60 * 30) // 30 min
+            user.passwordResetExpires = new Date(Date.now() + 1000 * 60 * 30) // 30 min
             await user.save()
 
             const resetLink = `${config.clientUrl}/reset-password?token=${rawToken}`
@@ -344,7 +344,7 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<void
 
         user.password = newPassword
         user.passwordResetToken = null
-        user.passwordResetExpiry = null
+        user.passwordResetExpires = null
         await user.save()
 
         res.json({ message: 'Password reset successful' })

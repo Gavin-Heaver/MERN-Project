@@ -50,7 +50,7 @@ const conversationSchema = new Schema(
 },
 { timestamps: true });
 
-conversationSchema.pre("validate", function(next)
+conversationSchema.pre("validate", async function(next)
 {
     if (Array.isArray(this.participantIds) && this.participantIds.length === 2)
     {
@@ -60,7 +60,6 @@ conversationSchema.pre("validate", function(next)
             .map(id => new Schema.Types.ObjectId(id));
     }
 
-    next();
 });
 
 module.exports = mongoose.model("Conversation", conversationSchema);

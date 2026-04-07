@@ -62,12 +62,6 @@ const userSchema = new mongoose.Schema(
             required: true,
             select: false
         },
-        displayName:
-        {
-            type: String,
-            required: true,
-            trim: true
-        },
         passwordResetToken: {
             type: String,
             default: null
@@ -81,16 +75,6 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ["active", "suspended", "deleted"],
             default: "active"
-        },
-        passwordResetToken:
-        {
-            type: String,
-            default: null
-        },
-        passwordResetExpiry:
-        {
-            type: Date,
-            default: null
         },
         verification:
         {
