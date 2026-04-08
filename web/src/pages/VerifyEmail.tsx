@@ -1,29 +1,31 @@
 import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { api } from "../api"
 import axios from "axios"
 
 export default function VerifyEmail() {
-            
+        const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const [code, setCode] = useState("")
     const [error, setError] = useState<null|string>(null)
+    const [email, setEmail] = useState("")
 
-        async function handleSubmit(e: React.SyntheticEvent) {
+    async function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault()
         setError(null)
         setLoading(true)
-        // try {
-        //     await api.auth.verifyEmail({ email, code })
-        //     navigate('/account-setup')
-        // } catch (err) {
-        //     if (axios.isAxiosError(err)) {
-        //         setError(err.response?.data?.message ?? 'Verification failed')
-        //     } else {
-        //         setError('Incorrect code!')
-        //     }
-        // } finally {
-        //     setLoading(false)
-        // }
+        try {
+            await api.auth.verify({ email: email, verificationCode: code })
+            navigate('/account-setup')
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message ?? 'Verification failed')
+            } else {
+                setError('Incorrect code!')
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (

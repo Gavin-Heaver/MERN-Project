@@ -19,17 +19,19 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     }
 
     try {
-        const existing = await User.findOne({ email })
+        const existing = await User.findOne({ email, 'verification.emailVerified': true  });
         if (existing) {
-            res.status(409).json({ message: 'Email already registered' })
-            return
+                res.status(409).json({ message: 'Email already registered' })
+                return
         }
 
-       
         const verificationCode = Math.floor(100000 + Math.random() * 900000);
-
         const user = await User.create({ email, password, basicInfo: { basicInfoComplete: false }, verification: { code: String(verificationCode), 
-            codeCreatedAt: Date.now(), emailVerified: false, verifiedAt: null  } }) 
+        codeCreatedAt: Date.now(), emailVerified: false, verifiedAt: null  } }) 
+       
+       
+
+      
         
         try {
                 const { error } = await resend.emails.send({
@@ -139,9 +141,13 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
         const valid = await user.comparePassword(password)
         if (!valid) { res.status(401).json({ message: 'Invalid credentials' }); return }
+
         if (!user.verification?.emailVerified) {
-            res.status(403).json({ message: "Please verify your email before logging in" });
-            return;
+            res.status(403).json({
+            requiresVerification: true,
+            email: user.email,
+            message: "Verification required. Code sent."
+            });
         }
         const token = jwt.sign(
             { id: user._id, email: user.email },

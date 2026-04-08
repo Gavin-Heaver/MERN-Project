@@ -58,12 +58,32 @@ router.get('/discover', authenticate, async (req: Request, res: Response): Promi
     try {
         const currentUserId = new mongoose.Types.ObjectId(req.user?.id);
 
+        // Get current user's preferences and basicInfo
+        const currentUser = await User.findById(currentUserId).select('preferences basicInfo');
+        if (!currentUser?.preferences || !currentUser?.basicInfo) {
+            res.status(400).json({ message: 'Complete your profile and preferences first' });
+            return;
+        }
+
+        const { ageMin, ageMax, interestedInGenders } = currentUser.preferences;
+        const { gender: myGender, age: myAge } = currentUser.basicInfo;
+
+        // Get already-interacted users
         const interactions = await Interaction.find({ fromUserId: currentUserId }).select('toUserId');
         const excludedIds = interactions.map((i: any) => i.toUserId);
         excludedIds.push(currentUserId);
 
         const users = await User.find({
-            _id: { $nin: excludedIds }
+            _id: { $nin: excludedIds },
+
+            'basicInfo.gender': { $in: interestedInGenders },
+            'basicInfo.age': { $gte: ageMin, $lte: ageMax },
+            'preferences.interestedInGenders': myGender,
+            'preferences.ageMin': { $lte: myAge },
+            'preferences.ageMax': { $gte: myAge },
+            'basicInfo.basicInfoComplete': true,
+            'preferences.preferencesComplete': true,
+            'profile.profileComplete': true,
         })
         .select('-password')
         .limit(20);
