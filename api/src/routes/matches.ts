@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Request, Response, Router } from "express";
 import { authenticate } from "../middleware/auth";
 

@@ -2,6 +2,13 @@ const mongoose = require("mongoose");
 
 const { Schema } = mongoose;
 
+import { HydratedDocument } from "mongoose";
+
+interface IMessage {
+    messageType: string;
+    text?: string;
+}
+
 const readBySchema = new Schema(
 {
     userId:
@@ -58,17 +65,15 @@ const messageSchema = new Schema(
 },
 { timestamps: true });
 
-messageSchema.pre("validate", function(next)
+messageSchema.pre("validate", async function(this: HydratedDocument<IMessage>)
 {
     if (
         (this.messageType === "text" || this.messageType === "system") &&
         !(this.text || "").trim()
     )
     {
-        return next(new Error("Text is required for messages."));
+        throw new Error("Text is required for messages.");
     }
-
-    next();
 });
 
 messageSchema.index({ conversationId: 1, createdAt: 1 });

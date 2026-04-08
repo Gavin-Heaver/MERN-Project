@@ -57,7 +57,7 @@ conversationSchema.pre("validate", async function(next)
         this.participantIds = this.participantIds
             .map(id => id.toString())
             .sort()
-            .map(id => new Schema.Types.ObjectId(id));
+            .map(id => new mongoose.Types.ObjectId(id));
     }
 
 });
