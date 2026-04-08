@@ -104,6 +104,12 @@ export default function AccountPage() {
                 return { ...prev, photos: [...prev.photos, url] }
             })
         } catch (err) {
+            const errorMsg = 'Failed to upload photo'
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data.message ?? errorMsg)
+            } else {
+                setError(errorMsg)
+            }
             setError('Failed to upload photo')
         }
     }
