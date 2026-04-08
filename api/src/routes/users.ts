@@ -232,7 +232,7 @@ router.patch('/preferences', authenticate, async (req: Request, res: Response): 
         return
     }
 
-    const { ageMin, ageMax, interestedInGenders, preferredInterestTagIds, dealbreakerTagIds } = req.body
+    const { ageMin, ageMax, interestedInGenders } = req.body
 
     if (!ageMin || !ageMax || !interestedInGenders) {
         res.status(400).json({ message: 'ageMin, ageMax, and interestedInGenders are required' })
@@ -247,8 +247,6 @@ router.patch('/preferences', authenticate, async (req: Request, res: Response): 
                     'preferences.ageMin': ageMin,
                     'preferences.ageMax': ageMax,
                     'preferences.interestedInGenders': interestedInGenders,
-                    'preferences.preferredInterestTagIds': preferredInterestTagIds,
-                    'preferences.dealbreakerTagIds': dealbreakerTagIds,
                     'preferences.preferencesComplete': true   
                 }
             },
@@ -283,9 +281,9 @@ router.patch('/profile', authenticate, async (req: Request, res: Response): Prom
         return
     }
 
-    const { bio, photos, promptAnswers, interestTagIds } = req.body
+    const { bio, photos, promptAnswers} = req.body
 
-    if (!bio || !photos || !promptAnswers || !interestTagIds) {
+    if (!bio || !photos || !promptAnswers) {
         res.status(400).json({ message: 'All profile fields are required' })
         return
     }
@@ -298,7 +296,6 @@ router.patch('/profile', authenticate, async (req: Request, res: Response): Prom
                     'profile.bio': bio,
                     'profile.photos': photos,
                     'profile.promptAnswers': promptAnswers,
-                    'profile.interestTagIds': interestTagIds,
                     'profile.profileComplete': true   
                 }
             },
