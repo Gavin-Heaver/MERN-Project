@@ -1,5 +1,6 @@
+//imports
 import 'package:flutter/material.dart';
-import '../services/api_service.dart'; // Make sure this path is correct!
+import '../services/api_service.dart'; 
 import '../main.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -10,10 +11,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // --- Controllers & State Variables ---
+  //variables
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _workController = TextEditingController(text: "Software Intern");
-  
+
   String _majorController = 'Computer Science';
   String _heightController = '6\' 2"';
   String _classYear = 'Junior';
@@ -22,14 +23,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _datingIntentions = 'Long-term relationship';
   String _religion = 'Agnostic';
   String _politics = 'Moderate';
-
   final String _age = "21";
 
-  // --- Loading States ---
-  bool _isLoading = true; // Shows a spinner when fetching data on screen load
-  bool _isSaving = false; // Shows a loading text when saving
+  bool _isLoading = true; 
+  bool _isSaving = false; 
 
-  // Massive list of majors moved here to keep the UI code clean!
+  //Majors list
   final List<String> _allMajors = [
     "Accounting","Actuarial Science","Advertising/Public Relations","Aerospace Engineering","Anthropology",
     "Architecture","Art","Biology","Biomedical Sciences","Biotechnology","Business Economics","Career and Technical Education","Chemistry",
@@ -45,30 +44,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     "Religion and Cultural Studies","Risk Management and Insurance","Secondary Education","Social Sciences","Social Work","Sociology","Spanish","Statistics","Theatre","Theatre Studies","Writing and Rhetoric"
   ];
 
-  // --- 1. RUNS IMMEDIATELY WHEN THE SCREEN OPENS ---
   @override
   void initState() {
     super.initState();
     _fetchProfileData();
   }
 
+  //fetching data
   Future<void> _fetchProfileData() async {
     try {
       final userData = await ApiService.getUserProfile();
       
-      // Navigate through the JSON (matches your User.ts schema)
       final basicInfo = userData['basicInfo'] ?? {};
 
       setState(() {
         _nameController.text = basicInfo['firstName'] ?? '';
         
-        // Ensure the fetched major actually exists in our dropdown list to prevent crash
         String fetchedMajor = basicInfo['major'] ?? 'Computer Science';
         if (_allMajors.contains(fetchedMajor)) {
           _majorController = fetchedMajor;
         }
 
-        _isLoading = false; // Turn off the spinner
+        _isLoading = false; 
       });
     } catch (e) {
       print("Error loading profile: $e");
@@ -76,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // --- 2. RUNS WHEN THEY PRESS 'SAVE CHANGES' ---
+  //Api contact
   Future<void> _saveChanges() async {
     setState(() => _isSaving = true);
     try {
@@ -85,7 +82,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         major: _majorController,
       );
       
-      // Show a little success popup at the bottom of the screen!
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profile updated successfully!"), backgroundColor: Colors.green),
@@ -103,9 +99,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showDeleteConfirmation() {
-    // ... [Your existing delete dialog code remains the same] ...
+    // To be worked on
   }
 
+  //dispose
   @override
   void dispose() {
     _nameController.dispose();
@@ -120,7 +117,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        // If data is loading, show a centered spinner. Otherwise, show the screen!
         child: _isLoading 
           ? const Center(child: CircularProgressIndicator(color: crimson))
           : SingleChildScrollView(
@@ -128,12 +124,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              //Title
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Make sure to remove the Image.asset if the file is missing, or keep it if it's there!
                     Text(
                       'Uknighted',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
@@ -141,8 +137,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-              
-              // --- 1. PHOTO GRID ---
+
+              //Greeting with name
+              Center(
+                child: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _nameController,
+                  builder: (context, value, child) {
+                    final displayName = value.text.trim().isEmpty ? "Your Name" : value.text.trim();
+                    
+                    return Text(
+                      "Hello, $displayName!", 
+                      style: const TextStyle(
+                        fontSize: 32, 
+                        fontWeight: FontWeight.w900, 
+                        color: crimson, 
+                        letterSpacing: 1.2,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              //Photos
               const Text("My Photos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               GridView.builder(
@@ -171,34 +188,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 30),
 
-              // --- 2. BASIC INFO ---
+              //Basic info title
               const Text("Basic Info", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: crimson)),
               const Divider(thickness: 1),
               const SizedBox(height: 10),
-
-              Center(
-                child: ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _nameController, // Listens directly to what is typed
-                  builder: (context, value, child) {
-                    // If they backspace their whole name, show a fallback
-                    final displayName = value.text.trim().isEmpty ? "Your Name" : value.text.trim();
-                    
-                    return Text(
-                      "Hello, $displayName!", // E.g., "Gavin, 21"
-                      style: const TextStyle(
-                        fontSize: 32, 
-                        fontWeight: FontWeight.w900, 
-                        color: crimson, // Uses your UKnighted red!
-                        letterSpacing: 1.2,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
               
+              //Name change box
               _buildTextField("New Name", _nameController),
               
+              //Age box (unchangable)
               TextFormField(
                 initialValue: _age,
                 readOnly: true, 
@@ -212,37 +210,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 16),
 
+              //Gender box
               _buildDropdown("Gender", _gender, ['Male', 'Female', 'Non-binary', 'Other'], (val) => setState(() => _gender = val!)),
+              
+              //Age Box
               _buildDropdown("Sexual Orientation", _sexualOrientation, ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Other'], (val) => setState(() => _sexualOrientation = val!)),
               const SizedBox(height: 10),
 
-              // --- 3. UNIVERSITY & WORK ---
+              //Background box
               const Text("Background", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: crimson)),
               const Divider(thickness: 1),
               const SizedBox(height: 10),
 
-              // Plugs in your massive list of majors automatically!
+              //Major box
               _buildDropdown("Major", _majorController, _allMajors, (val) => setState(() => _majorController = val!)),
+              //Class year box
               _buildDropdown("Class Year", _classYear, ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Grad Student'], (val) => setState(() => _classYear = val!)),
+              //Work box
               _buildTextField("Work / Job Title", _workController),
               const SizedBox(height: 10),
 
-              // --- 4. MORE ABOUT ME ---
               const Text("More About Me", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: crimson)),
               const Divider(thickness: 1),
               const SizedBox(height: 10),
 
+              //Height box
               _buildDropdown("Height", _heightController, 
               ['<4', '4\'', '4\' 1"', '4\' 2"', '4\' 3"', '4\' 4"', '4\' 5"', '4\' 6"', '4\' 7"', '4\' 8"', '4\' 9"', '4\' 10"', '4\' 11"', 
               '5\'', '5\' 1"', '5\' 2"', '5\' 3"', '5\' 4"', '5\' 5"', '5\' 6"', '5\' 7"', '5\' 8"', '5\' 9"', '5\' 10"', '5\' 11"',
               '6\'', '6\' 1"', '6\' 2"', '6\' 3"', '6\' 4"', '6\' 5"', '6\' 6"', '>6\' 6"'], (val) => setState(() => _heightController = val!)),
+              //Intentions box
               _buildDropdown("Dating Intentions", _datingIntentions, ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'], (val) => setState(() => _datingIntentions = val!)),
+              //Religion box
               _buildDropdown("Religion", _religion, ['Christian', 'Catholic', 'Jewish', 'Muslim', 'Atheist', 'Agnostic', 'Spiritual', 'Other'], (val) => setState(() => _religion = val!)),
+              //Political Alignment box
               _buildDropdown("Political Alignment", _politics, ['Liberal', 'Moderate', 'Conservative', 'Apolitical', 'Other'], (val) => setState(() => _politics = val!)),
               
               const SizedBox(height: 40),
 
-              // --- 5. NEW: SAVE CHANGES BUTTON ---
+              //Save button
               ElevatedButton(
                 onPressed: _isSaving ? null : _saveChanges,
                 style: ElevatedButton.styleFrom(
@@ -258,20 +264,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 20),
 
+              //log out button
               Center(
                 child: OutlinedButton.icon(
                   onPressed: () async {
-                    // 1. Delete the secure token from the phone's vault
                     await ApiService.clearToken();
 
-                    // 2. Navigate to the Title/Login screen AND wipe the history
                     if (context.mounted) {
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const TitleScreen(), // Change to your actual first screen!
+                          builder: (context) => const TitleScreen(),
                         ),
-                        (route) => false, // This is crucial!
+                        (route) => false,
                       );
                     }
                   },
@@ -293,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 5),
 
-              // --- 6. DELETE ACCOUNT BUTTON ---
+              //Delete account button
               Center(
                 child: OutlinedButton.icon(
                   onPressed: _showDeleteConfirmation,
@@ -317,10 +322,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ==========================================
-  // HELPER FUNCTIONS 
-  // ==========================================
-
+  //Helper functions
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -343,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<String>(
         value: currentValue,
-        isExpanded: true, // Prevents the overflow error for long text!
+        isExpanded: true, 
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),

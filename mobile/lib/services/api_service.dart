@@ -194,6 +194,33 @@ static Future<void> savePreferences({
     }
   }
 
+    static Future<void> saveProfile({
+    required String bio,
+    required List<dynamic> photos,
+    required List<dynamic> promptAnswers,
+    required List<String> interestTagIds,
+  }) async {
+    final res = await http.patch(
+      Uri.parse('$_baseUrl/users/profile'), 
+      headers: await _headers(), 
+      body: jsonEncode({
+        'bio': bio,
+        'photos': photos,
+        'promptAnswers': promptAnswers,
+        'interestTagIds': interestTagIds,
+      }),
+    );
+
+    if (res.statusCode != 200) {
+      try {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        throw data['message'] ?? 'Failed to save profile.';
+      } catch (e) {
+        throw 'Server error: ${res.statusCode}. Check backend console.';
+      }
+    }
+  }
+
   static Future<Map<String, dynamic>> getUserProfile() async {
     final res = await http.get(
       Uri.parse('$_baseUrl/users/me'),

@@ -1,3 +1,4 @@
+//imports
 import 'package:flutter/material.dart';
 import '/services/api_service.dart';
 import 'code_verification.dart';
@@ -15,13 +16,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _error;
   bool _loading = false;
 
+  //API communication
   Future<void> _submit() async {
+    //ensuring email and button aren't empty
     if (_emailCtrl.text.trim().isEmpty || _passwordCtrl.text.isEmpty) {
       setState(() { _error = "Please fill in all fields."; });
-      return; // Stops the function here
+      return; 
     }
 
-    // 2. Optional: Enforce a university email requirement
+    //ensuring email follows .edu rules
     if (!_emailCtrl.text.trim().toLowerCase().endsWith('.edu')) {
       setState(() { _error = "You must use a valid university .edu email."; });
       return;
@@ -33,6 +36,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text
       );
+      //Go to verification screen
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
@@ -48,12 +52,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() { _loading = false; });
     }
   }
+
+  //disposes
   @override
     void dispose() {
       _emailCtrl.dispose();
       _passwordCtrl.dispose();
       super.dispose();
     }
+
   @override
   Widget build(BuildContext context) {
 
@@ -66,16 +73,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         iconTheme: const IconThemeData(color: const Color.fromARGB(255, 170, 57, 71)),
       ),
 
-      // SafeArea 
       body: SafeArea( 
-        // scrolling
         child: SingleChildScrollView( 
-          // 3. Move the padding here so the scroll flows smoothly to the edges
           padding: const EdgeInsets.all(24), 
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // App Logo 
+              //logo
               Image.asset(
                 'assets/Logo_V1.png',
                 width: 350,
@@ -94,6 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 40),
 
+              //email text
               TextField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
@@ -107,6 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 20),
 
+              //password text
               TextField(
                 controller: _passwordCtrl,
                 obscureText: true,
@@ -127,6 +133,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               const SizedBox(height: 16),
               
+              //submit button
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
@@ -143,7 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
 
-              const SizedBox(height: 60), // Extra bottom space for comfortable scrolling
+              const SizedBox(height: 60),
             ],
           ),
         ),

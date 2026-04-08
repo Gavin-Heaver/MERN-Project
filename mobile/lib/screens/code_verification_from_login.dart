@@ -1,8 +1,8 @@
+//imports
 import 'package:flutter/material.dart';
 import 'set_basic_info.dart'; 
-import '../services/api_service.dart'; // Make sure this path is correct for your project!
+import '../services/api_service.dart'; 
 
-// 1. Upgraded to a StatefulWidget to manage the typing and loading states
 class VerificationScreenFromEmail extends StatefulWidget {
   const VerificationScreenFromEmail({super.key});
 
@@ -11,16 +11,29 @@ class VerificationScreenFromEmail extends StatefulWidget {
 }
 
 class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmail> {
-  // 3. Added the controller to read the 6 digits
+  //variables
   final TextEditingController _emailCtrl = TextEditingController();
   final TextEditingController _codeCtrl = TextEditingController();
   String? _error;
   bool _loading = false;
 
-  // 4. The API Verification Function
+  //API contact
   Future<void> _verify() async {
+    //verifying code length
     if (_codeCtrl.text.trim().isEmpty || _codeCtrl.text.trim().length != 6) {
       setState(() { _error = "Please enter the full and correct 6-digit code."; });
+      return;
+    }
+
+    //verifying user put in email
+    if (_emailCtrl.text.trim().isEmpty) {
+      setState(() { _error = "Please fill in all fields."; });
+      return; 
+    }
+
+    //verifying the email is valid
+    if (!_emailCtrl.text.trim().toLowerCase().endsWith('.edu')) {
+      setState(() { _error = "You must use a valid university .edu email."; });
       return;
     }
 
@@ -47,7 +60,6 @@ class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmai
     }
   }
 
-  // Always dispose of controllers!
   @override
   void dispose() {
     _codeCtrl.dispose();
@@ -72,8 +84,8 @@ class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmai
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
+              //logo, text, and email+code grabber
               children: [
-                // Icon for visual flair
                 const Icon(
                   Icons.mark_email_read_rounded,
                   size: 80,
@@ -102,10 +114,9 @@ class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmai
                 ),
                 const SizedBox(height: 40),
 
-                //Email
                 TextField(
                   controller: _emailCtrl,
-                  textAlign: TextAlign.center, // Centers the text
+                  textAlign: TextAlign.center, 
                   style: const TextStyle(
                     color: Colors.black, 
                     fontSize: 24, 
@@ -125,21 +136,20 @@ class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmai
 
                 const SizedBox(height: 10),
                 
-                // 6-Digit Code Input
                 TextField(
                   controller: _codeCtrl,
                   keyboardType: TextInputType.number,
-                  maxLength: 6, // Restricts input to 6 characters
-                  textAlign: TextAlign.center, // Centers the text
+                  maxLength: 6,
+                  textAlign: TextAlign.center, 
                   style: const TextStyle(
                     color: Colors.black, 
                     fontSize: 32, 
-                    letterSpacing: 15, // Spreads the numbers out to look like an OTP field
+                    letterSpacing: 15, 
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
                     labelText: "Code",
-                    counterText: "", // Hides the "0/6" character counter below the field,
+                    counterText: "", 
                     hintStyle: const TextStyle(color: Colors.grey, letterSpacing: 15),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -153,7 +163,6 @@ class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmai
                 ),
                 const SizedBox(height: 40),
                 
-                // Verify Button
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
@@ -161,9 +170,9 @@ class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmai
                   ),
                 const SizedBox(height: 40),
                 
-                // Verify Button
+                //Button
                 ElevatedButton(
-                  onPressed: _loading ? null : _verify, // 6. Hooked up the logic
+                  onPressed: _loading ? null : _verify,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 170, 57, 71),
                     foregroundColor: Colors.white,
@@ -173,14 +182,13 @@ class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmai
                     ),
                   ),
                   child: Text(
-                    _loading ? 'Verifying...' : 'Verify & Continue', // 7. Dynamic text
+                    _loading ? 'Verifying...' : 'Verify & Continue', 
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 
                 const SizedBox(height: 20),
                 
-                // Resend Code Option
               ],
             ),
           ),

@@ -1,9 +1,10 @@
+//imports
 import 'package:flutter/material.dart';
 import 'package:mobile/screens/feed_screen.dart';
-import '../services/api_service.dart';
+import 'services/api_service.dart';
 import 'screens/login.dart';
 import 'screens/signup.dart';
-import 'screens/set_basic_info.dart';
+
 
 void main() {
   runApp(const UKnightedApp());
@@ -20,8 +21,8 @@ class UKnightedApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const TitleScreen(), // Set the TitleScreen as the starting point
-      debugShowCheckedModeBanner: false, // Hides the annoying debug banner
+      home: const TitleScreen(), 
+      debugShowCheckedModeBanner: false, 
     );
   }
 }
@@ -33,6 +34,7 @@ class AuthGate extends StatefulWidget {
   State<AuthGate> createState() => _AuthGateState();
 }
 
+//API interactions
 class _AuthGateState extends State<AuthGate> {
   bool _checking = true;
   bool _loggedIn = false;
@@ -72,7 +74,7 @@ class TitleScreen extends StatelessWidget {
         width: double.infinity, 
         height: double.infinity, 
         decoration: const BoxDecoration(
-          // gradient background
+          //background colors
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
@@ -87,13 +89,12 @@ class TitleScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // REPLACED Spacer: Added a bit of fixed breathing room at the very top
                 SizedBox(height: screenHeight * 0.05), 
                 
                 // App Logo 
                 Image.asset(
                   'assets/Logo_V1.png',
-                  width: 500, // Leaving this large will easily let you test the new scrolling!
+                  width: 500, 
                   height: 500,
                 ),
                 const SizedBox(height: 20),
@@ -109,7 +110,6 @@ class TitleScreen extends StatelessWidget {
                   ),
                 ),
                 
-                // REPLACED Spacer: Fixed gap between the title and the buttons
                 const SizedBox(height: 50), 
                 
                 // Register Button
@@ -117,11 +117,10 @@ class TitleScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Go to register 
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const RegisterScreen(), // Added 'const' for better performance
+                          builder: (context) => const RegisterScreen(), 
                         ),
                       );
                     },
@@ -142,16 +141,15 @@ class TitleScreen extends StatelessWidget {
                 
                 const SizedBox(height: 20),
                 
-                // Login Button
+                //Login button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Go to login 
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LoginScreen(), // Added 'const'
+                          builder: (context) => const LoginScreen(), 
                         ),
                       );
                     },
@@ -170,7 +168,6 @@ class TitleScreen extends StatelessWidget {
                   ),
                 ),
                 
-                // Bottom padding to ensure the scroll goes all the way past the lowest button
                 const SizedBox(height: 60), 
               ],
             ),

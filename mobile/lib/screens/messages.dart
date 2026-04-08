@@ -1,5 +1,4 @@
-//Messages
-
+//imports
 import 'package:flutter/material.dart';
 import 'chat_individual_screen.dart';
 
@@ -8,7 +7,7 @@ class MessagesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    // Mock accounts
     final List<Map<String, dynamic>> activeChats = [
       {
         'name': 'Sam',
@@ -81,6 +80,7 @@ class MessagesScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                //Logo and title
                 children: [
                   Image.asset('assets/Logo_V2.png', height: 36, width: 36, fit: BoxFit.contain),
                   SizedBox(width: 8),
@@ -92,15 +92,12 @@ class MessagesScreen extends StatelessWidget {
               ),
             ),
 
-          // 2. ACTIVE CHATS SECTION (Vertical Scroll)
-          // We wrap this in Expanded so it takes up all remaining screen space
           Expanded(
             child: ListView.builder(
               itemCount: activeChats.length,
               itemBuilder: (context, index) {
                 final chat = activeChats[index];
                 
-                // ListTile is a pre-built Flutter widget perfect for chat rows
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
                   leading: CircleAvatar(
@@ -117,7 +114,7 @@ class MessagesScreen extends StatelessWidget {
                   ),
                   subtitle: Text(
                     chat['lastMessage'],
-                    maxLines: 1, // Cuts the text off with "..." if it's too long
+                    maxLines: 1, 
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: chat['unread'] ? Colors.black87 : Colors.grey[600],
@@ -137,7 +134,6 @@ class MessagesScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 5),
-                      // Only show the red dot if the message is unread
                       if (chat['unread'])
                         Container(
                           width: 10,
@@ -153,7 +149,6 @@ class MessagesScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        // We pass the name of the specific chat they clicked on!
                         builder: (context) => ChatScreen(chatName: chat['name']), 
                       ),
                     );

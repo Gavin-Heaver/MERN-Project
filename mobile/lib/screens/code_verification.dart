@@ -1,12 +1,12 @@
+//imports
 import 'package:flutter/material.dart';
 import 'set_basic_info.dart'; 
-import '../services/api_service.dart'; // Make sure this path is correct for your project!
+import '../services/api_service.dart';
 
-// 1. Upgraded to a StatefulWidget to manage the typing and loading states
 class VerificationScreen extends StatefulWidget {
-  // 2. Added the bucket to hold the email passed from the Register Screen
   final String userEmail; 
 
+  //Need email for verification sync
   const VerificationScreen({super.key, required this.userEmail});
 
   @override
@@ -14,13 +14,14 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
-  // 3. Added the controller to read the 6 digits
+  //Variables
   final TextEditingController _codeCtrl = TextEditingController();
   String? _error;
   bool _loading = false;
 
-  // 4. The API Verification Function
+  //API connect
   Future<void> _verify() async {
+    //Ensure code length
     if (_codeCtrl.text.trim().isEmpty || _codeCtrl.text.trim().length != 6) {
       setState(() { _error = "Please enter the full and correct 6-digit code."; });
       return;
@@ -49,7 +50,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     }
   }
 
-  // Always dispose of controllers!
+  //Dispose
   @override
   void dispose() {
     _codeCtrl.dispose();
@@ -63,6 +64,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
       backgroundColor: Colors.white,
 
+      //back button
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -74,8 +76,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
+              // little logo and text
               children: [
-                // Icon for visual flair
                 const Icon(
                   Icons.mark_email_read_rounded,
                   size: 80,
@@ -104,20 +106,20 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ),
                 const SizedBox(height: 40),
                 
-                // 6-Digit Code Input
+                //code submission
                 TextField(
                   controller: _codeCtrl,
                   keyboardType: TextInputType.number,
-                  maxLength: 6, // Restricts input to 6 characters
-                  textAlign: TextAlign.center, // Centers the text
+                  maxLength: 6,
+                  textAlign: TextAlign.center, 
                   style: const TextStyle(
                     color: Colors.black, 
                     fontSize: 32, 
-                    letterSpacing: 15, // Spreads the numbers out to look like an OTP field
+                    letterSpacing: 15, 
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
-                    counterText: "", // Hides the "0/6" character counter below the field
+                    counterText: "", 
                     hintText: "••••••",
                     hintStyle: const TextStyle(color: Colors.grey, letterSpacing: 15),
                     enabledBorder: OutlineInputBorder(
@@ -132,7 +134,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ),
                 const SizedBox(height: 40),
                 
-                // Verify Button
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
@@ -140,9 +141,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   ),
                 const SizedBox(height: 40),
                 
-                // Verify Button
+                //button
                 ElevatedButton(
-                  onPressed: _loading ? null : _verify, // 6. Hooked up the logic
+                  onPressed: _loading ? null : _verify, 
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 170, 57, 71),
                     foregroundColor: Colors.white,
@@ -152,14 +153,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     ),
                   ),
                   child: Text(
-                    _loading ? 'Verifying...' : 'Verify & Continue', // 7. Dynamic text
+                    _loading ? 'Verifying...' : 'Verify & Continue',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 
                 const SizedBox(height: 20),
                 
-                // Resend Code Option
               ],
             ),
           ),

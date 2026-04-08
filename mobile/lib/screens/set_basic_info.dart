@@ -1,6 +1,7 @@
+//imports
 import 'package:flutter/material.dart';
 import 'set_preferences.dart';
-import '../services/api_service.dart'; // Make sure this path is correct!
+import '../services/api_service.dart'; 
  
 class BasicInfoScreen extends StatefulWidget {
   const BasicInfoScreen({super.key});
@@ -10,7 +11,7 @@ class BasicInfoScreen extends StatefulWidget {
 }
 
 class _BasicInfoScreenState extends State<BasicInfoScreen> {
-  // Matches the User.ts Schema exactly
+  //Variables
   final TextEditingController _firstNameCtrl = TextEditingController();
   final TextEditingController _lastNameCtrl = TextEditingController();
   final TextEditingController _ageCtrl = TextEditingController();
@@ -22,6 +23,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   String? _error;
   bool _loading = false;
 
+  //disposes
   @override
   void dispose() {
     _firstNameCtrl.dispose();
@@ -30,8 +32,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     super.dispose();
   }
 
+  //API contact
   Future<void> _submit() async {
-    // 1. Check for empty text fields
+    //Making sure all fields filled
     if (_firstNameCtrl.text.trim().isEmpty || 
         _lastNameCtrl.text.trim().isEmpty || 
         _ageCtrl.text.trim().isEmpty) {
@@ -39,7 +42,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       return;
     }
 
-    // 2. Validate Age (Backend requires min: 18)
+    //Age Validation
     int? age = int.tryParse(_ageCtrl.text.trim());
     if (age == null || age < 18 || age > 99) {
       setState(() { _error = "You must be a valid age (18+) to use UKnighted."; });
@@ -49,7 +52,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     setState(() { _error = null; _loading = true; });
 
     try {
-      // 3. Send data to MongoDB
       await ApiService.saveBasicInfo(
         firstName: _firstNameCtrl.text.trim(),
         lastName: _lastNameCtrl.text.trim(),
@@ -59,7 +61,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         classYear: _classYear,
       );
       
-      // 4. Move to Preferences
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -95,6 +96,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               ),
               const SizedBox(height: 30),
               
+              //Boxes to collect all info (first name, last name, age, gender, major class year)
               _buildTextField("First Name", _firstNameCtrl),
               const SizedBox(height: 10),
               
@@ -130,7 +132,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               }),
               const SizedBox(height: 20),
               
-              // Error Display
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
@@ -159,9 +160,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     );
   }
 
-  // ==========================================
-  // HELPER FUNCTIONS
-  // ==========================================
+
+  //Helper functions
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -184,7 +184,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       padding: const EdgeInsets.only(bottom: 16.0),
       child: TextField(
         keyboardType: TextInputType.number,
-        maxLength: 2, // Age only needs 2 digits!
+        maxLength: 2,
         controller: controller,
         decoration: InputDecoration(
           counterText: "",
