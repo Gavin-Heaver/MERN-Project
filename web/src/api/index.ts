@@ -9,7 +9,8 @@ import type {
     Match,
     Conversation,
     Message,
-    PotentialMatch
+    PotentialMatch,
+    ProfileData
 } from '../types';
 
 export const api = {
@@ -71,13 +72,8 @@ export const api = {
     },
     profile: {
         getProfile: () =>
-            client.get<{ user: FullUser }>('/users/me').then(r => r.data.user),
-        updateProfile: (data: {
-            bio: string
-            photos: string[]
-            promptAnswers: { question: string; answer: string }[]
-            interestTagIds: string[]
-        }) =>
+            client.get<ProfileData>('/users/me/profile').then(r => r.data),
+        updateProfile: (data: ProfileData | null) =>
             client.patch<MessageResponse>('/users/profile', data).then(r => r.data),
         
         uploadPhoto: (formData: FormData) =>
