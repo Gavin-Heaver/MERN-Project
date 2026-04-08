@@ -169,8 +169,6 @@ static Future<void> savePreferences({
     required int ageMin,
     required int ageMax,
     required List<String> interestedInGenders,
-    required List<String> preferredInterestTagIds,
-    required List<String> dealbreakerTagIds,
   }) async {
     final res = await http.patch(
       Uri.parse('$_baseUrl/users/preferences'), 
@@ -179,8 +177,6 @@ static Future<void> savePreferences({
         'ageMin': ageMin,
         'ageMax': ageMax,
         'interestedInGenders': interestedInGenders,
-        'preferredInterestTagIds': preferredInterestTagIds,
-        'dealbreakerTagIds': dealbreakerTagIds,
       }),
     );
 
