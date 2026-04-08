@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'navigation.dart'; //import 'code_verification';
 import '../services/api_service.dart';
+import 'code_verification_from_login.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -123,6 +124,33 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Text(
                   _loading ? 'Logging in...' : 'Log In',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              TextButton(
+                onPressed: () {
+                  // Go to login 
+                 Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (_) => VerificationScreenFromEmail( 
+                      )
+                    )
+                  );
+                },
+                style: TextButton.styleFrom(
+                  // This gives the text the UKnighted crimson color
+                  foregroundColor: const Color.fromARGB(255, 170, 57, 71), 
+                  // Optional: Adds a little padding so it's easier to tap
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), 
+                ),
+                child: const Text(
+                  "Verification Code Screen",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
 

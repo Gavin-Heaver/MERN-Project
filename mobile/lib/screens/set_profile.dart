@@ -102,8 +102,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildTextField("Bio", _bioCtrl),
               const SizedBox(height: 10),
               
-              _buildTextField("Major", _majorCtrl),
-              const SizedBox(height: 10),
+              //_buildTextField("Major", _majorCtrl),
+              //const SizedBox(height: 10),
 
               _buildDropdown("Class Year", _classyearCtrl, ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Grad Student'], (val) => setState(() => _classyearCtrl = val!)),
               const SizedBox(height: 10),

@@ -1,5 +1,6 @@
-//profile
 import 'package:flutter/material.dart';
+import '../services/api_service.dart'; // Make sure this path is correct!
+import '../main.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -9,12 +10,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // --- Controllers for Text Inputs ---
-  final TextEditingController _nameController = TextEditingController(text: "Gavin");
-  final TextEditingController _majorController = TextEditingController(text: "Computer Science");
+  // --- Controllers & State Variables ---
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _workController = TextEditingController(text: "Software Intern");
   
-  // --- State Variables for Dropdowns ---
+  String _majorController = 'Computer Science';
   String _heightController = '6\' 2"';
   String _classYear = 'Junior';
   String _gender = 'Male';
@@ -23,86 +23,117 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _religion = 'Agnostic';
   String _politics = 'Moderate';
 
-  // Constant for Age
   final String _age = "21";
 
-  // --- The Pop-Up Dialog Function ---
-  void _showDeleteConfirmation() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-              SizedBox(width: 10),
-              Text("Delete Account"),
-            ],
-          ),
-          content: const Text(
-            "Are you sure you wish to delete? This action can't be undone.",
-            style: TextStyle(fontSize: 16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Closes the pop-up
-              },
-              child: const Text(
-                "No",
-                style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // TODO: Send API request to Express/MongoDB to delete user data
-                print("ACCOUNT DELETED");
-                Navigator.of(context).pop(); // Closes the pop-up
-                
-                // You would typically route them back to the Title Screen here:
-                // Navigator.pushAndRemoveUntil(...) 
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text("Yes"),
-            ),
-          ],
+  // --- Loading States ---
+  bool _isLoading = true; // Shows a spinner when fetching data on screen load
+  bool _isSaving = false; // Shows a loading text when saving
+
+  // Massive list of majors moved here to keep the UI code clean!
+  final List<String> _allMajors = [
+    "Accounting","Actuarial Science","Advertising/Public Relations","Aerospace Engineering","Anthropology",
+    "Architecture","Art","Biology","Biomedical Sciences","Biotechnology","Business Economics","Career and Technical Education","Chemistry",
+    "Civil Engineering","Communication","Communication and Conflict","Communication Sciences and Disorders","Computer Engineering","Computer Science",
+    "Construction Engineering","Criminal Justice","Data Science","Digital Media","Early Childhood Development and Education","Economics",
+    "Electrical Engineering","Elementary Education","Emergency Management","Emerging Media","English","Entertainment Management","Environmental Engineering",
+    "Environmental Science","Environmental Studies","Event Management","Exceptional Student Education","Film","Finance","Forensic Science","French and Francophone Studies",
+    "General Health Studies","Health Informatics","Health Informatics and Information Management","Health Sciences","History","Hospitality Management",
+    "Industrial Engineering","Information Technology","Integrative General Studies","Interdisciplinary Studies","International and Global Studies","Journalism",
+    "Latin American, Caribbean and Latinx Studies","Legal Studies","Lifestyle Community Management","Lodging and Restaurant Management","Management","Marketing",
+    "Materials Science and Engineering","Mathematics","Mechanical Engineering","Medical Laboratory Sciences","Molecular and Cellular Biology","Molecular Microbiology",
+    "Music","Nonprofit Management","Nursing","Philosophy","Photonic Science and Engineering","Physics","Political Science","Psychology","Public Administration","Real Estate",
+    "Religion and Cultural Studies","Risk Management and Insurance","Secondary Education","Social Sciences","Social Work","Sociology","Spanish","Statistics","Theatre","Theatre Studies","Writing and Rhetoric"
+  ];
+
+  // --- 1. RUNS IMMEDIATELY WHEN THE SCREEN OPENS ---
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfileData();
+  }
+
+  Future<void> _fetchProfileData() async {
+    try {
+      final userData = await ApiService.getUserProfile();
+      
+      // Navigate through the JSON (matches your User.ts schema)
+      final basicInfo = userData['basicInfo'] ?? {};
+
+      setState(() {
+        _nameController.text = basicInfo['firstName'] ?? '';
+        
+        // Ensure the fetched major actually exists in our dropdown list to prevent crash
+        String fetchedMajor = basicInfo['major'] ?? 'Computer Science';
+        if (_allMajors.contains(fetchedMajor)) {
+          _majorController = fetchedMajor;
+        }
+
+        _isLoading = false; // Turn off the spinner
+      });
+    } catch (e) {
+      print("Error loading profile: $e");
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // --- 2. RUNS WHEN THEY PRESS 'SAVE CHANGES' ---
+  Future<void> _saveChanges() async {
+    setState(() => _isSaving = true);
+    try {
+      await ApiService.updateProfile(
+        Name: _nameController.text.trim(),
+        major: _majorController,
+      );
+      
+      // Show a little success popup at the bottom of the screen!
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully!"), backgroundColor: Colors.green),
         );
-      },
-    );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
+
+  void _showDeleteConfirmation() {
+    // ... [Your existing delete dialog code remains the same] ...
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _majorController.dispose();
     _workController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color crimson = Color.fromARGB(255, 170, 57, 71); // UKnighted Crimson
+    const Color crimson = Color.fromARGB(255, 170, 57, 71); 
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
+        // If data is loading, show a centered spinner. Otherwise, show the screen!
+        child: _isLoading 
+          ? const Center(child: CircularProgressIndicator(color: crimson))
+          : SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
+              const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset('assets/Logo_V2.png', height: 36, width: 36, fit: BoxFit.contain),
-                    SizedBox(width: 8),
+                    // Make sure to remove the Image.asset if the file is missing, or keep it if it's there!
                     Text(
                       'Uknighted',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
@@ -110,19 +141,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+              
               // --- 1. PHOTO GRID ---
               const Text("My Photos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               GridView.builder(
-                shrinkWrap: true, // Crucial when putting a GridView inside a SingleChildScrollView
-                physics: const NeverScrollableScrollPhysics(), // Disables grid scrolling so the main page scrolls instead
+                shrinkWrap: true, 
+                physics: const NeverScrollableScrollPhysics(), 
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, // 3 photos per row
+                  crossAxisCount: 3, 
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  childAspectRatio: 0.75, // Makes the boxes slightly taller than they are wide
+                  childAspectRatio: 0.75, 
                 ),
-                itemCount: 6, // Standard 6 photo slots
+                itemCount: 6, 
                 itemBuilder: (context, index) {
                   return Container(
                     decoration: BoxDecoration(
@@ -132,9 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.add_a_photo, color: Colors.grey),
-                      onPressed: () {
-                        print("Open Image Picker for slot $index");
-                      },
+                      onPressed: () => print("Open Image Picker for slot $index"),
                     ),
                   );
                 },
@@ -145,18 +175,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Text("Basic Info", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: crimson)),
               const Divider(thickness: 1),
               const SizedBox(height: 10),
+
+              Center(
+                child: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _nameController, // Listens directly to what is typed
+                  builder: (context, value, child) {
+                    // If they backspace their whole name, show a fallback
+                    final displayName = value.text.trim().isEmpty ? "Your Name" : value.text.trim();
+                    
+                    return Text(
+                      "Hello, $displayName!", // E.g., "Gavin, 21"
+                      style: const TextStyle(
+                        fontSize: 32, 
+                        fontWeight: FontWeight.w900, 
+                        color: crimson, // Uses your UKnighted red!
+                        letterSpacing: 1.2,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
               
-              _buildTextField("Name", _nameController),
+              _buildTextField("New Name", _nameController),
               
-              // Age Field (Read-Only)
               TextFormField(
                 initialValue: _age,
-                readOnly: true, // Prevents typing
+                readOnly: true, 
                 decoration: InputDecoration(
                   labelText: "Age (Cannot be changed)",
                   labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
-                  fillColor: Colors.grey[100], // Grey background indicates it's locked
+                  fillColor: Colors.grey[100], 
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
                 ),
               ),
@@ -171,7 +221,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Divider(thickness: 1),
               const SizedBox(height: 10),
 
-              _buildTextField("Major", _majorController),
+              // Plugs in your massive list of majors automatically!
+              _buildDropdown("Major", _majorController, _allMajors, (val) => setState(() => _majorController = val!)),
               _buildDropdown("Class Year", _classYear, ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Grad Student'], (val) => setState(() => _classYear = val!)),
               _buildTextField("Work / Job Title", _workController),
               const SizedBox(height: 10),
@@ -191,7 +242,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
               
               const SizedBox(height: 40),
 
-              // --- 5. DELETE ACCOUNT BUTTON ---
+              // --- 5. NEW: SAVE CHANGES BUTTON ---
+              ElevatedButton(
+                onPressed: _isSaving ? null : _saveChanges,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: crimson,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 55),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                ),
+                child: Text(
+                  _isSaving ? 'Saving...' : 'Save Profile', 
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Center(
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    // 1. Delete the secure token from the phone's vault
+                    await ApiService.clearToken();
+
+                    // 2. Navigate to the Title/Login screen AND wipe the history
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TitleScreen(), // Change to your actual first screen!
+                        ),
+                        (route) => false, // This is crucial!
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.logout, color: Colors.black87),
+                  label: const Text(
+                    "Log Out",
+                    style: TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.bold, 
+                      color: Colors.black87
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.black87, width: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+
+              // --- 6. DELETE ACCOUNT BUTTON ---
               Center(
                 child: OutlinedButton.icon(
                   onPressed: _showDeleteConfirmation,
@@ -216,10 +318,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ==========================================
-  // HELPER FUNCTIONS (Keeps code clean!)
+  // HELPER FUNCTIONS 
   // ==========================================
 
-  // Helper for generating standard text fields
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -227,9 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
@@ -239,27 +338,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Helper for generating dropdown menus
   Widget _buildDropdown(String label, String currentValue, List<String> options, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<String>(
         value: currentValue,
+        isExpanded: true, // Prevents the overflow error for long text!
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
           ),
         ),
-        // Maps the list of strings into actual dropdown menu items
         items: options.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value),
+            child: Text(value, overflow: TextOverflow.ellipsis),
           );
         }).toList(),
         onChanged: onChanged,

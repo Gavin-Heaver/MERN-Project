@@ -3,7 +3,7 @@ import 'package:mobile/screens/feed_screen.dart';
 import '../services/api_service.dart';
 import 'screens/login.dart';
 import 'screens/signup.dart';
-
+import 'screens/set_basic_info.dart';
 
 void main() {
   runApp(const UKnightedApp());
@@ -77,8 +77,8 @@ class TitleScreen extends StatelessWidget {
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
             colors: [
-              Color.fromARGB(255, 255, 168, 216),
-              Color.fromARGB(255, 255, 251, 0),
+              Color.fromARGB(255, 255, 255, 255),
+              Color.fromARGB(255, 255, 255, 255),
             ],
           ),
         ),
@@ -104,7 +104,7 @@ class TitleScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 56,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: const Color.fromARGB(255, 170, 57, 71),
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -126,8 +126,8 @@ class TitleScreen extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color.fromARGB(255, 170, 57, 71),
+                      backgroundColor: const Color.fromARGB(255, 170, 57, 71),
+                      foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -156,8 +156,8 @@ class TitleScreen extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color.fromARGB(255, 170, 57, 71),
+                      backgroundColor: const Color.fromARGB(255, 170, 57, 71),
+                      foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),

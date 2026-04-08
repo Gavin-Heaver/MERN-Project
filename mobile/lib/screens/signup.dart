@@ -35,7 +35,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const VerificationScreen())
+          MaterialPageRoute(
+            builder: (_) => VerificationScreen(
+              userEmail: _emailCtrl.text.trim(), 
+            )
+          )
         );
       }
     } catch (e) {

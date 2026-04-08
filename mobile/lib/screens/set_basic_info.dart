@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'set_preferences.dart';
+import '../services/api_service.dart'; // Make sure this path is correct!
  
 class BasicInfoScreen extends StatefulWidget {
   const BasicInfoScreen({super.key});
@@ -9,51 +10,60 @@ class BasicInfoScreen extends StatefulWidget {
 }
 
 class _BasicInfoScreenState extends State<BasicInfoScreen> {
-  // 1. ALL Text Fields must be controlled by TextEditingControllers
+  // Matches the User.ts Schema exactly
   final TextEditingController _firstNameCtrl = TextEditingController();
   final TextEditingController _lastNameCtrl = TextEditingController();
   final TextEditingController _ageCtrl = TextEditingController();
-  final TextEditingController _heightCtrl = TextEditingController();
   
-  // 2. Dropdown menus need a starting String value
   String _gender = 'Male'; 
-  String _ethnicity = 'Prefer not to say'; 
+  String _classYear = 'Freshman'; 
+  String _majorCtrl = 'Computer Science';
   
-  // Clean up the memory when leaving the screen!
+  String? _error;
+  bool _loading = false;
+
   @override
   void dispose() {
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
     _ageCtrl.dispose();
-    _heightCtrl.dispose();
     super.dispose();
   }
 
-    /*
-  String? _error;
-  bool _loading = false;
-
   Future<void> _submit() async {
-    if (_emailCtrl.text.trim().isEmpty || _passwordCtrl.text.isEmpty) {
+    // 1. Check for empty text fields
+    if (_firstNameCtrl.text.trim().isEmpty || 
+        _lastNameCtrl.text.trim().isEmpty || 
+        _ageCtrl.text.trim().isEmpty) {
       setState(() { _error = "Please fill in all fields."; });
-      return; // Stops the function here
+      return;
     }
 
-    // 2. Optional: Enforce a university email requirement
-    if (!_emailCtrl.text.trim().toLowerCase().endsWith('.edu')) {
-      setState(() { _error = "You must use a valid university .edu email."; });
+    // 2. Validate Age (Backend requires min: 18)
+    int? age = int.tryParse(_ageCtrl.text.trim());
+    if (age == null || age < 18 || age > 99) {
+      setState(() { _error = "You must be a valid age (18+) to use UKnighted."; });
       return;
     }
 
     setState(() { _error = null; _loading = true; });
+
     try {
-      await ApiService.register(
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text
+      // 3. Send data to MongoDB
+      await ApiService.saveBasicInfo(
+        firstName: _firstNameCtrl.text.trim(),
+        lastName: _lastNameCtrl.text.trim(),
+        age: age,
+        gender: _gender,
+        major: _majorCtrl,
+        classYear: _classYear,
       );
+      
+      // 4. Move to Preferences
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const VerificationScreen())
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const PreferenceScreen()), 
         );
       }
     } catch (e) {
@@ -62,13 +72,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       setState(() { _loading = false; });
     }
   }
-  @override
-    void dispose() {
-      _emailCtrl.dispose();
-      _passwordCtrl.dispose();
-      super.dispose();
-    }
-  */
 
   @override
   Widget build(BuildContext context) {
@@ -76,12 +79,10 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          // Adds breathing room around the edges of the whole scrolling list
           padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // App Logo 
               Image.asset(
                 'assets/Logo_V2.png',
                 width: 100,
@@ -89,12 +90,10 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               ),
               const Text(
                 "Who are you?",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
-              
-              // 3. Replaced Placeholders with your actual Helper Functions!
               
               _buildTextField("First Name", _firstNameCtrl),
               const SizedBox(height: 10),
@@ -110,32 +109,47 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               }),
               const SizedBox(height: 10),
               
-              _buildTextField("Height (e.g. 5' 10\")", _heightCtrl),
+              _buildDropdown("Major", _majorCtrl, ["Accounting","Actuarial Science","Advertising/Public Relations","Aerospace Engineering","Anthropology",
+              "Architecture","Art","Biology","Biomedical Sciences","Biotechnology","Business Economics","Career and Technical Education","Chemistry",
+              "Civil Engineering","Communication","Communication and Conflict","Communication Sciences and Disorders","Computer Engineering","Computer Science",
+              "Construction Engineering","Criminal Justice","Data Science","Digital Media","Early Childhood Development and Education","Economics",
+              "Electrical Engineering","Elementary Education","Emergency Management","Emerging Media","English","Entertainment Management","Environmental Engineering",
+              "Environmental Science","Environmental Studies","Event Management","Exceptional Student Education","Film","Finance","Forensic Science","French and Francophone Studies",
+              "General Health Studies","Health Informatics","Health Informatics and Information Management","Health Sciences","History","Hospitality Management",
+              "Industrial Engineering","Information Technology","Integrative General Studies","Interdisciplinary Studies","International and Global Studies","Journalism",
+              "Latin American, Caribbean and Latinx Studies","Legal Studies","Lifestyle Community Management","Lodging and Restaurant Management","Management","Marketing",
+              "Materials Science and Engineering","Mathematics","Mechanical Engineering","Medical Laboratory Sciences","Molecular and Cellular Biology","Molecular Microbiology",
+              "Music","Nonprofit Management","Nursing","Philosophy","Photonic Science and Engineering","Physics","Political Science","Psychology","Public Administration","Real Estate",
+              "Religion and Cultural Studies","Risk Management and Insurance","Secondary Education","Social Sciences","Social Work","Sociology","Spanish","Statistics","Theatre","Theatre Studies","Writing and Rhetoric"], (val) {
+                setState(() => _majorCtrl = val!);
+              }),
               const SizedBox(height: 10),
 
-              _buildDropdown("Ethnicity", _ethnicity, ['Prefer not to say', 'Asian', 'Black/African', 'Hispanic/Latino', 'White/Caucasian', 'Mixed', 'Other'], (val) {
-                setState(() => _ethnicity = val!);
+              _buildDropdown("Class Year", _classYear, ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate'], (val) {
+                setState(() => _classYear = val!);
               }),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               
-              // Continue Button at the very bottom
+              // Error Display
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 16), textAlign: TextAlign.center),
+                ),
+              
+              // Submit Button
               ElevatedButton(
-                onPressed: () {
-                  // Go to preferences 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PreferenceScreen(), // Make sure your class name matches here
-                    ),
-                  );
-                },
+                onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 170, 57, 71),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 55),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                 ),
-                child: const Text('Next, Preferences', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text(
+                  _loading ? 'Saving...' : 'Next, Preferences', 
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                ),
               ),
               const SizedBox(height: 20), 
             ],
@@ -148,7 +162,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   // ==========================================
   // HELPER FUNCTIONS
   // ==========================================
-
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -156,9 +169,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
@@ -168,19 +179,17 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     );
   }
 
-  // FIXED: Changed int? to TextEditingController
   Widget _buildNumberField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: TextField(
         keyboardType: TextInputType.number,
-        maxLength: 3,
+        maxLength: 2, // Age only needs 2 digits!
         controller: controller,
         decoration: InputDecoration(
+          counterText: "",
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
@@ -195,21 +204,17 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<String>(
         value: currentValue,
+        isExpanded: true,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
           ),
         ),
         items: options.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
+          return DropdownMenuItem<String>(value: value, child: Text(value));
         }).toList(),
         onChanged: onChanged,
       ),

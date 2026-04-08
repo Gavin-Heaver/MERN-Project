@@ -3,18 +3,16 @@ import 'set_basic_info.dart';
 import '../services/api_service.dart'; // Make sure this path is correct for your project!
 
 // 1. Upgraded to a StatefulWidget to manage the typing and loading states
-class VerificationScreen extends StatefulWidget {
-  // 2. Added the bucket to hold the email passed from the Register Screen
-  final String userEmail; 
-
-  const VerificationScreen({super.key, required this.userEmail});
+class VerificationScreenFromEmail extends StatefulWidget {
+  const VerificationScreenFromEmail({super.key});
 
   @override
-  State<VerificationScreen> createState() => _VerificationScreenState();
+  State<VerificationScreenFromEmail> createState() => _VerificationScreenFromEmailState();
 }
 
-class _VerificationScreenState extends State<VerificationScreen> {
+class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmail> {
   // 3. Added the controller to read the 6 digits
+  final TextEditingController _emailCtrl = TextEditingController();
   final TextEditingController _codeCtrl = TextEditingController();
   String? _error;
   bool _loading = false;
@@ -30,7 +28,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     try {
       await ApiService.verifyCode(
-        email: widget.userEmail, 
+        email: _emailCtrl.text.trim(), 
         code: _codeCtrl.text.trim()
       );
       
@@ -103,6 +101,29 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
+
+                //Email
+                TextField(
+                  controller: _emailCtrl,
+                  textAlign: TextAlign.center, // Centers the text
+                  style: const TextStyle(
+                    color: Colors.black, 
+                    fontSize: 24, 
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: const BorderSide(color: Colors.black),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
                 
                 // 6-Digit Code Input
                 TextField(
@@ -117,8 +138,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
-                    counterText: "", // Hides the "0/6" character counter below the field
-                    hintText: "••••••",
+                    labelText: "Code",
+                    counterText: "", // Hides the "0/6" character counter below the field,
                     hintStyle: const TextStyle(color: Colors.grey, letterSpacing: 15),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
