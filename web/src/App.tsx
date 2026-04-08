@@ -43,7 +43,7 @@ export default function App() {
                 <Route path="/people" element={<PeoplePage />} />
                 <Route path="/messages" element={<ChatsPage />} />
                 <Route path="/account" element={<AccountPage />} />
-                <Route path="/chat:chatId" element={<MessagePage />} />
+                <Route path="/chat/:chatId" element={<MessagePage />} />
               </Routes>
             </AuthenticatedLayout>
           </PrivateRoute>
