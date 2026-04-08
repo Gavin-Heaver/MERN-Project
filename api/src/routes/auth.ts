@@ -25,7 +25,14 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
                 return
         }
 
-        const verificationCode = Math.floor(100000 + Math.random() * 900000);
+        let verificationCode: number;
+
+        if(email.endsWith('@test.edu')) {
+          verificationCode = 123456;} // test code
+     else {
+        verificationCode = Math.floor(100000 + Math.random() * 900000);
+        }
+        
         const user = await User.create({ email, password, basicInfo: { basicInfoComplete: false }, verification: { code: String(verificationCode), 
         codeCreatedAt: Date.now(), emailVerified: false, verifiedAt: null  } }) 
        
