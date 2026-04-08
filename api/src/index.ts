@@ -14,6 +14,7 @@ import interactionsRoutes from './routes/interactions'
 import matchesRoutes from './routes/matches'
 import messagesRoutes from './routes/messages'  
 import { config } from './config/env'
+import path from 'path'
 
 const app = express()
 const httpServer = createServer(app)
@@ -25,6 +26,7 @@ const io = new Server(httpServer, {
 app.set('io', io)
 app.use(cors({ origin: config.clientUrl }))
 app.use(express.json())
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
 
