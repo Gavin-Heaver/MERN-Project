@@ -1,18 +1,32 @@
 import React, { useState, useEffect } from "react"
-import axios from "axios"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
 import { api } from "../api"
-import type { ProfileData } from "../types"
+import type { FullUser } from '../types'
 import { GENDER_OPTIONS, INTEREST_OPTIONS, ETHNICITY_OPTIONS, RELIGION_OPTIONS, POLITICS_OPTIONS, DATING_INTENTION_OPTIONS, MAJOR_LIST, CLASS_YEAR_OPTIONS, PROMPT_LIST } from "../constants/profileOptions"
+import axios from "axios"
+
+type Section = 'basicInfo' | 'profile' | 'preferences' | null
 
 export default function AccountPage() {
+    const { logout } = useAuth()
+    const navigate = useNavigate()
 
-    const [profile, setProfile] = useState<ProfileData | null>(null)
+    const [user, setUser] = useState<FullUser | null>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
-    const [error, setError] = useState<null | string>(null)
-    const [successMessage, setSuccessMessage] = useState<null | string>(null)
+    const [error, setError] = useState<string | null>(null)
+    const [success, setSuccess] = useState<string | null>(null)
+    const [editing, setEditing] = useState<Section>(null)
 
-    // Section expand/collapse
+    const [basicEdit, setBasicEdit] = useState({
+        bio: '',
+        prompts: [] as { question: string; answer: string }[]
+    })
+    const [prefsEdit, setPrefsEdit] = useState({
+        ageMin: 18, ageMax: 99, interacted
+    })
+
     const [openSection, setOpenSection] = useState<null | string>(null)
 
     useEffect(() => {
