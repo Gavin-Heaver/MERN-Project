@@ -142,7 +142,7 @@ const userSchema = new mongoose.Schema(
         },
         profile:
         {
-            profileComplete: 
+            profileComplete:
             { 
                 type: Boolean, 
                 default: false 
@@ -162,6 +162,12 @@ const userSchema = new mongoose.Schema(
             {
                 type: [promptAnswerSchema],
                 default: []
+            },
+            datingIntentions:
+            {
+                type: String,
+                maxlength: 500,
+                default: ""
             },
             interestTagIds:
             {
