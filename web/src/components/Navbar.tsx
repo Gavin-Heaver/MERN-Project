@@ -11,7 +11,7 @@ export default function Navbar() {
     ]
 
     return (
-        <header className="fixed bottom-0 left-0 right-0 bg-gray-500 border-gray-200 z-50 md:top-0 md:bottom-auto md:border-t-0 md: border-b">
+        <header className="fixed bottom-0 left-0 right-0 bg-gray-500 border-gray-200 z-50 md:top-0 md:bottom-auto md:border-t-0 md:border-b">
             <nav className="flex justify-around items-center h-16 max-w-screen-sm mx-auto">
                 {links.map(({ to, label, icon: Icon }) => {
                     const active = pathname.startsWith(to)
