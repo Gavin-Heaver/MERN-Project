@@ -95,6 +95,78 @@ router.get('/discover', authenticate, async (req: Request, res: Response): Promi
     }
 });
 
+router.post('/seed-test-users', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const dummyUsers = [
+            {
+                email: 'alice@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Alice', lastName: 'Smith', age: 21, gender: 'Female', major: 'Biology', classYear: '2026', basicInfoComplete: true },
+                preferences: { ageMin: 18, ageMax: 26, interestedInGenders: ['Male'], preferencesComplete: true },
+                profile: { bio: 'Love hiking and coffee.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+            {
+                email: 'bob@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Bob', lastName: 'Jones', age: 22, gender: 'Male', major: 'CS', classYear: '2025', basicInfoComplete: true },
+                preferences: { ageMin: 18, ageMax: 25, interestedInGenders: ['Female'], preferencesComplete: true },
+                profile: { bio: 'Big into chess and cooking.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+            {
+                email: 'sara@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Sara', lastName: 'Lee', age: 20, gender: 'Female', major: 'Art', classYear: '2027', basicInfoComplete: true },
+                preferences: { ageMin: 20, ageMax: 30, interestedInGenders: ['Male', 'Non-binary'], preferencesComplete: true },
+                profile: { bio: 'Painter and plant mom.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+            {
+                email: 'dan@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Dan', lastName: 'Park', age: 24, gender: 'Male', major: 'Finance', classYear: '2024', basicInfoComplete: true },
+                preferences: { ageMin: 21, ageMax: 28, interestedInGenders: ['Male', 'Non-binary'], preferencesComplete: true },
+                profile: { bio: 'Runner. Foodie. Bad at texting.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+            {
+                email: 'eli@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Eli', lastName: 'Morgan', age: 23, gender: 'Non-binary', major: 'Psychology', classYear: '2025', basicInfoComplete: true },
+                preferences: { ageMin: 18, ageMax: 27, interestedInGenders: ['Male', 'Female', 'Non-binary'], preferencesComplete: true },
+                profile: { bio: 'Bookworm. Therapy advocate. Dog person.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+        ];
+
+        const results = [];
+
+        for (const data of dummyUsers) {
+            // Skip if already exists
+            const existing = await User.findOne({ email: data.email, 'verification.emailVerified': true });
+            if (existing) {
+                results.push({ email: data.email, status: 'skipped (already exists)' });
+                continue;
+            }
+
+            // Delete any unverified leftover with same email
+            await User.deleteOne({ email: data.email });
+
+            const user = await User.create({
+                email: data.email,
+                password: data.password,
+                basicInfo: data.basicInfo,
+                preferences: data.preferences,
+                profile: data.profile,
+                verification: {
+                    emailVerified: true,
+                    verifiedAt: new Date(),
+                    code: null,
+                    codeCreatedAt: null,
+                }
+            });
+
+            results.push({ email: data.email, status: 'created', id: user._id });
+        }
+
+        res.status(201).json({ message: 'Seed complete', results });
+    } catch (err) {
+        console.error('Seed error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 router.patch('/basic-info', authenticate, async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.id 
 
