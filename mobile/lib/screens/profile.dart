@@ -138,8 +138,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    
-
     setState(() => _isSaving = true);
     
     try {
@@ -176,7 +174,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showDeleteConfirmation() {
-    // To be worked on
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+              SizedBox(width: 10),
+              Text("Delete Account?"),
+            ],
+          ),
+          content: const Text(
+            "This action is permanent and cannot be undone. All your matches, messages, and profile data will be erased forever.",
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            // CANCEL BUTTON
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext), // Just closes the dialog
+              child: const Text("Cancel", textAlign: TextAlign.center, style: TextStyle(color: Colors.black87, fontSize: 16)),
+            ),
+            
+            // CONFIRM DELETE BUTTON
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext); // Close the dialog box first
+                setState(() => _isLoading = true); // Turn on the main screen loading spinner
+
+                try {
+                  // 1. Tell the backend to destroy the data
+                  await ApiService.deleteAccount();
+                  
+                  // 2. Destroy the local token on the phone
+                  await ApiService.clearToken();
+                  
+                  // 3. Bulldoze back to the Title/Login screen
+                  if (mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      // Change 'TitleScreen()' to whatever your initial login screen is named!
+                      MaterialPageRoute(builder: (context) => const TitleScreen()), 
+                      (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  setState(() => _isLoading = false); // Turn off spinner
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              ),
+              child: const Text("Delete Forever", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -205,11 +266,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Image.asset('assets/Logo_V2.png', height: 36, width: 36, fit: BoxFit.contain),
+                    SizedBox(width: 8),
                     Text(
                       'Uknighted',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
