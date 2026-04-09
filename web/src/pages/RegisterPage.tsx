@@ -40,6 +40,7 @@ export default function RegisterPage() {
                 </button>
             </form>
             <p>Already have an account? <Link to="/login">Login</Link></p>
+            <p>Need to verify your email? <Link to="/verify-email">Verify Email</Link></p>
         </div>
     )
 }
