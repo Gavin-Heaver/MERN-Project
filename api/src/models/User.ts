@@ -177,12 +177,6 @@ const userSchema = new mongoose.Schema(
                 }],
                 default: []
             },
-            datingIntentions:
-            {
-                type: String,
-                maxlength: 500,
-                default: ""
-            },
         },
 
         preferences:
