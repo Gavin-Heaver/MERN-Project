@@ -66,6 +66,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final profileData = userObj['profile'] ?? {};
       final prefData = userObj['preferences'] ?? {};
 
+      // ADD THIS LINE:
+      print("UKNIGHTED DEBUG - Profile Data from DB: $profileData");
+
       setState(() {
         // 1. Load Basic Info
         _firstNameController.text = basicInfo['firstName'] ?? '';
