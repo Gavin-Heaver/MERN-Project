@@ -264,4 +264,73 @@ static Future<void> savePreferences({
       }
     }
   }
+
+  // ==========================================
+  // DISCOVER & INTERACTIONS (SWIPING)
+  // ==========================================
+  
+  static Future<List<dynamic>> getDiscoverUsers() async {
+    final res = await http.get(
+      Uri.parse('$_baseUrl/users/discover'),
+      headers: await _headers()
+    );
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body)['users'] as List<dynamic>;
+    }
+    throw 'Failed to load discover feed';
+  }
+
+  static Future<Map<String, dynamic>> sendInteraction({required String toUserId, required String type}) async {
+    // type should be 'like' or 'pass'
+    final res = await http.post(
+      Uri.parse('$_baseUrl/interactions'), // Assumes your interactions.ts is mounted at /api/interactions
+      headers: await _headers(),
+      body: jsonEncode({'toUserId': toUserId, 'type': type}),
+    );
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+    throw 'Failed to send swipe action';
+  }
+
+  // ==========================================
+  // MESSAGES & CONVERSATIONS
+  // ==========================================
+
+  static Future<List<dynamic>> getConversations() async {
+    // Assumes your messages.ts is mounted at /api/message
+    final res = await http.get(
+      Uri.parse('$_baseUrl/messages/conversations'),
+      headers: await _headers()
+    );
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body)['conversations'] as List<dynamic>;
+    }
+    throw 'Failed to load conversations';
+  }
+
+  static Future<List<dynamic>> getMessages(String conversationId) async {
+    final res = await http.get(
+      Uri.parse('$_baseUrl/messages/$conversationId'),
+      headers: await _headers()
+    );
+    
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      // The backend returns { "conversation": {...}, "messages": [...] }
+      // We need to return just the messages list to the ChatScreen
+      return data['messages'] as List<dynamic>;
+    }
+    throw 'Failed to load chat history';
+  }
+  static Future<void> sendMessage({required String toUserId, required String text}) async {
+    final res = await http.post(
+      Uri.parse('$_baseUrl/messages/send-msg'),
+      headers: await _headers(),
+      body: jsonEncode({'toUserId': toUserId, 'text': text}),
+    );
+    if (res.statusCode != 201 && res.statusCode != 200) {
+      throw 'Failed to send message';
+    }
+  }
 }
