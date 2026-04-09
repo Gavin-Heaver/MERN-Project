@@ -6,6 +6,10 @@ import { Resend } from 'resend';
 import crypto from 'crypto';
 import { authenticate } from '../middleware/auth'
 
+const Interaction = require('../models/Interaction');
+const Match = require('../models/Match');
+const Conversation = require('../models/Conversation');
+const Message = require('../models/Message');
 const router: Router = Router()
 const resend = new Resend(config.resendKey);
 console.log('Resend email service ready');
@@ -315,5 +319,62 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<void
     }
 });
 
+router.delete('/delete-account', authenticate, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        // Find all matches involving this user
+        const matches = await Match.find({
+            $or: [{ userAId: userId }, { userBId: userId }]
+        });
+
+        const matchIds = matches.map((match: any) => match._id);
+        const conversationIds = matches
+            .map((match: any) => match.conversationId)
+            .filter(Boolean);
+
+        // Delete all messages in those conversations
+        if (conversationIds.length > 0) {
+            await Message.deleteMany({
+                conversationId: { $in: conversationIds }
+            });
+
+            await Conversation.deleteMany({
+                _id: { $in: conversationIds }
+            });
+        }
+
+        // Delete all matches involving this user
+        if (matchIds.length > 0) {
+            await Match.deleteMany({
+                _id: { $in: matchIds }
+            });
+        }
+
+        // Delete all interactions involving this user
+        await Interaction.deleteMany({
+            $or: [{ fromUserId: userId }, { toUserId: userId }]
+        });
+
+        // Finally delete the user
+        const deletedUser = await User.findByIdAndDelete(userId);
+
+        if (!deletedUser) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+
+        res.json({ message: 'Account deleted successfully' });
+    } catch (err) {
+        console.error('Delete account error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
 export default router
+
