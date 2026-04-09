@@ -58,12 +58,32 @@ router.get('/discover', authenticate, async (req: Request, res: Response): Promi
     try {
         const currentUserId = new mongoose.Types.ObjectId(req.user?.id);
 
+        // Get current user's preferences and basicInfo
+        const currentUser = await User.findById(currentUserId).select('preferences basicInfo');
+        if (!currentUser?.preferences || !currentUser?.basicInfo) {
+            res.status(400).json({ message: 'Complete your profile and preferences first' });
+            return;
+        }
+
+        const { ageMin, ageMax, interestedInGenders } = currentUser.preferences;
+        const { gender: myGender, age: myAge } = currentUser.basicInfo;
+
+        // Get already-interacted users
         const interactions = await Interaction.find({ fromUserId: currentUserId }).select('toUserId');
         const excludedIds = interactions.map((i: any) => i.toUserId);
         excludedIds.push(currentUserId);
 
         const users = await User.find({
-            _id: { $nin: excludedIds }
+            _id: { $nin: excludedIds },
+
+            'basicInfo.gender': { $in: interestedInGenders },
+            'basicInfo.age': { $gte: ageMin, $lte: ageMax },
+            'preferences.interestedInGenders': myGender,
+            'preferences.ageMin': { $lte: myAge },
+            'preferences.ageMax': { $gte: myAge },
+            'basicInfo.basicInfoComplete': true,
+            'preferences.preferencesComplete': true,
+            'profile.profileComplete': true,
         })
         .select('-password')
         .limit(20);
@@ -71,6 +91,78 @@ router.get('/discover', authenticate, async (req: Request, res: Response): Promi
         res.json({ users });
     } catch (err) {
         console.error('Discover users error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.post('/seed-test-users', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const dummyUsers = [
+            {
+                email: 'alice@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Alice', lastName: 'Smith', age: 21, gender: 'Female', major: 'Biology', classYear: '2026', basicInfoComplete: true },
+                preferences: { ageMin: 18, ageMax: 26, interestedInGenders: ['Male'], preferencesComplete: true },
+                profile: { bio: 'Love hiking and coffee.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+            {
+                email: 'bob@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Bob', lastName: 'Jones', age: 22, gender: 'Male', major: 'CS', classYear: '2025', basicInfoComplete: true },
+                preferences: { ageMin: 18, ageMax: 25, interestedInGenders: ['Female'], preferencesComplete: true },
+                profile: { bio: 'Big into chess and cooking.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+            {
+                email: 'sara@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Sara', lastName: 'Lee', age: 20, gender: 'Female', major: 'Art', classYear: '2027', basicInfoComplete: true },
+                preferences: { ageMin: 20, ageMax: 30, interestedInGenders: ['Male', 'Non-binary'], preferencesComplete: true },
+                profile: { bio: 'Painter and plant mom.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+            {
+                email: 'dan@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Dan', lastName: 'Park', age: 24, gender: 'Male', major: 'Finance', classYear: '2024', basicInfoComplete: true },
+                preferences: { ageMin: 21, ageMax: 28, interestedInGenders: ['Male', 'Non-binary'], preferencesComplete: true },
+                profile: { bio: 'Runner. Foodie. Bad at texting.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+            {
+                email: 'eli@test.edu', password: 'Test1234!',
+                basicInfo: { firstName: 'Eli', lastName: 'Morgan', age: 23, gender: 'Non-binary', major: 'Psychology', classYear: '2025', basicInfoComplete: true },
+                preferences: { ageMin: 18, ageMax: 27, interestedInGenders: ['Male', 'Female', 'Non-binary'], preferencesComplete: true },
+                profile: { bio: 'Bookworm. Therapy advocate. Dog person.', photos: [], promptAnswers: [], interestTagIds: [], profileComplete: true }
+            },
+        ];
+
+        const results = [];
+
+        for (const data of dummyUsers) {
+            // Skip if already exists
+            const existing = await User.findOne({ email: data.email, 'verification.emailVerified': true });
+            if (existing) {
+                results.push({ email: data.email, status: 'skipped (already exists)' });
+                continue;
+            }
+
+            // Delete any unverified leftover with same email
+            await User.deleteOne({ email: data.email });
+
+            const user = await User.create({
+                email: data.email,
+                password: data.password,
+                basicInfo: data.basicInfo,
+                preferences: data.preferences,
+                profile: data.profile,
+                verification: {
+                    emailVerified: true,
+                    verifiedAt: new Date(),
+                    code: null,
+                    codeCreatedAt: null,
+                }
+            });
+
+            results.push({ email: data.email, status: 'created', id: user._id });
+        }
+
+        res.status(201).json({ message: 'Seed complete', results });
+    } catch (err) {
+        console.error('Seed error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -140,7 +232,7 @@ router.patch('/preferences', authenticate, async (req: Request, res: Response): 
         return
     }
 
-    const { ageMin, ageMax, interestedInGenders, preferredInterestTagIds, dealbreakerTagIds } = req.body
+    const { ageMin, ageMax, interestedInGenders } = req.body
 
     if (!ageMin || !ageMax || !interestedInGenders) {
         res.status(400).json({ message: 'ageMin, ageMax, and interestedInGenders are required' })
@@ -155,8 +247,6 @@ router.patch('/preferences', authenticate, async (req: Request, res: Response): 
                     'preferences.ageMin': ageMin,
                     'preferences.ageMax': ageMax,
                     'preferences.interestedInGenders': interestedInGenders,
-                    'preferences.preferredInterestTagIds': preferredInterestTagIds,
-                    'preferences.dealbreakerTagIds': dealbreakerTagIds,
                     'preferences.preferencesComplete': true   
                 }
             },
@@ -191,9 +281,9 @@ router.patch('/profile', authenticate, async (req: Request, res: Response): Prom
         return
     }
 
-    const { bio, photos, promptAnswers, interestTagIds } = req.body
+    const { bio, photos, promptAnswers} = req.body
 
-    if (!bio || !photos || !promptAnswers || !interestTagIds) {
+    if (!bio || !photos || !promptAnswers) {
         res.status(400).json({ message: 'All profile fields are required' })
         return
     }
@@ -206,7 +296,6 @@ router.patch('/profile', authenticate, async (req: Request, res: Response): Prom
                     'profile.bio': bio,
                     'profile.photos': photos,
                     'profile.promptAnswers': promptAnswers,
-                    'profile.interestTagIds': interestTagIds,
                     'profile.profileComplete': true   
                 }
             },

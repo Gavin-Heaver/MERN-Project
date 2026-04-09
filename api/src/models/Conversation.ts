@@ -51,7 +51,7 @@ conversationSchema.pre("validate", function()
         this.participantIds = this.participantIds
             .map((id: mongoose.Types.ObjectId) => id.toString())
             .sort()
-            .map((id: string) => new mongoose.Types.ObjectId(id));
+            .map(id => new mongoose.Types.ObjectId(id));
     }
 
 });

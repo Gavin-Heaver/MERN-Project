@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Request, Response, Router } from "express";
 import { authenticate } from "../middleware/auth";
 
@@ -56,7 +57,6 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Cannot interact with yourself' });
         }
 
-        // 1️⃣ Save interaction (or update if exists)
         const interaction = await Interaction.findOneAndUpdate(
             { fromUserId, toUserId },
             { type },
@@ -65,7 +65,6 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 
         let match = null;
 
-        // 2️⃣ Only check for match if it's a LIKE
         if (type === "like") {
             const reverseLike = await Interaction.findOne({
                 fromUserId: toUserId,
@@ -73,7 +72,6 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
                 type: "like"
             });
 
-            // 3️⃣ If both liked each other → create match
             if (reverseLike) {
                 const [userAId, userBId] = [fromUserId, toUserId].sort();
                 try {
@@ -84,14 +82,13 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
                     );
     } catch (err) {
         console.error('Match creation error:', err);
-        // Fallback or specific error handling
     }
             }
         }
 
         res.json({
             interaction,
-            match, // will be null unless mutual like
+            match, 
             isMatch: !!match
         });
 
