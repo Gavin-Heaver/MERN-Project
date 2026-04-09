@@ -281,9 +281,9 @@ router.patch('/profile', authenticate, async (req: Request, res: Response): Prom
         return
     }
 
-    const { bio, photos, promptAnswers} = req.body
+    const { bio, photos, promptAnswers, datingIntentions } = req.body
 
-    if (!bio || !photos || !promptAnswers) {
+    if (!bio || !photos || !promptAnswers || !datingIntentions) {
         res.status(400).json({ message: 'All profile fields are required' })
         return
     }
@@ -296,7 +296,8 @@ router.patch('/profile', authenticate, async (req: Request, res: Response): Prom
                     'profile.bio': bio,
                     'profile.photos': photos,
                     'profile.promptAnswers': promptAnswers,
-                    'profile.profileComplete': true   
+                    'profile.profileComplete': true,
+                    'profile.datingIntentions': datingIntentions  
                 }
             },
             { new: true, runValidators: true }

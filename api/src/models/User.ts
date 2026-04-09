@@ -176,7 +176,13 @@ const userSchema = new mongoose.Schema(
                     ref: "Tag"
                 }],
                 default: []
-            }
+            },
+            datingIntentions:
+            {
+                type: String,
+                maxlength: 500,
+                default: ""
+            },
         },
 
         preferences:
