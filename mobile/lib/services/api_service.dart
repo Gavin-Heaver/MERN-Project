@@ -201,7 +201,8 @@ static Future<void> savePreferences({
       body: jsonEncode({
         'bio': bio,
         'photos': photos,
-        'datingIntentions': datingIntentions, // Sends it to the backend!
+        'datingIntentions': datingIntentions, 
+        'promptAnswers': [],// Sends it to the backend!
       }),
     );
 
