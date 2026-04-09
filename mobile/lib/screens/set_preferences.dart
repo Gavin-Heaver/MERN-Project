@@ -1,7 +1,6 @@
-//imports
 import 'package:flutter/material.dart';
-import 'set_profile.dart'; 
-import '../services/api_service.dart'; 
+import 'set_profile.dart'; // Make sure this path is correct
+import '../services/api_service.dart'; // Make sure this path is correct
 
 class PreferenceScreen extends StatefulWidget {
   const PreferenceScreen({super.key});
@@ -11,34 +10,41 @@ class PreferenceScreen extends StatefulWidget {
 }
 
 class _PreferenceScreenState extends State<PreferenceScreen> {
-  // Variables
+  // Controllers
   final TextEditingController _ageMinCtrl = TextEditingController();
   final TextEditingController _ageMaxCtrl = TextEditingController();
-  final TextEditingController _interestsCtrl = TextEditingController();
-  final TextEditingController _dealBreakersCtrl = TextEditingController();
 
-  String _interestedIn = 'Women'; 
+  // --- NEW: Checklist State Variables ---
+  // This holds exactly what they check off (e.g., ['Male', 'Non-binary'])
+  final List<String> _interestedInGenders = []; 
+  
+  // The master list of options to display
+  final List<String> _availableGenders = ['Male', 'Female', 'Non-binary', 'Other'];
   
   String? _error;
   bool _loading = false;
 
-  //Dispose
   @override
   void dispose() {
     _ageMinCtrl.dispose();
     _ageMaxCtrl.dispose();
-    _interestsCtrl.dispose();
-    _dealBreakersCtrl.dispose();
     super.dispose();
   }
 
-  //API connect
   Future<void> _submit() async {
+    // 1. Check for empty fields
     if (_ageMinCtrl.text.trim().isEmpty || _ageMaxCtrl.text.trim().isEmpty) {
       setState(() { _error = "Please fill in your age preferences."; });
       return; 
     }
 
+    // 2. NEW: Ensure they checked at least one box!
+    if (_interestedInGenders.isEmpty) {
+      setState(() { _error = "Please select at least one gender you are interested in."; });
+      return;
+    }
+
+    // 3. Parse and Validate Ages
     int? ageMin = int.tryParse(_ageMinCtrl.text.trim());
     int? ageMax = int.tryParse(_ageMaxCtrl.text.trim());
 
@@ -52,22 +58,15 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
       return;
     }
 
-    //Interested in genders decisions
-    List<String> interestedInGenders = [];
-    if (_interestedIn == 'Men') interestedInGenders = ['Male'];
-    else if (_interestedIn == 'Women') interestedInGenders = ['Female'];
-    else if (_interestedIn == 'Everyone') interestedInGenders = ['Male', 'Female', 'Non-binary', 'Other'];
-
     setState(() { _error = null; _loading = true; });
 
     try {
+      // 4. Send the API request
       await ApiService.savePreferences(
         ageMin: ageMin,
         ageMax: ageMax,
-        interestedInGenders: interestedInGenders,
-        // Passing empty arrays to prevent MongoDB 
-        preferredInterestTagIds: [], 
-        dealbreakerTagIds: [],
+        // We can pass the array directly now! No translation needed.
+        interestedInGenders: _interestedInGenders,
       );
 
       if (mounted) {
@@ -85,6 +84,8 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const Color crimson = Color.fromARGB(255, 170, 57, 71);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -105,7 +106,6 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
               ),
               const SizedBox(height: 30),
 
-              //min and max age
               Row(
                 children: [
                   Expanded(child: _buildNumberField("Min Age", _ageMinCtrl)),
@@ -115,29 +115,26 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
               ),
               const SizedBox(height: 10),
 
-              //Genders interested in
-              _buildDropdown("Attraction", _interestedIn, ['Men', 'Women', 'Everyone'], (val) {
-                setState(() => _interestedIn = val!);
-              }),
-              const SizedBox(height: 10),
-
-              //Interests and deal breakers
-              _buildTextField("Interests", _interestsCtrl),
-              const SizedBox(height: 10),
-              _buildTextField("Deal Breakers", _dealBreakersCtrl),
+              // --- NEW: The Checklist Widget ---
+              const Text(
+                "Interested In", 
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)
+              ),
+              const SizedBox(height: 8),
+              _buildGenderChecklist(),
               const SizedBox(height: 20),
               
+              // Error Display
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 16), textAlign: TextAlign.center),
                 ),
               
-              //submission button
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 170, 57, 71),
+                  backgroundColor: crimson,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 55),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
@@ -155,7 +152,41 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
     );
   }
 
-  //helper functions
+  // ==========================================
+  // HELPER FUNCTIONS
+  // ==========================================
+  
+  // --- NEW: Custom Checklist Builder ---
+  Widget _buildGenderChecklist() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[400]!),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        children: _availableGenders.map((gender) {
+          return CheckboxListTile(
+            title: Text(gender, style: const TextStyle(fontSize: 16)),
+            value: _interestedInGenders.contains(gender), // Checks the box if it's in our list
+            activeColor: const Color.fromARGB(255, 170, 57, 71), // UKnighted Crimson!
+            controlAffinity: ListTileControlAffinity.leading, // Puts the checkbox on the left
+            dense: true, 
+            onChanged: (bool? selected) {
+              setState(() {
+                if (selected == true) {
+                  _interestedInGenders.add(gender);
+                } else {
+                  _interestedInGenders.remove(gender);
+                }
+              });
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -189,28 +220,6 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
             borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDropdown(String label, String currentValue, List<String> options, ValueChanged<String?> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: DropdownButtonFormField<String>(
-        value: currentValue,
-        isExpanded: true,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
-          ),
-        ),
-        items: options.map((String value) {
-          return DropdownMenuItem<String>(value: value, child: Text(value));
-        }).toList(),
-        onChanged: onChanged,
       ),
     );
   }

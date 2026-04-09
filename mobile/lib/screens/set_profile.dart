@@ -91,16 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildTextField("Bio", _bioCtrl),
               const SizedBox(height: 10),
 
-              // Placeholders as we don't have it all setup and some things might get removed
-              _buildTextField("Work (Placeholder)", _workCtrl),
-              const SizedBox(height: 10),
-
-              _buildDropdown("Religion (Placeholder)", _religionCtrl, ['Christian', 'Catholic', 'Jewish', 'Muslim', 'Atheist', 'Agnostic', 'Spiritual', 'Other'], (val) => setState(() => _religionCtrl = val!)),
-              const SizedBox(height: 10),
-
-              _buildDropdown("Political Alignment (Placeholder)", _politicalCtrl, ['Liberal', 'Moderate', 'Conservative', 'Apolitical', 'Other'], (val) => setState(() => _politicalCtrl = val!)),
-              const SizedBox(height: 10),
-
               _buildDropdown("Dating Intentions (Placeholder)", _datingIntentionCtrl, ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'], (val) => setState(() => _datingIntentionCtrl = val!)),
               const SizedBox(height: 20),
               
