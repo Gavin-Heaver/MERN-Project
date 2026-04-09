@@ -84,6 +84,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // 2. Load Profile (Bio)
         _bioController.text = profileData['bio'] ?? '';
 
+        _bioController.text = profileData['bio'] ?? '';
+        
+        String? fetchedIntentions = profileData['datingIntentions'];
+        if (fetchedIntentions != null && ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'].contains(fetchedIntentions)) {
+          _datingIntentions = fetchedIntentions;
+        }
+
         // 3. Load Preferences
         if (prefData['ageMin'] != null) _ageMinController.text = prefData['ageMin'].toString();
         if (prefData['ageMax'] != null) _ageMaxController.text = prefData['ageMax'].toString();
@@ -128,6 +135,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
+    
+
     setState(() => _isSaving = true);
     
     try {
@@ -150,8 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await ApiService.saveProfile(
         bio: _bioController.text.trim(),
         photos: [], 
-        promptAnswers: [],
-        interestTagIds: [],
+        datingIntentions: _datingIntentions!, // Passes the dropdown value!
       );
       
       if (mounted) {

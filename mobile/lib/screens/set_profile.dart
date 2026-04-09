@@ -15,8 +15,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _bioCtrl = TextEditingController();
   final TextEditingController _workCtrl = TextEditingController();
   
-  String _politicalCtrl = 'Apolitical'; 
-  String _religionCtrl = 'Christian'; 
   String _datingIntentionCtrl = 'Long-term relationship';
    
   String? _error;
@@ -41,10 +39,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await ApiService.saveProfile(
         bio: _bioCtrl.text.trim(),
-        // Passing empty arrays for MongoDB for now, gotta be fixed
-        photos: [], 
-        promptAnswers: [],
-        interestTagIds: [],
+        photos: [], // Still sending an empty array for photos for now!
+        datingIntentions: _datingIntentionCtrl, // Plugs in the dropdown value!
       );
 
       if (mounted) {
@@ -91,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildTextField("Bio", _bioCtrl),
               const SizedBox(height: 10),
 
-              _buildDropdown("Dating Intentions (Placeholder)", _datingIntentionCtrl, ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'], (val) => setState(() => _datingIntentionCtrl = val!)),
+              _buildDropdown("Dating Intentions", _datingIntentionCtrl, ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'], (val) => setState(() => _datingIntentionCtrl = val!)),
               const SizedBox(height: 20),
               
               if (_error != null)
