@@ -12,23 +12,13 @@ export default function ChatsPage() {
     const [error, setError] = useState<null | string>(null)
 
     useEffect(() => {
-        async function fetchConversations() {
-            setError(null)
-            try {
-                const data = await api.messages.getConversations()
-                setChats(data)
-            } catch (err) {
-                if (axios.isAxiosError(err)) {
-                    setError(err.response?.data?.message ?? 'Failed to load chats')
-                } else {
-                    setError('Failed to load chats')
-                }
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchConversations()
+        api.messages.getConversations()
+            .then(setChats)
+            .catch(err => {
+                const errorMsg = 'Failed to load chats'
+                setError(axios.isAxiosError(err) ? (err.response?.data ?? errorMsg) : errorMsg)
+            })
+            .finally(() => setLoading(false))
     }, [])
 
     if (loading) return <p className="p-4">Loading chats...</p>
@@ -44,33 +34,37 @@ export default function ChatsPage() {
                 </p>
             ) : (
                 <div className="flex flex-col divide-y">
-                    {chats.map(chat => (
-                        <div
-                            key={chat._id}
-                            onClick={() => navigate(`/chat/${chat._id}`)}
-                            className="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/5 transition-colors"
-                        >
-                            <div className="w-12 h-12 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold shrink-0">
-                                ?
-                            </div>
+                    {chats.map(chat => {
+                        const name = chat.firstName ? `${chat.firstName}${chat.lastName ? ' ' + chat.lastName : ''}`
+                        : 'Unknown'
 
-                            <div className="flex-1 min-w-0">
-                                <p className="font-medium text-white truncate">
-                                    {chat.firstName ?? 'Unknown'}
-                                    {chat.lastName ?? 'Unknown'}
-                                </p>
-                                <p className={`text-sm truncate ${chat.lastMessagePreview ? "text-gray-400" : "text-pink-400"}`}>
-                                    {chat.lastMessagePreview || 'Start the conversation!'}
-                                </p>
-                            </div>
+                        return (
+                            <div
+                                key={chat._id}
+                                onClick={() => navigate(`/chat/${chat._id}`)}
+                                className="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/5 transition-colors"
+                            >
+                                <div className="w-12 h-12 rounded-full bg-gray-400/30 flex items-center justify-center text-white font-bold shrink-0 text-lg">
+                                    {name[0].toUpperCase()}
+                                </div>
 
-                            {chat.lastMessageAt && (
-                                <p className="text-xs text-gray-500 shrink-0">
-                                    {new Date(chat.lastMessageAt).toLocaleDateString()}
-                                </p>
-                            )}
-                        </div>
-                    ))}
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-white truncate">
+                                        {name}
+                                    </p>
+                                    <p className={`text-sm truncate ${chat.lastMessagePreview ? "text-gray-400" : "text-pink-400"}`}>
+                                        {chat.lastMessagePreview || 'Start the conversation!'}
+                                    </p>
+                                </div>
+
+                                {chat.lastMessageAt && (
+                                    <p className="text-xs text-gray-500 shrink-0">
+                                        {new Date(chat.lastMessageAt).toLocaleDateString()}
+                                    </p>
+                                )}
+                            </div>
+                        )
+                    })}
                 </div>
             )}
         </div>
