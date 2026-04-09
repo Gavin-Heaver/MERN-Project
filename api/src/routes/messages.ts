@@ -26,12 +26,19 @@ async function getConversation(userId: string, otherUserId: string) {
 router.get('/conversations', authenticate, async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = new mongoose.Types.ObjectId(req.user?.id);
+        const debugUser = await mongoose.model('User').findById(userId).lean();
+        console.log('User fields:', JSON.stringify(debugUser, null, 2));
 
         const conversations = await Conversation.find({
             participantIds: userId,
             status: 'active'
         })
             .populate('matchId')
+            .populate({
+                path: 'participantIds',
+                select: 'basicInfo.firstName basicInfo.lastName',
+                model: 'User'
+            })
             .sort({ lastMessageAt: -1 });
 
         res.json({ conversations });
