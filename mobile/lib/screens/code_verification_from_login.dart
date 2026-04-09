@@ -1,29 +1,39 @@
 //imports
 import 'package:flutter/material.dart';
 import 'set_basic_info.dart'; 
-import '../services/api_service.dart';
+import '../services/api_service.dart'; 
 
-class VerificationScreen extends StatefulWidget {
-  final String userEmail; 
-
-  //Need email for verification sync
-  const VerificationScreen({super.key, required this.userEmail});
+class VerificationScreenFromEmail extends StatefulWidget {
+  const VerificationScreenFromEmail({super.key});
 
   @override
-  State<VerificationScreen> createState() => _VerificationScreenState();
+  State<VerificationScreenFromEmail> createState() => _VerificationScreenFromEmailState();
 }
 
-class _VerificationScreenState extends State<VerificationScreen> {
-  //Variables
+class _VerificationScreenFromEmailState extends State<VerificationScreenFromEmail> {
+  //variables
+  final TextEditingController _emailCtrl = TextEditingController();
   final TextEditingController _codeCtrl = TextEditingController();
   String? _error;
   bool _loading = false;
 
-  //API connect
+  //API contact
   Future<void> _verify() async {
-    //Ensure code length
+    //verifying code length
     if (_codeCtrl.text.trim().isEmpty || _codeCtrl.text.trim().length != 6) {
       setState(() { _error = "Please enter the full and correct 6-digit code."; });
+      return;
+    }
+
+    //verifying user put in email
+    if (_emailCtrl.text.trim().isEmpty) {
+      setState(() { _error = "Please fill in all fields."; });
+      return; 
+    }
+
+    //verifying the email is valid
+    if (!_emailCtrl.text.trim().toLowerCase().endsWith('.edu')) {
+      setState(() { _error = "You must use a valid university .edu email."; });
       return;
     }
 
@@ -31,7 +41,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     try {
       await ApiService.verifyCode(
-        email: widget.userEmail, 
+        email: _emailCtrl.text.trim(), 
         code: _codeCtrl.text.trim()
       );
       
@@ -50,7 +60,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
     }
   }
 
-  //Dispose
   @override
   void dispose() {
     _codeCtrl.dispose();
@@ -64,7 +73,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
       backgroundColor: Colors.white,
 
-      //back button
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -76,7 +84,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              // little logo and text
+              //logo, text, and email+code grabber
               children: [
                 const Icon(
                   Icons.mark_email_read_rounded,
@@ -105,8 +113,29 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
+
+                TextField(
+                  controller: _emailCtrl,
+                  textAlign: TextAlign.center, 
+                  style: const TextStyle(
+                    color: Colors.black, 
+                    fontSize: 24, 
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: const BorderSide(color: Colors.black),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
                 
-                //code submission
                 TextField(
                   controller: _codeCtrl,
                   keyboardType: TextInputType.number,
@@ -119,8 +148,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
+                    labelText: "Code",
                     counterText: "", 
-                    hintText: "••••••",
                     hintStyle: const TextStyle(color: Colors.grey, letterSpacing: 15),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -141,9 +170,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   ),
                 const SizedBox(height: 40),
                 
-                //button
+                //Button
                 ElevatedButton(
-                  onPressed: _loading ? null : _verify, 
+                  onPressed: _loading ? null : _verify,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 170, 57, 71),
                     foregroundColor: Colors.white,
@@ -153,7 +182,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     ),
                   ),
                   child: Text(
-                    _loading ? 'Verifying...' : 'Verify & Continue',
+                    _loading ? 'Verifying...' : 'Verify & Continue', 
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),

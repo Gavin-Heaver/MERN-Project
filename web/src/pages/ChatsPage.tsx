@@ -1,18 +1,13 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import { Link, useNavigate } from "react-router-dom"
+import { useAuth } from '../context/AuthContext'
 import { api } from "../api"
-
-interface Conversation 
-{
-    id: string
-    participantName: string
-    lastMessage: string
-    lastMessageTime: string
-}
+import type { Conversation } from "../types"
+import axios from "axios"
 
 export default function ChatsPage() {
     const navigate = useNavigate()
+    const { user } = useAuth()
 
     const [chats, setChats] = useState<Conversation[]>([])
     const [loading, setLoading] = useState(true)
@@ -21,46 +16,67 @@ export default function ChatsPage() {
     useEffect(() => {
         async function fetchConversations() {
             setError(null)
-            // try {
-            //     //PLACEHOLDER API PATH!!!
-            //     const data = await api.messages.getChats()
-            //     setChats(data)
-            // } catch (err) {
-            //     if (axios.isAxiosError(err)) {
-            //         setError(err.response?.data?.message ?? 'Failed to load chats')
-            //     } else {
-            //         setError('Failed to load chats')
-            //     }
-            // } finally {
-            //     setLoading(false)
-            // }
+            try {
+                const data = await api.messages.getConversations()
+                setChats(data)
+            } catch (err) {
+                if (axios.isAxiosError(err)) {
+                    setError(err.response?.data?.message ?? 'Failed to load chats')
+                } else {
+                    setError('Failed to load chats')
+                }
+            } finally {
+                setLoading(false)
+            }
         }
 
         fetchConversations()
     }, [])
 
+    if (loading) return <p className="p-4">Loading chats...</p>
+    if (error) return <p className="p-4 text-red-500">{error}</p>
+
     return (
         <div>
             <h1 className='text-white p-4'>My Chats</h1>
 
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
-            {loading ? (
-                <p>Loading chats...</p>
-            ) : chats.length === 0 ? (
-                <p>No chats yet!</p>
+            {chats.length === 0 ? (
+                <p className="p-4 text-gray-400">
+                    No chats yet - <Link to="/people" className="text-pink-500">match</Link> with someone to start taking!
+                </p>
             ) : (
-                chats.map(chat => (
-                    <div
-                        key={chat.id}
-                        onClick={() => navigate('/chat/${chat.id}')}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <p>{chat.participantName}</p>
-                        <p>{chat.lastMessage}</p>
-                        <p>{chat.lastMessageTime}</p>
-                    </div>
-                ))
+                <div className="flex flex-col divide-y">
+                    {chats.map(chat => {
+                        const otherId = chat.participantIds.find(id => id !== user?.id)
+
+                        return (
+                            <div
+                                key={chat._id}
+                                onClick={() => navigate(`/chat/${chat._id}`)}
+                                className="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/5 transition-colors"
+                            >
+                                <div className="w-12 h-12 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold shrink-0">
+                                    ?
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-white truncate">
+                                        {otherId ?? 'Unknown'}
+                                    </p>
+                                    <p className={"text-sm text-gray-400 truncate" + chat.lastMessagePreview ? "" : "text-pink-400"}>
+                                        {chat.lastMessagePreview || 'Start the conversation!'}
+                                    </p>
+                                </div>
+
+                                {chat.lastMessageAt && (
+                                    <p className="text-xs text-gray-500 shrink-0">
+                                        {new Date(chat.lastMessageAt).toLocaleDateString()}
+                                    </p>
+                                )}
+                            </div>
+                        )
+                    })}
+                </div>
             )}
         </div>
     )

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose, { InferSchemaType } from "mongoose";
 
 const { Schema } = mongoose;
 
@@ -13,7 +13,7 @@ const readBySchema = new Schema(
 {
     userId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
@@ -25,17 +25,17 @@ const readBySchema = new Schema(
 },
 { _id: false });
 
-const messageSchema = new Schema(
+const messageSchema = new mongoose.Schema(
 {
     conversationId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Conversation",
         required: true
     },
     senderId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },

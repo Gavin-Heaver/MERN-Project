@@ -1,12 +1,10 @@
-const mongoose = require("mongoose");
+import mongoose, { InferSchemaType } from "mongoose";
 
-const { Schema } = mongoose;
-
-const conversationSchema = new Schema(
+const conversationSchema = new mongoose.Schema(
 {
     matchId:
     {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Match",
         required: true,
         unique: true
@@ -14,19 +12,15 @@ const conversationSchema = new Schema(
     participantIds:
     {
         type: [{
-            type: Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: "User"
         }],
         validate:
         {
-            validator: function(value)
-            {
-                return (
-                    Array.isArray(value) &&
-                    value.length === 2 &&
-                    value[0].toString() !== value[1].toString()
-                );
-            },
+            validator: (value: mongoose.Types.ObjectId[]) =>
+                Array.isArray(value) &&
+                value.length === 2 &&
+                value[0].toString() !== value[1].toString(),
             message: "A conversation must have exactly 2 participants."
         },
         required: true
@@ -50,12 +44,12 @@ const conversationSchema = new Schema(
 },
 { timestamps: true });
 
-conversationSchema.pre("validate", async function(next)
+conversationSchema.pre("validate", function()
 {
     if (Array.isArray(this.participantIds) && this.participantIds.length === 2)
     {
         this.participantIds = this.participantIds
-            .map(id => id.toString())
+            .map((id: mongoose.Types.ObjectId) => id.toString())
             .sort()
             .map(id => new mongoose.Types.ObjectId(id));
     }

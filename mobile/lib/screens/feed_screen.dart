@@ -1,3 +1,4 @@
+//imports
 import 'package:flutter/material.dart';
 
 class FeedScreen extends StatefulWidget {
@@ -8,7 +9,7 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  // 1. Mock Database of Profiles
+  // Mock Database of Profiles
   final List<Map<String, dynamic>> _profiles = [
     {
       'id': '101',
@@ -16,7 +17,6 @@ class _FeedScreenState extends State<FeedScreen> {
       'age': 21,
       'gender': 'Female',
       'bio': 'CS major. Catch me at the library or getting coffee. ☕️',
-      // We use a color placeholder here, but later this will be a NetworkImage URL
       'color': Colors.blueGrey, 
     },
     {
@@ -37,22 +37,17 @@ class _FeedScreenState extends State<FeedScreen> {
     },
   ];
 
-  // Keeps track of which profile we are currently looking at
   int _currentIndex = 0;
 
-  // 2. The Logic Function for Swiping/Buttons
   void _handleSwipe(bool isLike) {
     if (_currentIndex >= _profiles.length) return;
 
     final currentProfile = _profiles[_currentIndex];
 
+    // TODO: Send API request to Express/MongoDB
     if (isLike) {
-      // TODO: Send API request to Express/MongoDB
-      // Example: api.likeUser(currentUserId, currentProfile['id'])
       print("You LIKED ${currentProfile['name']}. Triggering notification check...");
       
-      // If the backend returns "MATCH!", this is where you would pop up an alert
-      // or automatically add them to the active chats list!
     } else {
       print("You PASSED on ${currentProfile['name']}.");
     }
@@ -65,7 +60,6 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 3. Handle the "Out of Profiles" state
     if (_currentIndex >= _profiles.length) {
       return Scaffold(
         backgroundColor: Colors.white,
@@ -73,6 +67,7 @@ class _FeedScreenState extends State<FeedScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Logo
               Image.asset('assets/Logo_V2.png', height: 100, width: 100),
               SizedBox(height: 20),
               Text(
@@ -89,7 +84,6 @@ class _FeedScreenState extends State<FeedScreen> {
       );
     }
 
-    // Grab the data for the profile currently on top of the deck
     final profile = _profiles[_currentIndex];
 
     return Scaffold(
@@ -97,12 +91,12 @@ class _FeedScreenState extends State<FeedScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // TOP APP BAR AREA
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Logo with name
                   Image.asset('assets/Logo_V2.png', height: 36, width: 36, fit: BoxFit.contain),
                   SizedBox(width: 8),
                   Text(
@@ -113,7 +107,6 @@ class _FeedScreenState extends State<FeedScreen> {
               ),
             ),
 
-            // THE PROFILE CARD
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -122,7 +115,6 @@ class _FeedScreenState extends State<FeedScreen> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // BACKGROUND IMAGE (Using a colored container and icon as a placeholder)
                       Container(
                         color: profile['color'],
                         child: const Icon(Icons.person, size: 150, color: Colors.white30),
@@ -130,22 +122,22 @@ class _FeedScreenState extends State<FeedScreen> {
                         // Image.network(profile['imageUrl'], fit: BoxFit.cover),
                       ),
 
-                      // GRADIENT OVERLAY (Makes the white text readable over any image)
                       const DecoratedBox(
+                        //Shape and color of box
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black87, // Darkens at the bottom
+                              Colors.black87,
                             ],
-                            stops: [0.6, 1.0], // Starts getting dark 60% of the way down
+                            stops: [0.6, 1.0], 
                           ),
                         ),
                       ),
 
-                      // PROFILE TEXT INFO
+                      // Name, age, gender, bio location and characteristics
                       Positioned(
                         bottom: 20,
                         left: 20,
@@ -202,22 +194,21 @@ class _FeedScreenState extends State<FeedScreen> {
               ),
             ),
 
-            // THE ACTION BUTTONS (X and Check)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Dislike / Pass Button
+                  //Dislike
                   FloatingActionButton(
-                    heroTag: 'passBtn', // Needed if using multiple FABs on one screen
+                    heroTag: 'passBtn', 
                     onPressed: () => _handleSwipe(false),
                     backgroundColor: Colors.white,
                     elevation: 5,
                     child: const Icon(Icons.close_rounded, color: Colors.redAccent, size: 35),
                   ),
                   
-                  // Like Button
+                  //Like
                   FloatingActionButton(
                     heroTag: 'likeBtn',
                     onPressed: () => _handleSwipe(true),
@@ -229,7 +220,6 @@ class _FeedScreenState extends State<FeedScreen> {
               ),
             ),
             
-            // Adding a little bottom padding to account for the nav bar
             const SizedBox(height: 10),
           ],
         ),

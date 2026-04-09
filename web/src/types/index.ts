@@ -168,6 +168,14 @@ export interface Match {
     createdAt: string
 }
 
+export interface PotentialMatch {
+    _id: string
+    email: string
+    basicInfo: BasicInfo
+    profile: Profile
+    preferences: Preferences
+}
+
 // Chats & Messages
 export interface Conversation {
     _id: string

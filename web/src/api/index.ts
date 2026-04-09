@@ -9,6 +9,7 @@ import type {
     Match,
     Conversation,
     Message,
+    PotentialMatch,
     ProfileData
 } from '../types';
 
@@ -49,17 +50,32 @@ export const api = {
         }>) =>
             client.put<{ user: FullUser }>('/users/me', data).then(r => r.data.user),
         discover: () =>
-            client.get<{ users: FullUser[] }>('/users/discover').then(r => r.data.users),
+            client.get<{ users: PotentialMatch[] }>('/users/discover').then(r => r.data.users),
         getById: (id: string) =>
             client.get<{ user: FullUser }>(`/users/${id}`).then(r => r.data.user),
+        updateBasicInfo: (data: {
+            firstName: string; lastName: string; age: number
+            gender: string; major: string; classYear: string
+        }) => client.patch<MessageResponse>('/users/basic-info', data).then(r => r.data),
+        updatePreferences: (data: {
+            ageMin: number; ageMax: number
+            interestedInGenders: string[]
+            preferredInterestTagIds?: string[]
+            dealbreakerTagIds?: string[]
+        }) => client.patch<MessageResponse>('/users/preferences', data).then(r => r.data),
+        updateProfile: (data: {
+            bio: string
+            photos: string[]
+            promptAnswers: { question: string; answer: string }[]
+            interestTagIds: string[]
+        }) => client.patch<MessageResponse>('/users/profile', data).then(r => r.data),
     },
     profile: {
         getProfile: () =>
             client.get<ProfileData>('/users/me/profile').then(r => r.data),
-        updateProfile: (data: Partial<ProfileData>) =>
-            client.put<ProfileData>('/users/me/profile', data).then(r => r.data),
-
-        // WIP
+        updateProfile: (data: ProfileData | null) =>
+            client.patch<MessageResponse>('/users/profile', data).then(r => r.data),
+        
         uploadPhoto: (formData: FormData) =>
             client.post<{ url: string }>('/users/me/photos', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }

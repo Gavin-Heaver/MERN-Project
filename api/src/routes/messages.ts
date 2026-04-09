@@ -25,7 +25,7 @@ async function getConversation(userId: string, otherUserId: string) {
 // GET /message/conversations
 router.get('/conversations', authenticate, async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.user?.id;
+        const userId = new mongoose.Types.ObjectId(req.user?.id);
 
         const conversations = await Conversation.find({
             participantIds: userId,

@@ -1,5 +1,7 @@
+//imports
 import 'package:flutter/material.dart';
-import 'set_profile.dart';
+import 'set_profile.dart'; 
+import '../services/api_service.dart'; 
 
 class PreferenceScreen extends StatefulWidget {
   const PreferenceScreen({super.key});
@@ -9,47 +11,69 @@ class PreferenceScreen extends StatefulWidget {
 }
 
 class _PreferenceScreenState extends State<PreferenceScreen> {
-  // 1. ALL Text Fields must be controlled by TextEditingControllers
+  // Variables
+  final TextEditingController _ageMinCtrl = TextEditingController();
+  final TextEditingController _ageMaxCtrl = TextEditingController();
   final TextEditingController _interestsCtrl = TextEditingController();
   final TextEditingController _dealBreakersCtrl = TextEditingController();
 
+  String _interestedIn = 'Women'; 
   
-  // 2. Dropdown menus need a starting String value
-  String _sexualOrientation = 'Straight'; 
-  
-  // Clean up the memory when leaving the screen!
+  String? _error;
+  bool _loading = false;
+
+  //Dispose
   @override
   void dispose() {
+    _ageMinCtrl.dispose();
+    _ageMaxCtrl.dispose();
     _interestsCtrl.dispose();
     _dealBreakersCtrl.dispose();
     super.dispose();
   }
 
-    /*
-  String? _error;
-  bool _loading = false;
-
+  //API connect
   Future<void> _submit() async {
-    if (_emailCtrl.text.trim().isEmpty || _passwordCtrl.text.isEmpty) {
-      setState(() { _error = "Please fill in all fields."; });
-      return; // Stops the function here
+    if (_ageMinCtrl.text.trim().isEmpty || _ageMaxCtrl.text.trim().isEmpty) {
+      setState(() { _error = "Please fill in your age preferences."; });
+      return; 
     }
 
-    // 2. Optional: Enforce a university email requirement
-    if (!_emailCtrl.text.trim().toLowerCase().endsWith('.edu')) {
-      setState(() { _error = "You must use a valid university .edu email."; });
+    int? ageMin = int.tryParse(_ageMinCtrl.text.trim());
+    int? ageMax = int.tryParse(_ageMaxCtrl.text.trim());
+
+    if (ageMin == null || ageMax == null || ageMin < 18 || ageMax > 99) {
+      setState(() { _error = "Ages must be valid numbers between 18 and 99."; });
       return;
     }
 
+    if (ageMin > ageMax) {
+      setState(() { _error = "Minimum age cannot be greater than maximum age."; });
+      return;
+    }
+
+    //Interested in genders decisions
+    List<String> interestedInGenders = [];
+    if (_interestedIn == 'Men') interestedInGenders = ['Male'];
+    else if (_interestedIn == 'Women') interestedInGenders = ['Female'];
+    else if (_interestedIn == 'Everyone') interestedInGenders = ['Male', 'Female', 'Non-binary', 'Other'];
+
     setState(() { _error = null; _loading = true; });
+
     try {
-      await ApiService.register(
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text
+      await ApiService.savePreferences(
+        ageMin: ageMin,
+        ageMax: ageMax,
+        interestedInGenders: interestedInGenders,
+        // Passing empty arrays to prevent MongoDB 
+        preferredInterestTagIds: [], 
+        dealbreakerTagIds: [],
       );
+
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const VerificationScreen())
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ProfileScreen())
         );
       }
     } catch (e) {
@@ -58,13 +82,6 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
       setState(() { _loading = false; });
     }
   }
-  @override
-    void dispose() {
-      _emailCtrl.dispose();
-      _passwordCtrl.dispose();
-      super.dispose();
-    }
-  */
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +89,10 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          // Adds breathing room around the edges of the whole scrolling list
           padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // App Logo 
               Image.asset(
                 'assets/Logo_V2.png',
                 width: 100,
@@ -85,40 +100,52 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
               ),
               const Text(
                 "Who are you looking for?",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
 
-              _buildDropdown("Sexual Orientation", _sexualOrientation, ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Other'], (val) {
-                setState(() => _sexualOrientation = val!);
+              //min and max age
+              Row(
+                children: [
+                  Expanded(child: _buildNumberField("Min Age", _ageMinCtrl)),
+                  const SizedBox(width: 20),
+                  Expanded(child: _buildNumberField("Max Age", _ageMaxCtrl)),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              //Genders interested in
+              _buildDropdown("Attraction", _interestedIn, ['Men', 'Women', 'Everyone'], (val) {
+                setState(() => _interestedIn = val!);
               }),
               const SizedBox(height: 10),
 
+              //Interests and deal breakers
               _buildTextField("Interests", _interestsCtrl),
               const SizedBox(height: 10),
-              
               _buildTextField("Deal Breakers", _dealBreakersCtrl),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               
-              // Continue Button at the very bottom
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 16), textAlign: TextAlign.center),
+                ),
+              
+              //submission button
               ElevatedButton(
-                onPressed: () {
-                  // Go to preferences 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileScreen(), // Make sure your class name matches here
-                    ),
-                  );
-                },
+                onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 170, 57, 71),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 55),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                 ),
-                child: const Text('Next, your Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text(
+                  _loading ? 'Saving...' : 'Next, your Profile', 
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                ),
               ),
               const SizedBox(height: 20), 
             ],
@@ -128,10 +155,7 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
     );
   }
 
-  // ==========================================
-  // HELPER FUNCTIONS
-  // ==========================================
-
+  //helper functions
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -139,9 +163,7 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
@@ -151,27 +173,42 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
     );
   }
 
+  Widget _buildNumberField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextField(
+        keyboardType: TextInputType.number,
+        maxLength: 2, 
+        controller: controller,
+        decoration: InputDecoration(
+          counterText: "",
+          labelText: label,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildDropdown(String label, String currentValue, List<String> options, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<String>(
         value: currentValue,
+        isExpanded: true,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Color.fromARGB(255, 170, 57, 71), width: 2),
           ),
         ),
         items: options.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
+          return DropdownMenuItem<String>(value: value, child: Text(value));
         }).toList(),
         onChanged: onChanged,
       ),
