@@ -190,11 +190,10 @@ static Future<void> savePreferences({
     }
   }
 
-    static Future<void> saveProfile({
+ static Future<void> saveProfile({
     required String bio,
     required List<dynamic> photos,
-    required List<dynamic> promptAnswers,
-    required List<String> interestTagIds,
+    required String datingIntentions,
   }) async {
     final res = await http.patch(
       Uri.parse('$_baseUrl/users/profile'), 
@@ -202,8 +201,7 @@ static Future<void> savePreferences({
       body: jsonEncode({
         'bio': bio,
         'photos': photos,
-        'promptAnswers': promptAnswers,
-        'interestTagIds': interestTagIds,
+        'datingIntentions': datingIntentions, // Sends it to the backend!
       }),
     );
 
