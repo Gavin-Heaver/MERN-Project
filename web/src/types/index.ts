@@ -179,6 +179,8 @@ export interface PotentialMatch {
 // Chats & Messages
 export interface Conversation {
     _id: string
+    firstName: string
+    lastName: string
     matchId: string
     participantIds: string[]
     lastMessageAt: string | null
