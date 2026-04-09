@@ -247,4 +247,21 @@ static Future<void> savePreferences({
       throw 'Failed to update profile.';
     }
   }
+
+  static Future<void> deleteAccount() async {
+    final res = await http.delete(
+      Uri.parse('$_baseUrl/auth/delete-account'),
+      // The backend uses the `authenticate` middleware, so we MUST send the token!
+      headers: await _headers(), 
+    );
+
+    if (res.statusCode != 200) {
+      try {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        throw data['message'] ?? 'Failed to delete account.';
+      } catch (e) {
+        throw 'Server error: ${res.statusCode}. Check backend console.';
+      }
+    }
+  }
 }
