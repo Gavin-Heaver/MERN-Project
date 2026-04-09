@@ -1,5 +1,5 @@
-//imports
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -9,57 +9,77 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  // Mock Database of Profiles
-  final List<Map<String, dynamic>> _profiles = [
-    {
-      'id': '101',
-      'name': 'Taylor',
-      'age': 21,
-      'gender': 'Female',
-      'bio': 'CS major. Catch me at the library or getting coffee. ☕️',
-      'color': Colors.blueGrey, 
-    },
-    {
-      'id': '102',
-      'name': 'Jordan',
-      'age': 22,
-      'gender': 'Male',
-      'bio': 'Always down for a late night coding session or a movie marathon.',
-      'color': Colors.teal,
-    },
-    {
-      'id': '103',
-      'name': 'Casey',
-      'age': 20,
-      'gender': 'Non-binary',
-      'bio': 'Robotics nerd. I built a robot that can fetch me snacks.',
-      'color': Colors.deepPurple,
-    },
-  ];
-
+  List<dynamic> _profiles = [];
   int _currentIndex = 0;
+  bool _isLoading = true;
+  String? _error;
 
-  void _handleSwipe(bool isLike) {
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  Future<void> _fetchUsers() async {
+    try {
+      final users = await ApiService.getDiscoverUsers();
+      setState(() {
+        _profiles = users;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleSwipe(bool isLike) async {
     if (_currentIndex >= _profiles.length) return;
 
     final currentProfile = _profiles[_currentIndex];
+    final targetUserId = currentProfile['_id'];
 
-    // TODO: Send API request to Express/MongoDB
-    if (isLike) {
-      print("You LIKED ${currentProfile['name']}. Triggering notification check...");
-      
-    } else {
-      print("You PASSED on ${currentProfile['name']}.");
-    }
-
-    // Move to the next profile
+    // Move to next card visually immediately
     setState(() {
       _currentIndex++;
     });
+
+    try {
+      // Tell the backend!
+      final result = await ApiService.sendInteraction(
+        toUserId: targetUserId, 
+        type: isLike ? 'like' : 'pass'
+      );
+
+      // Check if the backend reported a match!
+      if (isLike && result['matched'] == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("🎉 It's a Match with ${currentProfile['basicInfo']['firstName']}!"),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print("Swipe Error: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(backgroundColor: Colors.white, body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_error != null) {
+      return Scaffold(backgroundColor: Colors.white, body: Center(child: Text(_error!)));
+    }
+
     if (_currentIndex >= _profiles.length) {
       return Scaffold(
         backgroundColor: Colors.white,
@@ -67,17 +87,10 @@ class _FeedScreenState extends State<FeedScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
               Image.asset('assets/Logo_V2.png', height: 100, width: 100),
-              SizedBox(height: 20),
-              Text(
-                "You're all caught up!",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "Check back later for more UKnighted profiles.",
-                style: TextStyle(color: Colors.grey),
-              ),
+              const SizedBox(height: 20),
+              const Text("You're all caught up!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const Text("Check back later for more UKnighted profiles.", style: TextStyle(color: Colors.grey)),
             ],
           ),
         ),
@@ -85,6 +98,8 @@ class _FeedScreenState extends State<FeedScreen> {
     }
 
     final profile = _profiles[_currentIndex];
+    final basicInfo = profile['basicInfo'] ?? {};
+    final profileData = profile['profile'] ?? {};
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -92,17 +107,13 @@ class _FeedScreenState extends State<FeedScreen> {
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo with name
                   Image.asset('assets/Logo_V2.png', height: 36, width: 36, fit: BoxFit.contain),
-                  SizedBox(width: 8),
-                  Text(
-                    'Uknighted',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
-                  ),
+                  const SizedBox(width: 8),
+                  const Text('Uknighted', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
                 ],
               ),
             ),
@@ -116,32 +127,19 @@ class _FeedScreenState extends State<FeedScreen> {
                     fit: StackFit.expand,
                     children: [
                       Container(
-                        color: profile['color'],
+                        color: Colors.blueGrey, // Placeholder color until photos are linked
                         child: const Icon(Icons.person, size: 150, color: Colors.white30),
-                        // LATER: Replace the Container with this:
-                        // Image.network(profile['imageUrl'], fit: BoxFit.cover),
                       ),
-
                       const DecoratedBox(
-                        //Shape and color of box
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black87,
-                            ],
-                            stops: [0.6, 1.0], 
+                            begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black87], stops: [0.6, 1.0], 
                           ),
                         ),
                       ),
-
-                      // Name, age, gender, bio location and characteristics
                       Positioned(
-                        bottom: 20,
-                        left: 20,
-                        right: 20,
+                        bottom: 20, left: 20, right: 20,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -150,20 +148,13 @@ class _FeedScreenState extends State<FeedScreen> {
                               textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Text(
-                                  profile['name'],
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  basicInfo['firstName'] ?? 'Unknown',
+                                  style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  profile['age'].toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                  ),
+                                  basicInfo['age']?.toString() ?? '',
+                                  style: const TextStyle(color: Colors.white, fontSize: 24),
                                 ),
                               ],
                             ),
@@ -173,17 +164,16 @@ class _FeedScreenState extends State<FeedScreen> {
                                 const Icon(Icons.info_outline, color: Colors.white70, size: 16),
                                 const SizedBox(width: 5),
                                 Text(
-                                  profile['gender'],
+                                  basicInfo['gender'] ?? '',
                                   style: const TextStyle(color: Colors.white70, fontSize: 16),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              profile['bio'],
+                              profileData['bio'] ?? '',
                               style: const TextStyle(color: Colors.white, fontSize: 16),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
+                              maxLines: 3, overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -199,27 +189,21 @@ class _FeedScreenState extends State<FeedScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  //Dislike
                   FloatingActionButton(
                     heroTag: 'passBtn', 
                     onPressed: () => _handleSwipe(false),
-                    backgroundColor: Colors.white,
-                    elevation: 5,
+                    backgroundColor: Colors.white, elevation: 5,
                     child: const Icon(Icons.close_rounded, color: Colors.redAccent, size: 35),
                   ),
-                  
-                  //Like
                   FloatingActionButton(
                     heroTag: 'likeBtn',
                     onPressed: () => _handleSwipe(true),
-                    backgroundColor: Colors.white,
-                    elevation: 5,
+                    backgroundColor: Colors.white, elevation: 5,
                     child: const Icon(Icons.favorite_rounded, color: Colors.green, size: 35),
                   ),
                 ],
               ),
             ),
-            
             const SizedBox(height: 10),
           ],
         ),
