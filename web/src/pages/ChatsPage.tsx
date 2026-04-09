@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { useAuth } from '../context/AuthContext'
 import { api } from "../api"
 import type { Conversation } from "../types"
 import axios from "axios"
 
 export default function ChatsPage() {
     const navigate = useNavigate()
-    const { user } = useAuth()
 
     const [chats, setChats] = useState<Conversation[]>([])
     const [loading, setLoading] = useState(true)
@@ -46,36 +44,33 @@ export default function ChatsPage() {
                 </p>
             ) : (
                 <div className="flex flex-col divide-y">
-                    {chats.map(chat => {
-                        const otherId = chat.participantIds.find(id => id !== user?.id)
-
-                        return (
-                            <div
-                                key={chat._id}
-                                onClick={() => navigate(`/chat/${chat._id}`)}
-                                className="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/5 transition-colors"
-                            >
-                                <div className="w-12 h-12 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold shrink-0">
-                                    ?
-                                </div>
-
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-white truncate">
-                                        {otherId ?? 'Unknown'}
-                                    </p>
-                                    <p className={"text-sm text-gray-400 truncate" + chat.lastMessagePreview ? "" : "text-pink-400"}>
-                                        {chat.lastMessagePreview || 'Start the conversation!'}
-                                    </p>
-                                </div>
-
-                                {chat.lastMessageAt && (
-                                    <p className="text-xs text-gray-500 shrink-0">
-                                        {new Date(chat.lastMessageAt).toLocaleDateString()}
-                                    </p>
-                                )}
+                    {chats.map(chat => (
+                        <div
+                            key={chat._id}
+                            onClick={() => navigate(`/chat/${chat._id}`)}
+                            className="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/5 transition-colors"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold shrink-0">
+                                ?
                             </div>
-                        )
-                    })}
+
+                            <div className="flex-1 min-w-0">
+                                <p className="font-medium text-white truncate">
+                                    {chat.firstName ?? 'Unknown'}
+                                    {chat.lastName ?? 'Unknown'}
+                                </p>
+                                <p className={`text-sm truncate ${chat.lastMessagePreview ? "text-gray-400" : "text-pink-400"}`}>
+                                    {chat.lastMessagePreview || 'Start the conversation!'}
+                                </p>
+                            </div>
+
+                            {chat.lastMessageAt && (
+                                <p className="text-xs text-gray-500 shrink-0">
+                                    {new Date(chat.lastMessageAt).toLocaleDateString()}
+                                </p>
+                            )}
+                        </div>
+                    ))}
                 </div>
             )}
         </div>
