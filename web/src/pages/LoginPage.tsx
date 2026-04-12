@@ -21,7 +21,11 @@ export default function LoginPage() {
         try {
             const { token, user } = await api.auth.login({ email, password })
             login(token, user)
-            navigate('/people')
+            if (!user.basicInfo?.basicInfoComplete) {
+                navigate('/setup')
+            } else {
+                navigate('/people')
+            }
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setError(err.response?.data?.message ?? 'Login failed')

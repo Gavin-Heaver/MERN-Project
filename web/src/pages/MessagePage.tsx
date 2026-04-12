@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext"
 import { api } from "../api"
 import type { Message, Conversation } from "../types"
 import axios from "axios"
+import { ArrowLeft, ArrowUp, Menu } from "lucide-react"
 
 export default function MessagePage() {
     const { user } = useAuth()
@@ -40,14 +41,15 @@ export default function MessagePage() {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
 
-    const matchName = conversation?.firstName
-        ? `${conversation.firstName}${conversation.lastName ? ' ' + conversation.lastName : ''}`
-        : 'Loading...'
+    const otherUserDetails = conversation?.participantIds.find(u => u._id !== user!.id)
+    const otherUser = otherUserDetails?.basicInfo
+    const matchName = otherUser?.firstName
+        ? `${otherUser.firstName}${otherUser.lastName ? ' ' + otherUser.lastName : ''}`
+        : loading ? 'Loading...' : 'Unknown'
+    
+    const toUserId = otherUserDetails?._id
 
-    // Get the other user's ID to send messages to
-    const toUserId = conversation?.participantIds.find(id => id !== user?.id)
-
-    async function handleSend(e: React.FormEvent) {
+    async function handleSend(e: React.SyntheticEvent) {
         e.preventDefault()
         if (!newMessage.trim() || !toUserId || sending) return
         setSending(true)
@@ -82,24 +84,26 @@ export default function MessagePage() {
         <div className="flex flex-col h-[calc(100vh-4rem)]">
 
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate('/messages')} className="text-white/60 hover:text-white transition-colors">
-                        ←
+                    <button
+                        onClick={() => navigate('/messages')}
+                        className="text-white/60 hover:text-white transition-colors"
+                    >
+                        <ArrowLeft />
                     </button>
-                    <div className="w-9 h-9 rounded-full bg-pink-400/30 flex items-center justify-center text-white font-bold">
+                    <div className="w-9 h-9 rounded-full bg-pink-400/30 flex items-center justify-center text-white font-bold shrink-0">
                         {matchName[0]?.toUpperCase() ?? '?'}
                     </div>
                     <p className="text-white font-semibold">{matchName}</p>
                 </div>
 
-                {/* Menu */}
                 <div className="relative">
                     <button
                         onClick={() => setMenuOpen(p => !p)}
                         className="text-white/60 hover:text-white px-2 py-1 text-xl transition-colors"
                     >
-                        ⋮
+                        <Menu />
                     </button>
                     {menuOpen && (
                         <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl z-10 overflow-hidden min-w-32">
@@ -114,7 +118,6 @@ export default function MessagePage() {
                 </div>
             </div>
 
-            {/* Unmatch confirmation */}
             {showConfirm && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -144,7 +147,6 @@ export default function MessagePage() {
                 <p className="text-red-400 text-sm text-center py-2">{error}</p>
             )}
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
                 {loading ? (
                     <p className="text-white/50 text-center mt-8">Loading...</p>
@@ -175,7 +177,6 @@ export default function MessagePage() {
                 <div ref={bottomRef} />
             </div>
 
-            {/* Input */}
             <form
                 onSubmit={handleSend}
                 className="flex items-center gap-2 px-4 py-3 border-t border-white/10"
@@ -192,7 +193,7 @@ export default function MessagePage() {
                     disabled={!newMessage.trim() || sending}
                     className="w-9 h-9 rounded-full bg-pink-500 flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
                 >
-                    ↑
+                    <ArrowUp />
                 </button>
             </form>
 

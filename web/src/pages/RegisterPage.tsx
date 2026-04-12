@@ -16,7 +16,7 @@ export default function RegisterPage() {
         setLoading(true)
         try {
             await api.auth.register({ email, password })
-            navigate('/verify-email', { state: email })
+            navigate('/verify-email', { state: { email } })
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setError(err.response?.data?.message ?? 'Registration failed')

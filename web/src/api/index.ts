@@ -42,12 +42,7 @@ export const api = {
     users: {
         getMe: () =>
             client.get<{ user: FullUser }>('/users/me').then(r => r.data.user),
-        updateMe: (data: Partial<{
-            bio: string
-            age: number
-            major: string
-            year: string
-        }>) =>
+        updateMe: (data: Partial<{ bio: string }>) =>
             client.put<{ user: FullUser }>('/users/me', data).then(r => r.data.user),
         discover: () =>
             client.get<{ users: PotentialMatch[] }>('/users/discover').then(r => r.data.users),
@@ -65,21 +60,26 @@ export const api = {
         }) => client.patch<MessageResponse>('/users/preferences', data).then(r => r.data),
         updateProfile: (data: {
             bio: string
-            photos: string[]
+            photos: { url: string; publicId?: string }[]
             promptAnswers: { question: string; answer: string }[]
             interestTagIds: string[]
+            datingIntentions: string
         }) => client.patch<MessageResponse>('/users/profile', data).then(r => r.data),
     },
     profile: {
         getProfile: () =>
-            client.get<ProfileData>('/users/me/profile').then(r => r.data),
-        updateProfile: (data: ProfileData | null) =>
+            client.get<{ user: FullUser }>('/users/me').then(r => r.data.user),
+        updateProfile: (data: ProfileData) =>
             client.patch<MessageResponse>('/users/profile', data).then(r => r.data),
         
         uploadPhoto: (formData: FormData) =>
-            client.post<{ url: string }>('/users/me/photos', formData, {
+            client.post<{ url: string; publicId: string }>('/users/me/photos', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }).then(r => r.data),
+        deletePhoto: (photoId: string) =>
+            client.delete<MessageResponse>(`/users/me/photos/${photoId}`).then(r => r.data),
+        setPrimaryPhoto: (photoId: string) =>
+            client.patch<MessageResponse>(`/users/me/photos/${photoId}/primary`)
     },
     interactions: {
         interact: (toUserId: string, type: 'like' | 'pass') =>

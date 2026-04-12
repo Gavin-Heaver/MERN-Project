@@ -58,7 +58,7 @@ router.get('/:conversationId', authenticate, async (req: Request, res: Response)
             _id: conversationId,
             participantIds: userId,
             status: 'active'
-        });
+        }).populate('participantIds', 'basicInfo');
 
         if (!conversation) {
             res.status(404).json({ message: 'Conversation not found' });

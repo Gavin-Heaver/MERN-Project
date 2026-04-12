@@ -8,12 +8,17 @@ import ChatsPage from './pages/ChatsPage'
 import AccountPage from './pages/AccountPage'
 import Navbar from './components/Navbar'
 import VerifyEmail from './pages/VerifyEmail'
-import AccountSetup from './pages/AccountSetup'
+import SetupPage from './pages/SetupPage'
 import MessagePage from './pages/MessagePage'
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { token } = useAuth()
   return token ?<>{children}</> : <Navigate to="/login" replace />
+}
+
+function SetupRoute({ children }: { children: ReactNode }) {
+  const { token } = useAuth()
+  return token ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 function AuthenticatedLayout({ children }: { children: ReactNode }) {
@@ -22,7 +27,7 @@ function AuthenticatedLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <Navbar />
-      <main className='pb-16 md:pt-16'>{children}</main>
+      <main className='pb-16 md:pb-0 md:pt-16'>{children}</main>
     </>
   )
 }
@@ -34,7 +39,10 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/account-setup" element={<AccountSetup />} />
+
+        <Route path="/setup" element={
+          <SetupRoute><SetupPage /></SetupRoute>
+        } />
 
         <Route path='/*' element={
           <PrivateRoute>
