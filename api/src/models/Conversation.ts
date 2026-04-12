@@ -1,4 +1,4 @@
-import mongoose, { InferSchemaType } from "mongoose";
+import mongoose from "mongoose";
 
 const conversationSchema = new mongoose.Schema(
 {

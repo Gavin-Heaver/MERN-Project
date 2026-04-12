@@ -1,7 +1,18 @@
 import { Request, Response, Router } from "express";
 import mongoose from "mongoose";
+import multer from "multer";
+import { uploadPhoto, deletePhoto } from "../lib/uploadPhoto";
 import { authenticate } from "../middleware/auth";
 import { User } from "../models/User";
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (_req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) cb(null, true)
+        else cb(new Error('Only image files are allowed'))
+    }
+})
 
 const Interaction = require('../models/Interaction');
 
@@ -319,6 +330,134 @@ router.patch('/profile', authenticate, async (req: Request, res: Response): Prom
             return
         }
         console.error('Update profile error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+})
+
+// GET /users/:id
+router.get('/:id', authenticate, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const user = await User.findById(req.params.id).select('-password')
+        if (!user) {
+            res.status(404).json({ message: 'User not found' })
+            return
+        }
+        res.json({ user })
+    } catch (err) {
+        console.error('Get user by id error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+})
+
+// POST /users/me/photos
+router.post(
+    '/me/photos',
+    authenticate,
+    upload.single('photo'),
+    async(req: Request, res: Response): Promise<void> => {
+        try {
+            if (!req.file) {
+                res.status(400).json({ message: 'No file uploaded' })
+                return
+            }
+
+            const user = await User.findById(req.user?.id)
+            if (!user) { res.status(404).json({ message: 'User not found' }); return }
+
+            if (user.profile?.photos.length ?? 0 >= 6) {
+                res.status(400).json({ message: 'Maximum 6 photos allowed' })
+                return
+            }
+
+            const result = await uploadPhoto(
+                req.file.buffer,
+                `uknighted/users/${req.user?.id}`
+            )
+
+            const isPrimary = user.profile?.photos.length === 0
+
+            await User.findByIdAndUpdate(req.user?.id, {
+                $push: {
+                    'profile.photos': {
+                        url: result.url,
+                        publicId: result.publicId,
+                        isPrimary,
+                        order: user.profile?.photos.length
+                    }
+                }
+            })
+
+            res.status(201).json({ url: result.url, publicId: result.publicId, isPrimary })
+        } catch (err) {
+            console.error('Photo upload error:', err)
+            res.status(500).json({ message: 'Server error' })
+        }
+    }
+)
+
+// DELETE /users/me/photos/:photoId
+router.delete('/me/photos/:photoId', authenticate, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const user = await User.findById(req.user?.id)
+        if (!user) { res.status(404).json({ message: 'User not found' }); return }
+
+        const photo = user.profile?.photos.find(
+            (p: any) => p._id.toString() === req.params.photoId
+        )
+        if (!photo) {
+            res.status(404).json({ message: 'Photo not found' })
+            return
+        }
+
+        await deletePhoto(photo.publicId)
+
+        await User.findByIdAndUpdate(req.user?.id, {
+            $pull: { 'profile.photos': { _id: photo._id } }
+        })
+
+        const remaining = user.profile?.photos.filter(
+            (p: any) => p._id.toString() !== req.params.photoId
+        ) ?? []
+        if (photo.isPrimary && remaining.length > 0) {
+            await User.findByIdAndUpdate(
+                req.user?.id,
+                { $set: { 'profile.photos.0.isPrimary': true } }
+            )
+        }
+        
+        res.json({ message: 'Photo deleted' })
+    } catch (err) {
+        console.error('Photo delete error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+})
+
+// PATCH /users/me/photos/:photoId/primary
+router.patch('me/photos/:photoId/primary', authenticate, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const user = await User.findById(req.user?.id)
+        if (!user) { res.status(404).json({ message: 'User not found' }); return }
+
+        const photo = user.profile?.photos.find(
+            (p: any) => p._id.toString() === req.params.photoId
+        )
+        if (!photo) {
+            res.status(404).json({ message: 'Photo not found' })
+            return
+        }
+
+        await User.findByIdAndUpdate(req.user?.id, {
+            $set: { 'profile.photos.$[].isPrimary': false }
+        })
+        await User.findByIdAndUpdate(
+            req.user?.id,
+            { $set: { 'profile.photos.$[photo].isPrimary': true } },
+            { arrayFilters: [{ 'photo._id': photo._id }] }
+        )
+
+        res.json({ message: 'Primary photo updated' })
+    } catch (err) {
+        console.error('Set primary photo error:', err)
         res.status(500).json({ message: 'Server error' })
     }
 })
