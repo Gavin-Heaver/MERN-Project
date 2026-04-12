@@ -19,10 +19,10 @@ The app displays many core security requirements of modern applications, such as
 <br>
 This project was made with assistance from Generative Artificial Intelligence.
 <ul>
-  <li> Tools: </li>
-  <li> Dates: </li>
-  <li> Scope: </li>
-  <li> Use: </li>
+  <li> Tools: ChatGPT-4, Gemini 3.1, & Claude Sonnet 3.6 </li>
+  <li> Dates: Late March, April 3 - 7 </li>
+  <li> Scope: Learning & gaining familiarity with languages, explanation of various issues, and aiding in debugging </li>
+  <li> Use: Aided in debugging and an explanation of issues for Mongoose, GitHub conflicts, React, and Flutter. Was also used to help connect MongoDB to API </li>
 </ul>
 
 All AI-generated code implemented in the MERN project was reviewed, tested, understood, and altered to meet all requirements. The final product acts as an accurate reflection of our knowledge. 
