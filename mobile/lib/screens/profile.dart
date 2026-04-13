@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart'; // Added for photo uploads
 import '../services/api_service.dart'; 
 import '../main.dart'; 
 
@@ -16,10 +17,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _workController = TextEditingController();
 
-  // --- Profile Controllers (NEW) ---
+  // --- Profile Controllers ---
   final TextEditingController _bioController = TextEditingController();
 
-  // --- Preference Controllers (NEW) ---
+  // --- Preference Controllers ---
   final TextEditingController _ageMinController = TextEditingController();
   final TextEditingController _ageMaxController = TextEditingController();
 
@@ -31,6 +32,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final List<String> _interestedInGenders = []; 
   final List<String> _availableGenders = ['Male', 'Female', 'Non-binary', 'Other'];
+  
+  // NEW: State variable to hold the user's uploaded photos
+  List<dynamic> _photos = [];
 
   bool _isLoading = true; 
   bool _isSaving = false; 
@@ -66,7 +70,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final profileData = userObj['profile'] ?? {};
       final prefData = userObj['preferences'] ?? {};
 
-      // ADD THIS LINE:
       print("UKNIGHTED DEBUG - Profile Data from DB: $profileData");
 
       setState(() {
@@ -84,10 +87,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         String? fetchedClass = basicInfo['classYear'];
         if (fetchedClass != null && ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Grad Student'].contains(fetchedClass)) _classYear = fetchedClass;
 
-        // 2. Load Profile (Bio)
+        // 2. Load Profile (Bio & Photos)
         _bioController.text = profileData['bio'] ?? '';
-
-        _bioController.text = profileData['bio'] ?? '';
+        
+        // Populate the photos array from the backend
+        _photos = profileData['photos'] ?? [];
         
         String? fetchedIntentions = profileData['datingIntentions'];
         if (fetchedIntentions != null && ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'].contains(fetchedIntentions)) {
@@ -98,7 +102,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (prefData['ageMin'] != null) _ageMinController.text = prefData['ageMin'].toString();
         if (prefData['ageMax'] != null) _ageMaxController.text = prefData['ageMax'].toString();
 
-        // Convert the backend array back into the dropdown string
         _interestedInGenders.clear();
         if (prefData['interestedInGenders'] != null) {
           _interestedInGenders.addAll(List<String>.from(prefData['interestedInGenders']));
@@ -112,9 +115,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // NEW: Photo Upload Method
+  Future<void> _uploadNewPhoto() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80, // Compress to stay well under the 5MB backend limit
+    );
+    
+    if (image != null) {
+      setState(() => _isLoading = true);
+      try {
+        await ApiService.uploadPhoto(image.path);
+        // Refresh the profile data to grab the newly saved photo URL and display it
+        await _fetchProfileData(); 
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red)
+          );
+        }
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   // --- Save ALL changes ---
   Future<void> _saveChanges() async {
-    // Basic Info Validation
     int? parsedAge = int.tryParse(_ageController.text.trim());
     if (parsedAge == null || parsedAge < 18 || parsedAge > 99) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a valid age (18+)"), backgroundColor: Colors.red));
@@ -125,14 +152,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    // Preferences Validation
     int? minAge = int.tryParse(_ageMinController.text.trim());
     int? maxAge = int.tryParse(_ageMaxController.text.trim());
     if (minAge == null || maxAge == null || minAge < 18 || maxAge > 99 || minAge > maxAge) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a valid age preference range."), backgroundColor: Colors.red));
       return;
     }
-    // Checklist Validation
+    
     if (_interestedInGenders.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select at least one gender you are interested in."), backgroundColor: Colors.red));
       return;
@@ -141,7 +167,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isSaving = true);
     
     try {
-      // FIRE ALL 3 API CALLS
       await ApiService.saveBasicInfo(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
@@ -159,8 +184,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       await ApiService.saveProfile(
         bio: _bioController.text.trim(),
-        photos: [], 
-        datingIntentions: _datingIntentions!, // Passes the dropdown value!
+        photos: [], // Array tracked by backend photo endpoints now
+        datingIntentions: _datingIntentions!, 
       );
       
       if (mounted) {
@@ -191,36 +216,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: TextStyle(fontSize: 16),
           ),
           actions: [
-            // CANCEL BUTTON
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext), // Just closes the dialog
+              onPressed: () => Navigator.pop(dialogContext), 
               child: const Text("Cancel", textAlign: TextAlign.center, style: TextStyle(color: Colors.black87, fontSize: 16)),
             ),
-            
-            // CONFIRM DELETE BUTTON
             ElevatedButton(
               onPressed: () async {
-                Navigator.pop(dialogContext); // Close the dialog box first
-                setState(() => _isLoading = true); // Turn on the main screen loading spinner
+                Navigator.pop(dialogContext); 
+                setState(() => _isLoading = true); 
 
                 try {
-                  // 1. Tell the backend to destroy the data
                   await ApiService.deleteAccount();
-                  
-                  // 2. Destroy the local token on the phone
                   await ApiService.clearToken();
                   
-                  // 3. Bulldoze back to the Title/Login screen
                   if (mounted) {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      // Change 'TitleScreen()' to whatever your initial login screen is named!
                       MaterialPageRoute(builder: (context) => const TitleScreen()), 
                       (route) => false,
                     );
                   }
                 } catch (e) {
-                  setState(() => _isLoading = false); // Turn off spinner
+                  setState(() => _isLoading = false); 
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
@@ -267,13 +284,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset('assets/Logo_V2.png', height: 36, width: 36, fit: BoxFit.contain),
-                    SizedBox(width: 8),
-                    Text(
+                    const SizedBox(width: 8),
+                    const Text(
                       'Uknighted',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
@@ -296,7 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 10),
 
-              // --- My Photos ---
+              // --- My Photos Grid ---
               const Text("My Photos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               GridView.builder(
@@ -307,11 +324,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 itemCount: 6, 
                 itemBuilder: (context, index) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200], borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.grey[300]!, width: 2),
+                  final bool hasPhoto = index < _photos.length;
+                  final photo = hasPhoto ? _photos[index] : null;
+
+                  // Handle URL formatting safely depending on if the backend uses cloud URLs or local paths
+                  String? displayUrl;
+                  if (hasPhoto && photo['url'] != null) {
+                    displayUrl = photo['url'].toString().startsWith('http') 
+                        ? photo['url'] 
+                        : 'https://uknighted.onrender.com${photo['url']}';
+                  }
+
+                  return GestureDetector(
+                    // Allow tap to upload only if the slot is empty (for now)
+                    onTap: hasPhoto ? null : _uploadNewPhoto,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200], 
+                        borderRadius: BorderRadius.circular(15), 
+                        border: Border.all(color: Colors.grey[300]!, width: 2),
+                        image: hasPhoto && displayUrl != null ? DecorationImage(
+                          image: NetworkImage(displayUrl),
+                          fit: BoxFit.cover,
+                        ) : null,
+                      ),
+                      child: !hasPhoto ? const Icon(Icons.add_a_photo, color: Colors.grey) : null,
                     ),
-                    child: IconButton(icon: const Icon(Icons.add_a_photo, color: Colors.grey), onPressed: () => print("Open Image Picker")),
                   );
                 },
               ),
@@ -388,7 +426,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Log Out & Delete Buttons (Left identical to your previous version)
+              // Log Out & Delete Buttons 
               Center(
                 child: OutlinedButton.icon(
                   onPressed: () async {
