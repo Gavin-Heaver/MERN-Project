@@ -47,7 +47,7 @@ export default function MessagePage() {
     const matchName = otherUser?.firstName
         ? `${otherUser.firstName}${otherUser.lastName ? ' ' + otherUser.lastName : ''}`
         : loading ? 'Loading...' : 'Unknown'
-    const mainPhoto = otherUserDetails?.profile?.photos?.[0]
+    const mainPhoto = otherUserDetails?.profile?.photos?.find(p => p.isPrimary) ?? otherUserDetails?.profile?.photos?.[0]
     const toUserId = otherUserDetails?._id
 
     async function handleSend(e: React.SyntheticEvent) {
