@@ -177,16 +177,23 @@ export interface PotentialMatch {
 }
 
 // Chats & Messages
+export interface ConversationParticipant {
+    _id: string
+    basicInfo: {
+        firstName: string,
+        lastName: string
+    }
+}
+
 export interface Conversation {
     _id: string
-    firstName: string
-    lastName: string
     matchId: string
-    participantIds: string[]
+    participantIds: ConversationParticipant[]
     lastMessageAt: string | null
     lastMessagePreview: string
     status: 'active' | 'hidden' | 'closed'
     createdAt: string
+    updatedAt: string
 }
 
 export interface ReadBy {

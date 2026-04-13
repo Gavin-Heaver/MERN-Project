@@ -90,7 +90,6 @@ export const GENDER_OPTIONS = [
     "Male",
     "Female",
     "Non-Binary",
-    "Other",
     "Unspecified"
 ] as const
 
