@@ -284,7 +284,7 @@ export default function PeoplePage() {
 
                     <p className="text-gray-400 text-sm">{queue.length} {queue.length === 1 ? 'person' : 'people'} left</p>
 
-                    {matched && (
+                    {matchedUser && (
                         <button
                             onClick={() => navigate('/messages')}
                             className="flex items-center gap-2 text-pink-500 font-semibold hover:underline"

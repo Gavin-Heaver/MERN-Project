@@ -273,7 +273,7 @@ export default function AccountPage() {
                     <p className="text-white/40 text-sm italic">No photos yet — add one to appear in the swipe queue</p>
                 ) : (
                     <div className="grid grid-cols-3 gap-2">
-                        {photos.map((photo, i) => (
+                        {photos.map((photo) => (
                             <div
                                 key={photo._id}
                                 onClick={() => setSelectedPhotoId(prev => prev === photo._id ? null : photo._id)}
