@@ -17,6 +17,7 @@ export interface Verification {
 export interface Photo {
     _id: string
     url: string
+    publicId: string
     isPrimary: boolean
     order: number
 }
@@ -32,6 +33,7 @@ export interface Profile {
     photos: Photo[]
     promptAnswers: PromptAnswer[]
     interestTagIds: string[]
+    datingIntentions?: string
 }
 
 export interface Preferences {

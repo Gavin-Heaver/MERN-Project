@@ -24,6 +24,7 @@ export default function AccountPage() {
     })
     const [profileEdit, setProfileEdit] = useState({
         bio: '',
+        datingIntentions: '',
         prompts: [] as { question: string; answer: string }[]
     })
     const [prefsEdit, setPrefsEdit] = useState({
@@ -44,6 +45,7 @@ export default function AccountPage() {
                 })
                 setProfileEdit({
                     bio: data.profile?.bio ?? '',
+                    datingIntentions: data.profile?.datingIntentions ?? '',
                     prompts: data.profile?.promptAnswers?.map(p => ({
                         question: p.question,
                         answer: p.answer
@@ -89,7 +91,8 @@ export default function AccountPage() {
         try {
             await api.users.updateProfile({
                 bio: profileEdit.bio,
-                photos: user?.profile?.photos?.map(p => p.url) ?? [],
+                datingIntentions: profileEdit.datingIntentions,
+                photos: user?.profile?.photos?.map(p => ({ url: p.url, publicId: p.publicId })) ?? [],
                 promptAnswers: profileEdit.prompts,
                 interestTagIds: user?.profile?.interestTagIds ?? []
             })
