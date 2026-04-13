@@ -24,7 +24,7 @@ export default function AccountPage() {
     const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
 
     const [basicEdit, setBasicEdit] = useState({
-        firstName: '', lastName: '', age: 18, gender: '', major: '', classYear: ''
+        firstName: '', lastName: '', age: null as number | null, gender: '', major: '', classYear: ''
     })
     const [profileEdit, setProfileEdit] = useState({
         bio: '',
@@ -32,8 +32,9 @@ export default function AccountPage() {
         prompts: [] as { question: string; answer: string }[]
     })
     const [prefsEdit, setPrefsEdit] = useState({
-        ageMin: 18, ageMax: 99, interestedInGenders: [] as string[]
+        ageMin: null as number | null, ageMax: null as number | null, interestedInGenders: [] as string[]
     })
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
     useEffect(() => {
         api.users.getMe()
@@ -72,12 +73,24 @@ export default function AccountPage() {
     }, [])
 
     async function saveBasicInfo() {
+        if (!basicEdit.age || basicEdit.age < 18 || basicEdit.age > 99) {
+            setFieldErrors(p => ({ ...p, age: 'Age must be between 18 and 99' }))
+            return
+        }
+
         setSaving(true)
         setError(null)
         setSuccess(null)
         try {
-            await api.users.updateBasicInfo(basicEdit)
-            setUser(prev => prev ? { ...prev, basicInfo: { ...prev.basicInfo, ...basicEdit } } : prev)
+            await api.users.updateBasicInfo({ ...basicEdit, age: basicEdit.age })
+            setUser(prev => prev ? {
+                ...prev,
+                basicInfo: {
+                    ...prev.basicInfo,
+                    ...basicEdit,
+                    age: basicEdit.age as number
+                }
+            } : prev)
             setSuccess('Basic info saved')
             setEditing(null)
         } catch (err) {
@@ -137,12 +150,36 @@ export default function AccountPage() {
     }
 
     async function savePreferences() {
+        if (!prefsEdit.ageMin || prefsEdit.ageMin < 18 || prefsEdit.ageMin > 99) {
+            setFieldErrors(p => ({ ...p, ageMin: 'Must be between 18 and 99' }))
+            return
+        }
+        if (!prefsEdit.ageMax || prefsEdit.ageMax > 99 || prefsEdit.ageMax < prefsEdit.ageMin) {
+            setFieldErrors(p => ({
+                ...p,
+                ageMax: prefsEdit.ageMax! < prefsEdit.ageMin! ? 'Max must be greater than min' : 'Must be between 99 or under'
+            }))
+            return
+        }
+
         setSaving(true)
         setError(null)
         setSuccess(null)
         try {
-            await api.users.updatePreferences(prefsEdit)
-            setUser(prev => prev ? { ...prev, preferences: { ...prev.preferences, ...prefsEdit } } : prev)
+            await api.users.updatePreferences({
+                ...prefsEdit,
+                ageMin: prefsEdit.ageMin,
+                ageMax: prefsEdit.ageMax
+            })
+            setUser(prev => prev ? {
+                ...prev,
+                preferences: {
+                    ...prev.preferences,
+                    ...prefsEdit,
+                    ageMin: prefsEdit.ageMin as number,
+                    ageMax: prefsEdit.ageMax as number
+                }
+            } : prev)
             setSuccess('Preferences saved')
             setEditing(null)
         } catch (err) {
@@ -359,7 +396,10 @@ export default function AccountPage() {
                     {editing !== 'basicInfo'
                         ? <button className="text-sm text-indigo-400" onClick={() => setEditing('basicInfo')}>Edit</button>
                         : <div className="flex gap-2">
-                            <button className="text-sm text-gray-400" onClick={() => setEditing(null)}>Cancel</button>
+                            <button className="text-sm text-gray-400" onClick={() => {
+                                setEditing(null)
+                                setFieldErrors({})
+                            }}>Cancel</button>
                             <button className="text-sm text-indigo-400 font-semibold" onClick={saveBasicInfo} disabled={saving}>
                                 {saving ? 'Saving...' : 'Save'}
                             </button>
@@ -373,7 +413,27 @@ export default function AccountPage() {
                             <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50" placeholder="First name" value={basicEdit.firstName} onChange={e => setBasicEdit(p => ({ ...p, firstName: e.target.value }))} />
                             <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50" placeholder="Last name"  value={basicEdit.lastName}  onChange={e => setBasicEdit(p => ({ ...p, lastName: e.target.value }))} />
                         </div>
-                        <input type="number" className="rounded-lg p-2 bg-white/20 text-white" placeholder="Age" min={18} max={99} value={basicEdit.age} onChange={e => setBasicEdit(p => ({ ...p, age: Number(e.target.value) }))} />
+                        <input
+                            type="number"
+                            className="rounded-lg p-2 bg-white/20 text-white"
+                            placeholder="Age"
+                            value={basicEdit.age ?? ''}
+                            onChange={e => setBasicEdit(p => ({
+                                ...p,
+                                age: e.target.value === '' ? null : Number(e.target.value)
+                            }))}
+                            onBlur={() => {
+                                if (!basicEdit.age || basicEdit.age < 18 || basicEdit.age > 99)
+                                    setFieldErrors(p => ({ ...p, age: 'Age must be between 18 and 99' }))
+                                else
+                                    setFieldErrors(p => {
+                                        const n = { ...p }
+                                        delete n.age
+                                        return n
+                                    })
+                            }}
+                        />
+                        {fieldErrors.age && <p className="text-red-400 text-xs mt-1">{fieldErrors.age}</p>}
                         <select className="rounded-lg p-2 bg-white/20 text-white" value={basicEdit.gender} onChange={e => setBasicEdit(p => ({ ...p, gender: e.target.value }))}>
                             <option value="">Select gender</option>
                             {GENDER_OPTIONS.filter(g => g !== 'Unspecified').map(g => <option key={g} value={g}>{g}</option>)}
@@ -404,7 +464,10 @@ export default function AccountPage() {
                     {editing !== 'profile'
                         ? <button className="text-sm text-indigo-400" onClick={() => setEditing('profile')}>Edit</button>
                         : <div className="flex gap-2">
-                            <button className="text-sm text-gray-400" onClick={() => setEditing(null)}>Cancel</button>
+                            <button className="text-sm text-gray-400" onClick={() => {
+                                setEditing(null)
+                                setFieldErrors({})
+                            }}>Cancel</button>
                             <button className="text-sm text-indigo-400 font-semibold" onClick={saveProfile} disabled={saving}>
                                 {saving ? 'Saving...' : 'Save'}
                             </button>
@@ -496,11 +559,47 @@ export default function AccountPage() {
                         <div className="flex gap-3 items-center">
                             <div className="flex gap-2 items-center flex-1">
                                 <label className="text-white/60 text-sm">Min</label>
-                                <input type="number" className="flex-1 rounded-lg p-2 bg-white/20 text-white" min={18} max={99} value={prefsEdit.ageMin} onChange={e => setPrefsEdit(p => ({ ...p, ageMin: Number(e.target.value) }))} />
+                                <input
+                                    type="number"
+                                    className="flex-1 rounded-lg p-2 bg-white/20 text-white"
+                                    value={prefsEdit.ageMin ?? ''}
+                                    onChange={e => setPrefsEdit(p => ({
+                                        ...p,
+                                        ageMin: e.target.value === '' ? null : Number(e.target.value)
+                                    }))}
+                                    onBlur={() => {
+                                        if (!prefsEdit.ageMin || prefsEdit.ageMin < 18 || prefsEdit.ageMin > 99)
+                                            setFieldErrors(p => ({ ...p, ageMin: 'Age must be between 18 and 99' }))
+                                        else
+                                            setFieldErrors(p => {
+                                                const n = { ...p }
+                                                delete n.ageMin
+                                                return n
+                                            })
+                                    }}
+                                />
                             </div>
                             <div className="flex gap-2 items-center flex-1">
                                 <label className="text-white/60 text-sm">Max</label>
-                                <input type="number" className="flex-1 rounded-lg p-2 bg-white/20 text-white" min={18} max={99} value={prefsEdit.ageMax} onChange={e => setPrefsEdit(p => ({ ...p, ageMax: Number(e.target.value) }))} />
+                                <input
+                                    type="number"
+                                    className="flex-1 rounded-lg p-2 bg-white/20 text-white"
+                                    value={prefsEdit.ageMax ?? ''}
+                                    onChange={e => setPrefsEdit(p => ({
+                                        ...p,
+                                        ageMax: e.target.value === '' ? null : Number(e.target.value)
+                                    }))}
+                                    onBlur={() => {
+                                        if (!prefsEdit.ageMax || prefsEdit.ageMax < 18 || prefsEdit.ageMax > 99)
+                                            setFieldErrors(p => ({ ...p, ageMax: 'Age must be between 18 and 99' }))
+                                        else
+                                            setFieldErrors(p => {
+                                                const n = { ...p }
+                                                delete n.ageMax
+                                                return n
+                                            })
+                                    }}
+                                />
                             </div>
                         </div>
                         <div>
