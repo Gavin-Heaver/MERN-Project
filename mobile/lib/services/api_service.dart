@@ -333,4 +333,28 @@ static Future<void> savePreferences({
       throw 'Failed to send message';
     }
   }
+
+  static Future<Map<String, dynamic>> uploadPhoto(String filePath) async {
+    final token = await getToken();
+    final request = http.MultipartRequest(
+      'POST', 
+      Uri.parse('$_baseUrl/users/me/photos') // Matches endpoint in users.ts
+    );
+    
+    // Attach the JWT token for authentication
+    request.headers['Authorization'] = 'Bearer $token';
+    
+    // 'photo' must match upload.single('photo') in the backend
+    request.files.add(await http.MultipartFile.fromPath('photo', filePath));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body); // Returns {url, publicId, isPrimary}
+    } else {
+      final errorData = jsonDecode(response.body);
+      throw errorData['message'] ?? 'Photo upload failed';
+    }
+  }
 }
