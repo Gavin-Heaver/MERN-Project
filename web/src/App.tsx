@@ -10,6 +10,7 @@ import Navbar from './components/Navbar'
 import VerifyEmail from './pages/VerifyEmail'
 import SetupPage from './pages/SetupPage'
 import MessagePage from './pages/MessagePage'
+import ForgotPassword from './pages/ForgotPassword'
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { token } = useAuth()
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/setup" element={
           <SetupRoute><SetupPage /></SetupRoute>

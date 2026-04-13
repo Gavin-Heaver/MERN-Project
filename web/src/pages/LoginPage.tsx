@@ -143,6 +143,15 @@ export default function LoginPage() {
                         Don't have an account? <Link to="/register" style={{ color: RED, fontWeight: 'bold' }}>Sign up</Link>
                     </p>
 
+                    <p>
+                        <Link
+                            to="/forgot-password"
+                            className="text-red-400/70 text-lg"
+                        >
+                            Forgot password
+                        </Link>
+                    </p>
+
                 </div>
             </div>
         </div>
