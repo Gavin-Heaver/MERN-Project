@@ -41,7 +41,9 @@ export default function ChatsPage() {
             ) : (
                 <div className="flex flex-col divide-y divide-white/10">
                     {chats.map(chat => {
-                        const otherUser = chat.participantIds.find(u => u._id !== user?.id)?.basicInfo
+                        const otherUserDetails = chat.participantIds.find(u => u._id !== user?.id)
+                        const otherUser = otherUserDetails?.basicInfo
+                        const mainPhoto = otherUserDetails?.profile?.photos.find(p => p.isPrimary) ?? otherUserDetails?.profile?.photos?.[0]
                         const name = otherUser?.firstName ? `${otherUser.firstName}${otherUser.lastName ? ' ' + otherUser.lastName : ''}`
                         : 'Unknown'
 
@@ -51,8 +53,16 @@ export default function ChatsPage() {
                                 onClick={() => navigate(`/chat/${chat._id}`)}
                                 className="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/5 transition-colors"
                             >
-                                <div className="w-12 h-12 rounded-full bg-pink-400/30 flex items-center justify-center text-white font-bold shrink-0 text-lg">
-                                    {name[0].toUpperCase()}
+                                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0">
+                                    {mainPhoto ? (
+                                        <img
+                                            src={mainPhoto.url} alt={name} className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-pink-400/30 flex items-center justify-center text-white font-bold text-lg">
+                                            {name[0].toUpperCase()}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex-1 min-w-0">

@@ -181,18 +181,24 @@ export interface PotentialMatch {
 export interface ProfileViewData {
     _id: string
     basicInfo: BasicInfo
-    profile: Profile
+    profile: {
+        bio: string
+        photos: Photo[]
+        promptAnswers: PromptAnswer[]
+        datingIntentions?: string
+        interestTagIds?: string[]
+    }
 }
 
 // Chats & Messages
 export interface ConversationParticipant {
     _id: string
-    basicInfo: {
-        firstName: string,
-        lastName: string
-    }
-    profile?: {
+    basicInfo: BasicInfo
+    profile: {
+        bio: string
         photos: Photo[]
+        promptAnswers: PromptAnswer[]
+        datingIntentions?: string
     }
 }
 

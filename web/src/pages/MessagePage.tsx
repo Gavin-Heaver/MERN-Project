@@ -4,7 +4,8 @@ import { useAuth } from "../context/AuthContext"
 import { api } from "../api"
 import type { Message, Conversation } from "../types"
 import axios from "axios"
-import { ArrowLeft, ArrowUp, Menu } from "lucide-react"
+import { ArrowLeft, ArrowUp } from "lucide-react"
+import ProfileView from "../components/ProfileView"
 
 export default function MessagePage() {
     const { user } = useAuth()
@@ -15,10 +16,10 @@ export default function MessagePage() {
     const [messages, setMessages] = useState<Message[]>([])
     const [newMessage, setNewMessage] = useState('')
     const [loading, setLoading] = useState(true)
-    const [sending, setSending]             = useState(false)
-    const [error, setError]                 = useState<string | null>(null)
-    const [menuOpen, setMenuOpen]           = useState(false)
-    const [showConfirm, setShowConfirm]     = useState(false)
+    const [sending, setSending] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [showProfile, setShowProfile] = useState(false)
+    const [showConfirm, setShowConfirm] = useState(false)
 
     const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -46,7 +47,7 @@ export default function MessagePage() {
     const matchName = otherUser?.firstName
         ? `${otherUser.firstName}${otherUser.lastName ? ' ' + otherUser.lastName : ''}`
         : loading ? 'Loading...' : 'Unknown'
-    
+    const mainPhoto = otherUserDetails?.profile?.photos?.[0]
     const toUserId = otherUserDetails?._id
 
     async function handleSend(e: React.SyntheticEvent) {
@@ -83,7 +84,6 @@ export default function MessagePage() {
     return (
         <div className="flex flex-col flex-1 overflow-hidden">
 
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
                 <div className="flex items-center gap-3">
                     <button
@@ -92,13 +92,31 @@ export default function MessagePage() {
                     >
                         <ArrowLeft />
                     </button>
-                    <div className="w-9 h-9 rounded-full bg-pink-400/30 flex items-center justify-center text-white font-bold shrink-0">
-                        {matchName[0]?.toUpperCase() ?? '?'}
-                    </div>
-                    <p className="text-white font-semibold">{matchName}</p>
+                    <button
+                        onClick={() => setShowProfile(true)}
+                        className="w-9 h-9 rounded-full overflow-hidden shrink-0 focus:outline-none"
+                    >
+                        {mainPhoto ? (
+                            <img
+                                src={mainPhoto.url}
+                                alt={matchName}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-pink-400/30 flex items-center justify-center text-white font-bold">
+                                {matchName[0]?.toUpperCase() ?? '?'}
+                            </div>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setShowProfile(true)}
+                        className="text-white font-semibold hover:text-white/80 transition-colors"
+                    >
+                        {matchName}
+                    </button>
                 </div>
 
-                <div className="relative">
+                {/* <div className="relative">
                     <button
                         onClick={() => setMenuOpen(p => !p)}
                         className="text-white/60 hover:text-white px-2 py-1 text-xl transition-colors"
@@ -115,30 +133,56 @@ export default function MessagePage() {
                             </button>
                         </div>
                     )}
-                </div>
+                </div> */}
             </div>
 
-            {showConfirm && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
-                        <h3 className="font-bold text-lg mb-2">Unmatch with {matchName}?</h3>
-                        <p className="text-gray-500 text-sm mb-4">
-                            This will delete your conversation and you won't be able to message each other again.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setShowConfirm(false)}
-                                className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleUnmatch}
-                                className="flex-1 py-2 rounded-xl bg-red-500 text-white text-sm font-medium"
-                            >
-                                Unmatch
-                            </button>
-                        </div>
+            {showProfile && otherUserDetails && (
+                <div
+                    onClick={() => { setShowProfile(false); setShowConfirm(false) }}
+                    className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4"
+                >
+                    <div
+                        onClick={e => e.stopPropagation()}
+                        className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-3xl"
+                    >
+                        <ProfileView person={otherUserDetails} />
+
+                        {!showConfirm ? (
+                            <div className="flex flex-col gap-2 p-3 bg-[#1a1a2e] rounded-b-3xl">
+                                <button
+                                    onClick={() => setShowConfirm(true)}
+                                    className="w-full py-2 rounded-xl bg-red-500/20 text-red-400 text-sm font-medium"
+                                >
+                                    Unmatch
+                                </button>
+                                <button
+                                    onClick={() => setShowProfile(false)}
+                                    className="w-full py-2 text-white/40 text-sm"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-3 p-4 bg-[#1a1a2e] rounded-b-3xl">
+                                <p className="text-white text-sm text-center">
+                                    Unmatch with {matchName}? This can't be undone.
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setShowConfirm(false)}
+                                        className="flex-1 py-2 rounded-xl border border-white/20 text-white/60 text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleUnmatch}
+                                        className="flex-1 py-2 rounded-xl bg-red-500 text-white text-sm font-medium"
+                                    >
+                                        Unmatch
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

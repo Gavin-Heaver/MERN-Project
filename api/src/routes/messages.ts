@@ -33,12 +33,8 @@ router.get('/conversations', authenticate, async (req: Request, res: Response): 
             participantIds: userId,
             status: 'active'
         })
+            .populate('participantIds', 'basicInfo profile.photos profile.bio profile.promptAnswers profile.datingIntentions')
             .populate('matchId')
-            .populate({
-                path: 'participantIds',
-                select: 'basicInfo.firstName basicInfo.lastName',
-                model: 'User'
-            })
             .sort({ lastMessageAt: -1 });
 
         res.json({ conversations });
@@ -58,7 +54,8 @@ router.get('/:conversationId', authenticate, async (req: Request, res: Response)
             _id: conversationId,
             participantIds: userId,
             status: 'active'
-        }).populate('participantIds', 'basicInfo');
+        })
+            .populate('participantIds', 'basicInfo profile.photos profile.bio profile.promptAnswers profile.datingIntentions');
 
         if (!conversation) {
             res.status(404).json({ message: 'Conversation not found' });

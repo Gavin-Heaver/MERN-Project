@@ -7,7 +7,7 @@ interface ProfileViewProps {
 }
 
 export default function ProfileView({ person }: ProfileViewProps) {
-    const photos = person.profile.photos ?? []
+    const photos = person.profile?.photos ?? []
     const hasPhotos = photos.length > 0
     const [photoIndex, setPhotoIndex] = useState(0)
     const [galleryOpen, setGalleryOpen] = useState(false)
