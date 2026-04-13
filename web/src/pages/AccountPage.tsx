@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { api } from "../api"
@@ -11,10 +11,12 @@ type Section = 'basicInfo' | 'profile' | 'preferences' | null
 export default function AccountPage() {
     const { logout } = useAuth()
     const navigate = useNavigate()
+    const photoInput = useRef<HTMLInputElement>(null)
 
     const [user, setUser] = useState<FullUser | null>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const [uploading, setUploading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
     const [editing, setEditing] = useState<Section>(null)
@@ -123,6 +125,58 @@ export default function AccountPage() {
         }
     }
 
+    async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setUploading(true)
+        setError(null)
+        try {
+            const formData = new FormData()
+            formData.append('photo', file)
+            await api.profile.uploadPhoto(formData)
+            const updated = await api.users.getMe()
+            setUser(updated)
+            setSuccess('Photo uploaded')
+        } catch (err) {
+            setError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Upload failed') : 'Upload failed')
+        } finally {
+            setUploading(false)
+            if (photoInput.current) photoInput.current.value = ''
+        }
+    }
+
+    async function handleDeletePhoto(photoId: string) {
+        setError(null)
+        try {
+            await api.profile.deletePhoto(photoId)
+            setUser(prev => prev ? {
+                ...prev,
+                profile: {
+                    ...prev.profile,
+                    photos: prev.profile.photos.filter(p => p._id !== photoId)
+                }
+            } : prev)
+        } catch (err) {
+            setError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Delete failed') : 'Delete failed')
+        }
+    }
+
+    async function handleSetPrimary(photoId: string) {
+        setError(null)
+        try {
+            await api.profile.setPrimaryPhoto(photoId)
+            setUser(prev => prev ? {
+                ...prev,
+                profile: {
+                    ...prev.profile,
+                    photos: prev.profile.photos.map(p => ({ ...p, isPrimary: p._id === photoId }))
+                }
+            } : prev)
+        } catch (err) {
+            setError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Failed') : 'Failed')
+        }
+    }
+
     function handleLogout() {
         logout()
         navigate('/login')
@@ -131,39 +185,99 @@ export default function AccountPage() {
     if (loading) return <p className="p-4">Loading...</p>
     if (!user) return <p className="p-4 text-red-500">{error ?? 'Could not load profile'}</p>
 
+    const photos = user.profile?.photos ?? []
+
     return (
         <div className="max-w-lg mx-auto p-4 flex flex-col gap-4">
-            <div className="flex flex-col justify-between items-center mb-3">
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                {success && <p className="text-green-500 text-sm">{success}</p>}
 
-                <h1 className="text-xl font-bold text-white">Your Profile</h1>
+            <h1 className="text-xl font-bold text-white">Your Profile</h1>
+            {error   && <p className="text-red-400 text-sm">{error}</p>}
+            {success && <p className="text-green-400 text-sm">{success}</p>}
 
-                <div className="bg-white/10 rounded-xl p-4">
+            <div className="bg-white/10 rounded-xl p-4">
+                <div className="flex justify-between items-center mb-3">
+                    <h2 className="font-semibold text-white">Photos</h2>
+                    {photos.length < 6 && (
+                        <button
+                            onClick={() => photoInput.current?.click()}
+                            disabled={uploading}
+                            className="text-sm text-indigo-400 disabled:opacity-40"
+                        >
+                            {uploading ? 'Uploading...' : '+ Add photo'}
+                        </button>
+                    )}
+                    <input
+                        ref={photoInput}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                    />
+                </div>
+
+                {photos.length === 0 ? (
+                    <p className="text-white/40 text-sm italic">No photos yet — add one to appear in the swipe queue</p>
+                ) : (
+                    <div className="grid grid-cols-3 gap-2">
+                        {photos.map(photo => (
+                            <div key={photo._id} className="relative aspect-square rounded-xl overflow-hidden group">
+                                <img
+                                    src={photo.url}
+                                    alt="profile"
+                                    className="w-full h-full object-cover"
+                                />
+                                {photo.isPrimary && (
+                                    <div className="absolute top-1 left-1 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                                        Main
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                    {!photo.isPrimary && (
+                                        <button
+                                            onClick={() => handleSetPrimary(photo._id)}
+                                            className="text-xs text-white bg-pink-500 px-2 py-1 rounded-full"
+                                        >
+                                            Set main
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => handleDeletePhoto(photo._id)}
+                                        className="text-xs text-white bg-red-500 px-2 py-1 rounded-full"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                <p className="text-white/30 text-xs mt-2">{photos.length}/6 photos</p>
+            </div>
+
+            <div className="bg-white/10 rounded-xl p-4">
+                <div className="flex justify-between items-center mb-3">
                     <h2 className="font-semibold text-white">Basic Info</h2>
                     {editing !== 'basicInfo'
                         ? <button className="text-sm text-indigo-400" onClick={() => setEditing('basicInfo')}>Edit</button>
-                        :
-                            <div className="flex gap-2">
-                                <button className="text-sm text-gray-400" onClick={() => setEditing(null)}>Cancel</button>
-                                <button className="text-sm text-indigo-400 font-semibold" onClick={saveBasicInfo} disabled={saving}>
-                                    {saving ? 'Saving...' : 'Save'}
-                                </button>
-                            </div>
+                        : <div className="flex gap-2">
+                            <button className="text-sm text-gray-400" onClick={() => setEditing(null)}>Cancel</button>
+                            <button className="text-sm text-indigo-400 font-semibold" onClick={saveBasicInfo} disabled={saving}>
+                                {saving ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
                     }
-                    
                 </div>
 
                 {editing === 'basicInfo' ? (
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2">
                             <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50" placeholder="First name" value={basicEdit.firstName} onChange={e => setBasicEdit(p => ({ ...p, firstName: e.target.value }))} />
-                            <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50" placeholder="Last name" value={basicEdit.lastName} onChange={e => setBasicEdit(p => ({ ...p, lastName: e.target.value }))} />
+                            <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50" placeholder="Last name"  value={basicEdit.lastName}  onChange={e => setBasicEdit(p => ({ ...p, lastName: e.target.value }))} />
                         </div>
                         <input type="number" className="rounded-lg p-2 bg-white/20 text-white" placeholder="Age" min={18} max={99} value={basicEdit.age} onChange={e => setBasicEdit(p => ({ ...p, age: Number(e.target.value) }))} />
                         <select className="rounded-lg p-2 bg-white/20 text-white" value={basicEdit.gender} onChange={e => setBasicEdit(p => ({ ...p, gender: e.target.value }))}>
                             <option value="">Select gender</option>
-                            {GENDER_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}
+                            {GENDER_OPTIONS.filter(g => g !== 'Unspecified').map(g => <option key={g} value={g}>{g}</option>)}
                         </select>
                         <select className="rounded-lg p-2 bg-white/20 text-white" value={basicEdit.major} onChange={e => setBasicEdit(p => ({ ...p, major: e.target.value }))}>
                             <option value="">Select major</option>
@@ -176,7 +290,7 @@ export default function AccountPage() {
                     </div>
                 ) : (
                     <div className="text-white/80 text-sm flex flex-col gap-1">
-                        <p>{user.basicInfo?.firstName} {user.basicInfo?.lastName}</p>
+                        <p className="font-medium text-white">{user.basicInfo?.firstName} {user.basicInfo?.lastName}</p>
                         <p>Age: {user.basicInfo?.age ?? '—'}</p>
                         <p>Gender: {user.basicInfo?.gender ?? '—'}</p>
                         <p>Major: {user.basicInfo?.major ?? '—'}</p>
@@ -184,6 +298,7 @@ export default function AccountPage() {
                     </div>
                 )}
             </div>
+
             <div className="bg-white/10 rounded-xl p-4">
                 <div className="flex justify-between items-center mb-3">
                     <h2 className="font-semibold text-white">Profile</h2>
@@ -208,6 +323,17 @@ export default function AccountPage() {
                             value={profileEdit.bio}
                             onChange={e => setProfileEdit(p => ({ ...p, bio: e.target.value }))}
                         />
+                        <select
+                            className="rounded-lg p-2 bg-white/20 text-white"
+                            value={profileEdit.datingIntentions}
+                            onChange={e => setProfileEdit(p => ({ ...p, datingIntentions: e.target.value }))}
+                        >
+                            <option value="" disabled>Dating intention</option>
+                            <option>Long-term relationship</option>
+                            <option>Short-term relationship</option>
+                            <option>Figuring it out</option>
+                            <option>Prefer not to say</option>
+                        </select>
                         <div className="flex flex-col gap-2">
                             <p className="text-white/60 text-xs">Prompts (up to 3)</p>
                             {profileEdit.prompts.map((prompt, i) => (
@@ -239,6 +365,9 @@ export default function AccountPage() {
                 ) : (
                     <div className="text-white/80 text-sm flex flex-col gap-2">
                         <p>{user.profile?.bio || <span className="text-white/40 italic">No bio yet</span>}</p>
+                        {(user.profile)?.datingIntentions && (
+                            <p className="text-white/50">Looking for: {(user.profile).datingIntentions}</p>
+                        )}
                         {user.profile?.promptAnswers?.map((p, i) => (
                             <div key={i} className="bg-white/5 rounded-lg p-2">
                                 <p className="text-white/50 text-xs">{p.question}</p>
@@ -265,20 +394,23 @@ export default function AccountPage() {
 
                 {editing === 'preferences' ? (
                     <div className="flex flex-col gap-3">
-                        <div className="flex gap-2 items-center">
-                            <label className="text-white/60 text-sm w-20">Age min</label>
-                            <input type="number" className="flex-1 rounded-lg p-2 bg-white/20 text-white" min={18} max={99} value={prefsEdit.ageMin} onChange={e => setPrefsEdit(p => ({ ...p, ageMin: Number(e.target.value) }))} />
-                        </div>
-                        <div className="flex gap-2 items-center">
-                            <label className="text-white/60 text-sm w-20">Age max</label>
-                            <input type="number" className="flex-1 rounded-lg p-2 bg-white/20 text-white" min={18} max={99} value={prefsEdit.ageMax} onChange={e => setPrefsEdit(p => ({ ...p, ageMax: Number(e.target.value) }))} />
+                        <div className="flex gap-3 items-center">
+                            <div className="flex gap-2 items-center flex-1">
+                                <label className="text-white/60 text-sm">Min</label>
+                                <input type="number" className="flex-1 rounded-lg p-2 bg-white/20 text-white" min={18} max={99} value={prefsEdit.ageMin} onChange={e => setPrefsEdit(p => ({ ...p, ageMin: Number(e.target.value) }))} />
+                            </div>
+                            <div className="flex gap-2 items-center flex-1">
+                                <label className="text-white/60 text-sm">Max</label>
+                                <input type="number" className="flex-1 rounded-lg p-2 bg-white/20 text-white" min={18} max={99} value={prefsEdit.ageMax} onChange={e => setPrefsEdit(p => ({ ...p, ageMax: Number(e.target.value) }))} />
+                            </div>
                         </div>
                         <div>
-                            <p className="text-white/60 text-sm mb-1">Interested in</p>
+                            <p className="text-white/60 text-sm mb-2">Interested in</p>
                             <div className="flex flex-wrap gap-2">
                                 {INTEREST_OPTIONS.map(opt => (
                                     <button
                                         key={opt}
+                                        type="button"
                                         onClick={() => setPrefsEdit(p => ({
                                             ...p,
                                             interestedInGenders: p.interestedInGenders.includes(opt)
