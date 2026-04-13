@@ -5,6 +5,7 @@ import { api } from "../api"
 import type { FullUser } from '../types'
 import { GENDER_OPTIONS, INTEREST_OPTIONS, MAJOR_LIST, CLASS_YEAR_OPTIONS, PROMPT_LIST } from "../constants/profileOptions"
 import axios from "axios"
+import { ArrowLeft, ArrowRight, Check } from "lucide-react"
 
 type Section = 'basicInfo' | 'profile' | 'preferences' | null
 
@@ -20,6 +21,7 @@ export default function AccountPage() {
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
     const [editing, setEditing] = useState<Section>(null)
+    const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
 
     const [basicEdit, setBasicEdit] = useState({
         firstName: '', lastName: '', age: 18, gender: '', major: '', classYear: ''
@@ -91,13 +93,39 @@ export default function AccountPage() {
         setError(null)
         setSuccess(null)
         try {
-            await api.users.updateProfile({
+            const cleanedPrompts = profileEdit.prompts
+                .map(prompt => ({
+                    question: prompt.question.trim(),
+                    answer: prompt.answer.trim()
+                }))
+                .filter(prompt => prompt.question && prompt.answer)
+
+            const updatedProfilePayload = {
                 bio: profileEdit.bio,
                 datingIntentions: profileEdit.datingIntentions,
                 photos: user?.profile?.photos?.map(p => ({ url: p.url, publicId: p.publicId })) ?? [],
-                promptAnswers: profileEdit.prompts,
+                promptAnswers: cleanedPrompts,
                 interestTagIds: user?.profile?.interestTagIds ?? []
-            })
+            }
+
+            await api.users.updateProfile(updatedProfilePayload)
+
+            setUser(prev => prev ? {
+                ...prev,
+                profile: {
+                    ...prev.profile,
+                    bio: updatedProfilePayload.bio,
+                    datingIntentions: updatedProfilePayload.datingIntentions,
+                    promptAnswers: cleanedPrompts,
+                    photos: prev.profile.photos
+                }
+            } : prev)
+
+            setProfileEdit(prev => ({
+                ...prev,
+                prompts: cleanedPrompts
+            }))
+
             setSuccess('Profile saved')
             setEditing(null)
         } catch (err) {
@@ -177,6 +205,32 @@ export default function AccountPage() {
         }
     }
 
+    function handleMovePhoto(photoId: string, direction: 'left' | 'right') {
+        setUser(prev => {
+            if (!prev) return prev
+
+            const photos = [...prev.profile.photos]
+            const index = photos.findIndex(p => p._id === photoId)
+            if (index === -1) return prev
+
+            const targetIndex = direction === 'left' ? index - 1 : index + 1
+
+            if (targetIndex < 0 || targetIndex >= photos.length) return prev
+
+            const [movedPhoto] = photos.splice(index, 1)
+
+            photos.splice(targetIndex, 0, movedPhoto)
+
+            return {
+                ...prev,
+                profile: {
+                    ...prev.profile,
+                    photos
+                }
+            }
+        })
+    }
+
     function handleLogout() {
         logout()
         navigate('/login')
@@ -219,39 +273,84 @@ export default function AccountPage() {
                     <p className="text-white/40 text-sm italic">No photos yet — add one to appear in the swipe queue</p>
                 ) : (
                     <div className="grid grid-cols-3 gap-2">
-                        {photos.map(photo => (
-                            <div key={photo._id} className="relative aspect-square rounded-xl overflow-hidden group">
+                        {photos.map((photo, i) => (
+                            <div
+                                key={photo._id}
+                                onClick={() => setSelectedPhotoId(prev => prev === photo._id ? null : photo._id)}
+                                className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all ${selectedPhotoId === photo._id ? 'ring-2 ring-pink-500 scale-95' : ''}`}
+                            >
                                 <img
                                     src={photo.url}
                                     alt="profile"
                                     className="w-full h-full object-cover"
                                 />
                                 {photo.isPrimary && (
-                                    <div className="absolute top-1 left-1 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                                    <div className="absolute top-1 left-1 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full font-medium">
                                         Main
                                     </div>
                                 )}
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                                    {!photo.isPrimary && (
-                                        <button
-                                            onClick={() => handleSetPrimary(photo._id)}
-                                            className="text-xs text-white bg-pink-500 px-2 py-1 rounded-full"
-                                        >
-                                            Set main
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => handleDeletePhoto(photo._id)}
-                                        className="text-xs text-white bg-red-500 px-2 py-1 rounded-full"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
+                                {selectedPhotoId === photo._id && (
+                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                        <div className="w-5 h-5 rounded-full bg-pink-500 flex items-center justify-center">
+                                            <span className="text-white text-xs"><Check /></span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
                 )}
+
                 <p className="text-white/30 text-xs mt-2">{photos.length}/6 photos</p>
+
+                {selectedPhotoId && (() => {
+                    const idx = photos.findIndex(p => p._id === selectedPhotoId)
+                    const photo = photos[idx]
+                    if (!photo) return null
+
+                    return (
+                        <div className="mt-3 flex flex-col gap-2 border-t border-white/10 pt-3">
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => { handleMovePhoto(photo._id, 'left'); setSelectedPhotoId(null) }}
+                                    disabled={idx === 0}
+                                    className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm disabled:opacity-30 flex items-center justify-center gap-1"
+                                >
+                                    <ArrowLeft /> Move left
+                                </button>
+                                <button
+                                    onClick={() => { handleMovePhoto(photo._id, 'right'); setSelectedPhotoId(null) }}
+                                    disabled={idx === photos.length - 1}
+                                    className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm disabled:opacity-30 flex items-center justify-center gap-1"
+                                >
+                                    Move right <ArrowRight />
+                                </button>
+                            </div>
+                            <div className="flex gap-2">
+                                {!photo.isPrimary && (
+                                    <button
+                                        onClick={() => {handleSetPrimary(photo._id); setSelectedPhotoId(null) }}
+                                        className="text-xs text-white bg-pink-500 px-2 py-1 rounded-full"
+                                    >
+                                        Set main
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => {handleDeletePhoto(photo._id); setSelectedPhotoId(null)} }
+                                    className="text-xs text-white bg-red-500 px-2 py-1 rounded-full"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                            <button
+                                onClick={() => setSelectedPhotoId(null)}
+                                className="text-white/40 text-xs text-center"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    )
+                })()}
             </div>
 
             <div className="bg-white/10 rounded-xl p-4">
