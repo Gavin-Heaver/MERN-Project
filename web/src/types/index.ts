@@ -178,12 +178,27 @@ export interface PotentialMatch {
     preferences: Preferences
 }
 
+export interface ProfileViewData {
+    _id: string
+    basicInfo: BasicInfo
+    profile: {
+        bio: string
+        photos: Photo[]
+        promptAnswers: PromptAnswer[]
+        datingIntentions?: string
+        interestTagIds?: string[]
+    }
+}
+
 // Chats & Messages
 export interface ConversationParticipant {
     _id: string
-    basicInfo: {
-        firstName: string,
-        lastName: string
+    basicInfo: BasicInfo
+    profile: {
+        bio: string
+        photos: Photo[]
+        promptAnswers: PromptAnswer[]
+        datingIntentions?: string
     }
 }
 
