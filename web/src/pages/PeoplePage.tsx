@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import type { PotentialMatch } from "../types"
 import axios from "axios";
@@ -75,26 +75,35 @@ export default function PeoplePage() {
                 </div>
             )}
 
-            <ProfileView person={current} />
+            {!current ? (
+                <div className="text-center flex flex-col items-center gap-3">
+                    <p className="text-black/50">Check back later for more potential matches!</p>
+                    <p>In the meantime, <Link className="text-pink-500 underline" to={'/chats'}>Chat with your matches!</Link></p>
+                </div>
+            ) : (
+                <>
+                    <ProfileView person={current} />
 
-            <div className="flex gap-10">
-                <button
-                    onClick={() => handleInteract('pass')}
-                    disabled={acting}
-                    className="w-16 h-16 rounded-full bg-white shadow-xl flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-50 border border-gray-200"
-                >
-                    <XCircle className="text-gray-500" size={32} />
-                </button>
-                <button
-                    onClick={() => handleInteract('like')}
-                    disabled={acting}
-                    className="w-16 h-16 rounded-full bg-pink-500 shadow-xl flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-50"
-                >
-                    <HeartHandshake className="text-white" size={32} />
-                </button>
-            </div>
+                    <div className="flex gap-10">
+                        <button
+                            onClick={() => handleInteract('pass')}
+                            disabled={acting}
+                            className="w-16 h-16 rounded-full bg-white shadow-xl flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-50 border border-gray-200"
+                        >
+                            <XCircle className="text-gray-500" size={32} />
+                        </button>
+                        <button
+                            onClick={() => handleInteract('like')}
+                            disabled={acting}
+                            className="w-16 h-16 rounded-full bg-pink-500 shadow-xl flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-50"
+                        >
+                            <HeartHandshake className="text-white" size={32} />
+                        </button>
+                    </div>
 
-            <p className="text-gray-400 text-sm">{queue.length} {queue.length === 1 ? 'person' : 'people'} left</p>
+                    <p className="text-gray-400 text-sm">{queue.length} {queue.length === 1 ? 'person' : 'people'} left</p>
+                </>
+            )}
 
             {matchedUser && (
                 <button
