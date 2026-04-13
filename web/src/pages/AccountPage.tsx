@@ -409,10 +409,8 @@ export default function AccountPage() {
 
                 {editing === 'basicInfo' ? (
                     <div className="flex flex-col gap-2">
-                        <div className="flex gap-2">
-                            <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50" placeholder="First name" value={basicEdit.firstName} onChange={e => setBasicEdit(p => ({ ...p, firstName: e.target.value }))} />
-                            <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50" placeholder="Last name"  value={basicEdit.lastName}  onChange={e => setBasicEdit(p => ({ ...p, lastName: e.target.value }))} />
-                        </div>
+                        <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50 " placeholder="First name" value={basicEdit.firstName} onChange={e => setBasicEdit(p => ({ ...p, firstName: e.target.value }))} />
+                        <input className="flex-1 rounded-lg p-2 bg-white/20 text-white placeholder-white/50" placeholder="Last name"  value={basicEdit.lastName}  onChange={e => setBasicEdit(p => ({ ...p, lastName: e.target.value }))} />
                         <input
                             type="number"
                             className="rounded-lg p-2 bg-white/20 text-white"
