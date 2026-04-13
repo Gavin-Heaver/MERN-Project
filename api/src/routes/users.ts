@@ -364,7 +364,7 @@ router.post(
             const user = await User.findById(req.user?.id)
             if (!user) { res.status(404).json({ message: 'User not found' }); return }
 
-            if (user.profile?.photos.length ?? 0 >= 6) {
+            if ((user.profile?.photos.length ?? 0) >= 6) {
                 res.status(400).json({ message: 'Maximum 6 photos allowed' })
                 return
             }
@@ -433,7 +433,7 @@ router.delete('/me/photos/:photoId', authenticate, async (req: Request, res: Res
 })
 
 // PATCH /users/me/photos/:photoId/primary
-router.patch('me/photos/:photoId/primary', authenticate, async (req: Request, res: Response): Promise<void> => {
+router.patch('/me/photos/:photoId/primary', authenticate, async (req: Request, res: Response): Promise<void> => {
     try {
         const user = await User.findById(req.user?.id)
         if (!user) { res.status(404).json({ message: 'User not found' }); return }

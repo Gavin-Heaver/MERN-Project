@@ -9,8 +9,7 @@ import type {
     Match,
     Conversation,
     Message,
-    PotentialMatch,
-    ProfileData
+    PotentialMatch
 } from '../types';
 
 export const api = {
@@ -69,9 +68,6 @@ export const api = {
     profile: {
         getProfile: () =>
             client.get<{ user: FullUser }>('/users/me').then(r => r.data.user),
-        updateProfile: (data: ProfileData) =>
-            client.patch<MessageResponse>('/users/profile', data).then(r => r.data),
-        
         uploadPhoto: (formData: FormData) =>
             client.post<{ url: string; publicId: string }>('/users/me/photos', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -79,7 +75,7 @@ export const api = {
         deletePhoto: (photoId: string) =>
             client.delete<MessageResponse>(`/users/me/photos/${photoId}`).then(r => r.data),
         setPrimaryPhoto: (photoId: string) =>
-            client.patch<MessageResponse>(`/users/me/photos/${photoId}/primary`)
+            client.patch<MessageResponse>(`/users/me/photos/${photoId}/primary`).then(r => r.data)
     },
     interactions: {
         interact: (toUserId: string, type: 'like' | 'pass') =>
