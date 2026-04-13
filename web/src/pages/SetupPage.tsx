@@ -5,7 +5,7 @@ import {
     GENDER_OPTIONS,
     MAJOR_LIST,
     CLASS_YEAR_OPTIONS,
-    INTEREST_OPTIONS,
+    ALL_GENDERS,
     PROMPT_LIST,
     DATING_INTENTION_OPTIONS
 } from '../constants/profileOptions'
@@ -103,12 +103,6 @@ export default function SetupPage() {
         } finally {
             setSaving(false)
         }
-    }
-
-    function toggleGender(opt: string) {
-        setInterestedInGenders(prev =>
-            prev.includes(opt) ? prev.filter(g => g !== opt) : [...prev, opt]
-        )
     }
 
     return (
@@ -209,11 +203,13 @@ export default function SetupPage() {
                         <div>
                             <p className="text-white/60 text-sm mb-2">I'm interested in</p>
                             <div className="flex flex-wrap gap-2">
-                                {INTEREST_OPTIONS.map(opt => (
+                                {ALL_GENDERS.map(opt => (
                                     <button
                                         key={opt}
                                         type="button"
-                                        onClick={() => toggleGender(opt)}
+                                        onClick={() => setInterestedInGenders(prev =>
+                                            prev.includes(opt) ? prev.filter(g => g !== opt) : [...prev, opt]
+                                        )}
                                         className={`px-4 py-2 rounded-full text-sm border transition-colors ${
                                             interestedInGenders.includes(opt)
                                                 ? 'bg-pink-500 border-pink-500 text-white'
@@ -223,6 +219,16 @@ export default function SetupPage() {
                                         {opt}
                                     </button>
                                 ))}
+                                <button
+                                    type="button"
+                                    onClick={() => setInterestedInGenders([...ALL_GENDERS])}
+                                    className={`px-4 py-2 rounded-full text-sm border transition-colors ${ALL_GENDERS.every(g => interestedInGenders.includes(g))
+                                        ? 'bg-pink-500 border-pink-500 text-white'
+                                        : 'border-white/30 text-white/60'
+                                    }`}
+                                >
+                                    All
+                                </button>
                             </div>
                         </div>
 
