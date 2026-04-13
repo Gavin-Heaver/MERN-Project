@@ -89,7 +89,7 @@ router.get('/discover', authenticate, async (req: Request, res: Response): Promi
 
             'basicInfo.gender': { $in: interestedInGenders },
             'basicInfo.age': { $gte: ageMin, $lte: ageMax },
-            'preferences.interestedInGenders': myGender,
+            'preferences.interestedInGenders': { $in: [myGender] },
             'preferences.ageMin': { $lte: myAge },
             'preferences.ageMax': { $gte: myAge },
             'basicInfo.basicInfoComplete': true,
