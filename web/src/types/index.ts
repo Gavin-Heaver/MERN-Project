@@ -23,7 +23,7 @@ export interface Photo {
 }
 
 export interface PromptAnswer {
-    _id: string
+    _id?: string
     question: string
     answer: string
 }
