@@ -11,6 +11,7 @@ class FeedScreen extends StatefulWidget {
 class _FeedScreenState extends State<FeedScreen> {
   List<dynamic> _profiles = [];
   int _currentIndex = 0;
+  int _currentPhotoIndex = 0; 
   bool _isLoading = true;
   String? _error;
 
@@ -41,19 +42,18 @@ class _FeedScreenState extends State<FeedScreen> {
     final currentProfile = _profiles[_currentIndex];
     final targetUserId = currentProfile['_id'];
 
-    // Move to next card visually immediately
+    // Move to next card visually immediately and reset photo index
     setState(() {
       _currentIndex++;
+      _currentPhotoIndex = 0; 
     });
 
     try {
-      // Tell the backend!
       final result = await ApiService.sendInteraction(
         toUserId: targetUserId, 
         type: isLike ? 'like' : 'pass'
       );
 
-      // Check if the backend reported a match!
       if (isLike && result['matched'] == true) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -70,10 +70,19 @@ class _FeedScreenState extends State<FeedScreen> {
     }
   }
 
+  // Safely format the image URL
+  String _getPhotoUrl(String? rawUrl) {
+    if (rawUrl == null || rawUrl.isEmpty) return '';
+    if (rawUrl.startsWith('http')) return rawUrl;
+    return 'https://uknighted.onrender.com$rawUrl';
+  }
+
   @override
   Widget build(BuildContext context) {
+    const Color crimson = Color.fromARGB(255, 170, 57, 71);
+
     if (_isLoading) {
-      return const Scaffold(backgroundColor: Colors.white, body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(backgroundColor: Colors.white, body: Center(child: CircularProgressIndicator(color: crimson)));
     }
 
     if (_error != null) {
@@ -90,7 +99,7 @@ class _FeedScreenState extends State<FeedScreen> {
               Image.asset('assets/Logo_V2.png', height: 100, width: 100),
               const SizedBox(height: 20),
               const Text("You're all caught up!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              const Text("Check back later for more UKnighted profiles.", style: TextStyle(color: Colors.grey)),
+              const Text("Check back later for more profiles.", style: TextStyle(color: Colors.grey)),
             ],
           ),
         ),
@@ -100,6 +109,7 @@ class _FeedScreenState extends State<FeedScreen> {
     final profile = _profiles[_currentIndex];
     final basicInfo = profile['basicInfo'] ?? {};
     final profileData = profile['profile'] ?? {};
+    final List<dynamic> photos = profileData['photos'] ?? [];
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -126,18 +136,34 @@ class _FeedScreenState extends State<FeedScreen> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
+                      // 1. Base Image Layer (Absolute Bottom)
                       Container(
-                        color: Colors.blueGrey, // Placeholder color until photos are linked
-                        child: const Icon(Icons.person, size: 150, color: Colors.white30),
-                      ),
-                      const DecoratedBox(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black87], stops: [0.6, 1.0], 
+                          color: Colors.blueGrey, 
+                          image: photos.isNotEmpty
+                              ? DecorationImage(
+                                  image: NetworkImage(_getPhotoUrl(photos[_currentPhotoIndex]['url'])),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: photos.isEmpty ? const Icon(Icons.person, size: 150, color: Colors.white30) : null,
+                      ),
+
+                      // 2. Bottom Shadow Gradient wrapped in IgnorePointer
+                      // This ensures the gradient is purely visual and never steals taps!
+                      const IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black87], stops: [0.6, 1.0], 
+                            ),
                           ),
                         ),
                       ),
+
+                      // 3. User Info Text Layer
                       Positioned(
                         bottom: 20, left: 20, right: 20,
                         child: Column(
@@ -178,12 +204,88 @@ class _FeedScreenState extends State<FeedScreen> {
                           ],
                         ),
                       ),
+
+                      // 4. Photo Indicators (Bars at the top)
+                      if (photos.length > 1)
+                        Positioned(
+                          top: 10,
+                          left: 10,
+                          right: 10,
+                          child: Row(
+                            children: List.generate(
+                              photos.length,
+                              (index) => Expanded(
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: _currentPhotoIndex == index ? Colors.white : Colors.white.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(2),
+                                    boxShadow: [
+                                      BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 2, offset: const Offset(0, 1))
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      // 5. Left Scroll Button (Absolute Top Layer)
+                      if (_currentPhotoIndex > 0)
+                        Positioned(
+                          left: 10,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.4), // Slightly darker for better contrast
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.chevron_left, color: Colors.white, size: 36),
+                                onPressed: () {
+                                  setState(() {
+                                    _currentPhotoIndex--;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      // 6. Right Scroll Button (Absolute Top Layer)
+                      if (_currentPhotoIndex < photos.length - 1)
+                        Positioned(
+                          right: 10,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.4),
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.chevron_right, color: Colors.white, size: 36),
+                                onPressed: () {
+                                  setState(() {
+                                    _currentPhotoIndex++;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+
                     ],
                   ),
                 ),
               ),
             ),
 
+            // Interaction Buttons (Like / Pass)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: Row(

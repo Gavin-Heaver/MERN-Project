@@ -20,16 +20,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
     _fetchData();
   }
 
-  // Fetches both the user's own ID and their active conversations
   Future<void> _fetchData() async {
     try {
       final profile = await ApiService.getUserProfile();
       _myUserId = profile['user']['_id'];
 
       final convos = await ApiService.getConversations();
-      
-      // DEBUG: Log the raw data to see exactly what the backend is sending
-      print("UKNIGHTED DEBUG - Conversations Data: $convos");
 
       setState(() {
         _conversations = convos;
@@ -80,35 +76,38 @@ class _MessagesScreenState extends State<MessagesScreen> {
               itemBuilder: (context, index) {
                 final chat = _conversations[index];
                 
-                // SAFE EXTRACTION: Handle potential nulls or malformed participant lists
                 final participants = chat['participantIds'] as List<dynamic>? ?? [];
-                
-                // Identify the other user in the match
                 final otherUser = participants.firstWhere(
                   (p) => p is Map && p['_id'] != _myUserId, 
                   orElse: () => null
                 );
                 
-                // Provide fallbacks if the profile data wasn't populated by the backend
                 final String firstName = otherUser?['basicInfo']?['firstName'] ?? "UKnighted";
                 final String lastName = otherUser?['basicInfo']?['lastName'] ?? "User";
                 final String chatName = "$firstName $lastName";
                 final String otherUserId = otherUser?['_id'] ?? '';
+
+                // --- PHOTO EXTRACTION LOGIC ---
+                final List<dynamic> photos = otherUser?['profile']?['photos'] ?? [];
+                final primaryPhoto = photos.firstWhere(
+                  (p) => p['isPrimary'] == true, 
+                  orElse: () => photos.isNotEmpty ? photos[0] : null
+                );
+                final String? photoUrl = primaryPhoto?['url'];
 
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
                   leading: CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.grey[200],
-                    // Fallback to an icon if no profile picture exists
-                    child: const Icon(Icons.person, size: 35, color: Colors.grey),
+                    backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                    child: photoUrl == null ? const Icon(Icons.person, size: 35, color: Colors.grey) : null,
                   ),
                   title: Text(
                     chatName,
                     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                   ),
                   subtitle: Text(
-                    // Use a fallback if lastMessagePreview is null or an empty string
                     (chat['lastMessagePreview'] != null && chat['lastMessagePreview'].toString().isNotEmpty)
                         ? chat['lastMessagePreview']
                         : 'No messages yet. Start the conversation!',
@@ -117,13 +116,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   trailing: chat['lastMessageAt'] != null 
-                    ? Text(
-                        "Active", // You can later add a time-formatting helper here
-                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                      )
+                    ? Text("Active", style: TextStyle(color: Colors.grey[500], fontSize: 12))
                     : null,
                   onTap: () {
-                    if (otherUser != null) {
+                    if (otherUserId.isNotEmpty) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -134,7 +130,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             myUserId: _myUserId,
                           ), 
                         ),
-                      ).then((_) => _fetchData()); // Refresh the list when returning from the chat
+                      ).then((_) => _fetchData());
                     }
                   },
                 );

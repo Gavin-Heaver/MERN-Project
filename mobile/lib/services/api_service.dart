@@ -333,4 +333,37 @@ static Future<void> savePreferences({
       throw 'Failed to send message';
     }
   }
+
+  static Future<Map<String, dynamic>> uploadPhoto(String filePath) async {
+    final token = await getToken();
+    
+    // 1. Double check this URL! It MUST end in /users/me/photos
+    final request = http.MultipartRequest(
+      'POST', 
+      Uri.parse('$_baseUrl/users/me/photos') 
+    );
+    
+    request.headers['Authorization'] = 'Bearer $token';
+    request.files.add(await http.MultipartFile.fromPath('photo', filePath));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    // --- THE SAFETY NET ---
+    // If the server didn't send JSON back, don't try to decode it!
+    if (response.headers['content-type']?.contains('application/json') != true) {
+      print("🚨 BACKEND RETURNED HTML ERROR 🚨");
+      print("Status Code: ${response.statusCode}");
+      // This will print the HTML page to your console so you can read the real error
+      print(response.body); 
+      throw 'Server crashed or endpoint missing. Check debug console.';
+    }
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return jsonDecode(response.body); 
+    } else {
+      final errorData = jsonDecode(response.body);
+      throw errorData['message'] ?? 'Photo upload failed';
+    }
+  }
 }
