@@ -27,7 +27,7 @@ function AuthenticatedLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <Navbar />
-      <main className='pb-16 md:pb-0 md:pt-16'>{children}</main>
+      <main className='flex flex-col flex-1 pb-16 md:pb-0 md:pt-16 overflow-hidden'>{children}</main>
     </>
   )
 }

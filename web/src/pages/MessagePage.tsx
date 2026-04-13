@@ -81,7 +81,7 @@ export default function MessagePage() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)]">
+        <div className="flex flex-col flex-1 overflow-hidden">
 
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
