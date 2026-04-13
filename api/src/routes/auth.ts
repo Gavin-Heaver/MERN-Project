@@ -29,21 +29,35 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
                 return
         }
 
+        const isTestEmail = email.endsWith('.t@ucf.edu')
+
         let verificationCode: number;
 
-        if(email.endsWith('@test.edu')) {
-          verificationCode = 123456;} // test code
-     else {
-        verificationCode = Math.floor(100000 + Math.random() * 900000);
+        if(isTestEmail) {
+            verificationCode = 111111
+        } else if(email.endsWith('@test.edu')) {
+            verificationCode = 123456;} // test code
+        else {
+            verificationCode = Math.floor(100000 + Math.random() * 900000);
         }
         
-        const user = await User.create({ email, password, basicInfo: { basicInfoComplete: false }, verification: { code: String(verificationCode), 
-        codeCreatedAt: Date.now(), emailVerified: false, verifiedAt: null  } }) 
-       
-       
-
-      
+        const user = await User.create({
+            email,
+            password,
+            basicInfo: { basicInfoComplete: false },
+            verification: {
+                code: String(verificationCode),
+                codeCreatedAt: Date.now(),
+                emailVerified: false,
+                verifiedAt: null
+            }
+        }) 
         
+        if (isTestEmail) {
+            res.status(201).json({ message: 'Test account created. Use code 000000 to verify.' })
+            return
+        }
+
         try {
                 const { error } = await resend.emails.send({
                     from: 'noreply@uknighted.xyz',
@@ -66,7 +80,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
                 } else {
                     console.log('✅ Verification email sent');
                 }
-           } catch (emailError) {
+            } catch (emailError) {
                 console.error('Email send failed:', emailError);
                 await User.deleteOne({ _id: user._id });
                 res.status(500).json({ message: "Failed to send verification email" });
