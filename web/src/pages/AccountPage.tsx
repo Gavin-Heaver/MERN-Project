@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { api } from "../api"
 import type { FullUser } from '../types'
-import { GENDER_OPTIONS, INTEREST_OPTIONS, MAJOR_LIST, CLASS_YEAR_OPTIONS, PROMPT_LIST } from "../constants/profileOptions"
+import { GENDER_OPTIONS, ALL_GENDERS, MAJOR_LIST, CLASS_YEAR_OPTIONS, PROMPT_LIST } from "../constants/profileOptions"
 import axios from "axios"
 import { ArrowLeft, ArrowRight, Check } from "lucide-react"
 
@@ -506,7 +506,7 @@ export default function AccountPage() {
                         <div>
                             <p className="text-white/60 text-sm mb-2">Interested in</p>
                             <div className="flex flex-wrap gap-2">
-                                {INTEREST_OPTIONS.map(opt => (
+                                {ALL_GENDERS.map(opt => (
                                     <button
                                         key={opt}
                                         type="button"
@@ -516,11 +516,25 @@ export default function AccountPage() {
                                                 ? p.interestedInGenders.filter(g => g !== opt)
                                                 : [...p.interestedInGenders, opt]
                                         }))}
-                                        className={`px-3 py-1 rounded-full text-sm border transition-colors ${prefsEdit.interestedInGenders.includes(opt) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-white/30 text-white/60'}`}
+                                        className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                                            prefsEdit.interestedInGenders.includes(opt)
+                                                ? 'bg-indigo-500 border-indigo-500 text-white'
+                                                : 'border-white/30 text-white/60'
+                                        }`}
                                     >
                                         {opt}
                                     </button>
                                 ))}
+                                <button
+                                    type="button"
+                                    onClick={() => setPrefsEdit(p => ({ ...p, interestedInGenders: [...ALL_GENDERS] }))}
+                                    className={`px-4 py-2 rounded-full text-sm border transition-colors ${ALL_GENDERS.every(g => prefsEdit.interestedInGenders.includes(g))
+                                        ? 'bg-pink-500 border-pink-500 text-white'
+                                        : 'border-white/30 text-white/60'
+                                    }`}
+                                >
+                                    All
+                                </button>
                             </div>
                         </div>
                     </div>
