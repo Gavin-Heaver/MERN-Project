@@ -105,7 +105,8 @@ export const CLASS_YEAR_OPTIONS = [
 export const ALL_GENDERS = [
     "Male",
     "Female",
-    "Non-binary"
+    "Non-binary",
+    "Other"
 ] as const
 
 export const ETHNICITY_OPTIONS = [
