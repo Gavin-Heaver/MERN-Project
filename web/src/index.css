@@ -86,7 +86,7 @@
   }
 
   .auth-input-code {
-    @apply auth-input text-xl tracking-widest text-center;
+    @apply w-full px-5 py-3 rounded-full border border-ucf text-base outline-none focus:ring-2 focus:ring-ucf/30 text-xl tracking-widest text-center;
   }
 
   .auth-button {
