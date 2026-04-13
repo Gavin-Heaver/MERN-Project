@@ -178,12 +178,21 @@ export interface PotentialMatch {
     preferences: Preferences
 }
 
+export interface ProfileViewData {
+    _id: string
+    basicInfo: BasicInfo
+    profile: Profile
+}
+
 // Chats & Messages
 export interface ConversationParticipant {
     _id: string
     basicInfo: {
         firstName: string,
         lastName: string
+    }
+    profile?: {
+        photos: Photo[]
     }
 }
 
