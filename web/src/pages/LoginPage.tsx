@@ -38,17 +38,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            width: '100%',
-            backgroundColor: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-        }}>
+        <div className="auth-page">
 
             {/* Background triangles */}
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">

@@ -32,6 +32,76 @@
   }
 }
 
+@theme {
+  --color-ucf: #aa3947;
+  --color-ucf-light: #aa394722;
+}
+@layer base {
+  body {
+    margin: 0;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    max-width: 100%;
+    margin: 0 auto;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@layer components {
+  .auth-page {
+    @apply min-h-screen w-full bg-white flex flex-col items-center justify-center relative overflow-hidden;
+  }
+  .auth-bg {
+    @apply absolute inset-0 w-full h-full pointer-events-none;
+  }
+
+  .auth-content {
+    @apply relative z-10 w-full flex flex-col items-center;
+  }
+
+  .auth-logo {
+    @apply w-48 h-48 object-contain mb-2;
+  }
+
+  .auth-title {
+    @apply text-5xl font-bold text-ucf tracking-wide mb-2;
+  }
+
+  .auth-subtitle {
+    @apply text-ucf/70 text-base mb-8 text-center px-8;
+  }
+
+  .auth-form {
+    @apply w-full max-w-sm px-8 flex flex-col gap-4;
+  }
+
+  .auth-input {
+    @apply w-full px-5 py-3 rounded-full border border-ucf text-base outline-none focus:ring-2 focus:ring-ucf/30;
+  }
+
+  .auth-input-code {
+    @apply auth-input text-xl tracking-widest text-center;
+  }
+
+  .auth-button {
+    @apply w-full py-3 rounded-full bg-ucf text-white text-base font-bold hover:opacity-90 active:opacity-80 disabled:opacity-60 disabled:cursor-not-allowed transition-opacity;
+  }
+
+  .auth-link {
+    @apply text-center text-ucf text-sm;
+  }
+
+  .auth-error {
+    @apply text-red-500 text-sm text-center;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
