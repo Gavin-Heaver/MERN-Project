@@ -26,43 +26,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  // Opens the gallery to pick a profile photo
-  Future<void> _pickImage() async {
+  // Inside _ProfileScreenState
+  final List<String?> _localImages = List.filled(6, null); // Holds paths for 6 slots
+  int _uploadCount = 0; // To track progress during submission
+
+  // Opens the gallery to pick a photo for a specific slot
+  Future<void> _pickImage(int index) async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 80, // Reduces file size to stay under 5MB limit
+      imageQuality: 50, // Reduced quality further to ensure 6 photos stay under total limits
     );
     
     if (image != null) {
       setState(() {
-        _localImagePath = image.path;
+        _localImages[index] = image.path;
       });
     }
   }
 
   Future<void> _submit() async {
-    if (_localImagePath == null) {
-      setState(() { _error = "Please upload a photo to continue."; });
+    // Check if at least the first photo (primary) is provided
+    if (_localImages[0] == null) {
+      setState(() { _error = "Please upload at least the first photo."; });
       return; 
     }
     
     if (_bioCtrl.text.trim().isEmpty) {
-      setState(() { _error = "Please write a short bio to continue."; });
+      setState(() { _error = "Please write a short bio."; });
       return; 
     }
 
     setState(() { _error = null; _loading = true; });
 
     try {
-      // 1. Upload the physical photo first to /users/me/photos
-      await ApiService.uploadPhoto(_localImagePath!);
+      // 1. Loop through all non-null image paths and upload them
+      for (String? path in _localImages) {
+        if (path != null) {
+          await ApiService.uploadPhoto(path);
+        }
+      }
 
       // 2. Save the rest of the profile data
-      // Backend sets isPrimary automatically for the first photo
       await ApiService.saveProfile(
         bio: _bioCtrl.text.trim(),
-        photos: [], // Send empty array as backend handles photo tracking
+        photos: [], // Backend array is already populated by the uploads above
         datingIntentions: _datingIntentionCtrl,
       );
 
@@ -74,11 +82,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     } catch (e) {
-      setState(() { _error = e.toString(); });
+      setState(() { _error = "Upload failed: $e"; });
     } finally {
       setState(() { _loading = false; });
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -100,35 +109,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 30),
               
-              // Tappable Photo Upload Area
-              Center(
-                child: GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    height: 200,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.grey[300]!),
-                      image: _localImagePath != null 
-                        ? DecorationImage(
-                            image: FileImage(File(_localImagePath!)), 
-                            fit: BoxFit.cover
-                          ) 
+              // Inside the Column in build()
+              const Text(
+                "Upload your photos (First photo is primary)",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 15),
+
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.8,
+                ),
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  final String? path = _localImages[index];
+                  return GestureDetector(
+                    onTap: () => _pickImage(index),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: index == 0 ? crimson : Colors.grey[300]!, 
+                          width: index == 0 ? 2 : 1
+                        ),
+                        image: path != null 
+                          ? DecorationImage(image: FileImage(File(path)), fit: BoxFit.cover) 
+                          : null,
+                      ),
+                      child: path == null 
+                        ? Icon(Icons.add_a_photo, color: index == 0 ? crimson : Colors.grey) 
                         : null,
                     ),
-                    child: _localImagePath == null 
-                      ? const Icon(Icons.add_a_photo, size: 50, color: Colors.grey) 
-                      : null,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "This will be your primary profile picture",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                  );
+                },
               ),
               const SizedBox(height: 30),
               
