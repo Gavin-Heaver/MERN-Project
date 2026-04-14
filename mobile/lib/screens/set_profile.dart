@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart'; // Required for photo selection
 import 'navigation.dart';
 import '../services/api_service.dart'; 
@@ -14,9 +15,18 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _bioCtrl = TextEditingController();
   
-  String _datingIntentionCtrl = 'Long-term relationship';
+  String _datingIntentionCtrl = 'Long-term Relationship';
   String? _localImagePath; // Stores the picked image path locally
-   
+
+  List<dynamic> _promptAnswers = []; 
+  final List<String> _availablePrompts = [
+    "A green flag I look for is...",
+    "My love language is...",
+    "The way to win me over is...",
+    "I'm looking for someone who...",
+    "A fun fact about me is..."
+  ];
+  
   String? _error;
   bool _loading = false;
 
@@ -72,6 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         bio: _bioCtrl.text.trim(),
         photos: [], // Backend array is already populated by the uploads above
         datingIntentions: _datingIntentionCtrl,
+        promptAnswers: _promptAnswers,
       );
 
       if (mounted) {
@@ -85,6 +96,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() { _error = "Upload failed: $e"; });
     } finally {
       setState(() { _loading = false; });
+    }
+  }
+
+    void _addPrompt() {
+    if (_promptAnswers.length < 3) {
+      setState(() {
+        _promptAnswers.add({"question": _availablePrompts[0], "answer": ""});
+      });
     }
   }
   
@@ -103,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Image.asset('assets/Logo_V2.png', width: 100, height: 100),
               const Text(
-                "Final Touches",
+                "Your Profile",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
                 textAlign: TextAlign.center,
               ),
@@ -158,9 +177,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildDropdown(
                 "Dating Intentions", 
                 _datingIntentionCtrl, 
-                ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'], 
+                ['Long-term Relationship', 'Short-term Relationship', 'New friends', 'Figuring it out', 'Prefer not to say'], 
                 (val) => setState(() => _datingIntentionCtrl = val!)
               ),
+
+              Text(
+                "Prompts",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              
+              ..._promptAnswers.asMap().entries.map((entry) {
+                int idx = entry.key;
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDropdown(
+                            "Select Prompt", 
+                            _promptAnswers[idx]['question'], 
+                            _availablePrompts, 
+                            (val) => setState(() => _promptAnswers[idx]['question'] = val!)
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () => setState(() => _promptAnswers.removeAt(idx)),
+                        ),
+                      ],
+                    ),
+                    TextField(
+                      onChanged: (val) => _promptAnswers[idx]['answer'] = val,
+                      controller: TextEditingController(text: _promptAnswers[idx]['answer'])..selection = TextSelection.collapsed(offset: _promptAnswers[idx]['answer'].length),
+                      decoration: InputDecoration(
+                        hintText: "Your answer...",
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                  ],
+                );
+              }).toList(),
+
+              if (_promptAnswers.length < 3)
+                OutlinedButton.icon(
+                  onPressed: _addPrompt,
+                  icon: const Icon(Icons.add, color: crimson),
+                  label: const Text("Add Prompt", style: TextStyle(color: crimson)),
+                  style: OutlinedButton.styleFrom(side: const BorderSide(color: crimson)),
+                ),
+              const SizedBox(height: 10),
+
+
               const SizedBox(height: 20),
               
               if (_error != null)
