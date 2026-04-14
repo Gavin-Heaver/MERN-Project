@@ -184,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       await ApiService.saveProfile(
         bio: _bioController.text.trim(),
-        photos: [], // Array tracked by backend photo endpoints now
+        photos: _photos, // Array tracked by backend photo endpoints now
         datingIntentions: _datingIntentions!, 
       );
       

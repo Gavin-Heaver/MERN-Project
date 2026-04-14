@@ -190,9 +190,9 @@ static Future<void> savePreferences({
     }
   }
 
- static Future<void> saveProfile({
+  static Future<void> saveProfile({
     required String bio,
-    required List<dynamic> photos,
+    required List<dynamic> photos, // Changed from dynamic to accept existing photos
     required String datingIntentions,
   }) async {
     final res = await http.patch(
@@ -200,9 +200,9 @@ static Future<void> savePreferences({
       headers: await _headers(), 
       body: jsonEncode({
         'bio': bio,
-        'photos': photos,
+        'photos': photos, // Now sending the actual photo list
         'datingIntentions': datingIntentions, 
-        'promptAnswers': [],// Sends it to the backend!
+        'promptAnswers': [],
       }),
     );
 
