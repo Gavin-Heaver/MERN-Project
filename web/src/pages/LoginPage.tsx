@@ -52,16 +52,20 @@ export default function LoginPage() {
             <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
                 {/* Logo */}
-                <img
-                    src="/logo_stars.PNG"
+                {/* <img
+                    src="/logo_stars.webp"
                     alt="UKnighted Logo"
+                    fetchPriority="high"
+                    decoding="async"
+                    width={400}
+                    height={400}
                     style={{
-                        width: '300px',
-                        height: '300px',
+                        width: '200px',
+                        height: '200px',
                         objectFit: 'contain',
                         marginBottom: '0.5rem'
                     }}
-                />
+                /> */}
 
                 {/* App Name */}
                 <h1 style={{
