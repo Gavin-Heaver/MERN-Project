@@ -62,14 +62,14 @@ export default function PeoplePage() {
     }
 
     if (loading) return <p className="text-center mt-10">Loading...</p>
-    if (error) return <p className="text-center mt-10 text-red-500">{error}</p>
+    if (error) return <p className="text-center mt-10 text-error">{error}</p>
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-4 bg-gray-50">
+        <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-4 bg-background">
             {matchedUser && (
                 <div
                     onClick={() => navigate(`/chat/${matchedUser._id}`)}
-                    className="fixed top-6 left-1/2 -translate-x-1/2 bg-pink-500 text-white px-6 py-3 rounded-full shadow-xl z-50 text-lg font-bold animate-bounce"
+                    className="fixed top-6 left-1/2 -translate-x-1/2 bg-brand-450 text-foreground px-6 py-3 rounded-full shadow-xl z-50 text-lg font-bold animate-bounce"
                 >
                     It's a Match with {matchedUser.basicInfo.firstName}!
                 </div>
@@ -77,8 +77,8 @@ export default function PeoplePage() {
 
             {!current ? (
                 <div className="text-center flex flex-col items-center gap-3">
-                    <p className="text-black/50">Check back later for more potential matches!</p>
-                    <p>In the meantime, <Link className="text-pink-500 underline" to={'/messages'}>Chat with your matches!</Link></p>
+                    <p className="text-foreground">Check back later for more potential matches!</p>
+                    <p>In the meantime, <Link className="text-brand-450 underline" to={'/messages'}>Chat with your matches!</Link></p>
                 </div>
             ) : (
                 <>
@@ -88,7 +88,7 @@ export default function PeoplePage() {
                         <button
                             onClick={() => handleInteract('pass')}
                             disabled={acting}
-                            className="w-16 h-16 rounded-full bg-white shadow-xl flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-50 border border-gray-200"
+                            className="w-16 h-16 rounded-full bg-background shadow-xl flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-50 border border-gray-200"
                         >
                             <XCircle className="text-gray-500" size={32} />
                         </button>

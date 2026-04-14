@@ -41,7 +41,7 @@ export default function ChatsPage() {
             ) : (
                 <div className="flex flex-col divide-y divide-white/10">
                     {chats.map(chat => {
-                        const otherUserDetails = chat.participantIds.find(u => u._id !== user?.id)
+                        const otherUserDetails = chat.participantIds.find(u => u._id !== user?._id)
                         const otherUser = otherUserDetails?.basicInfo
                         const mainPhoto = otherUserDetails?.profile?.photos.find(p => p.isPrimary) ?? otherUserDetails?.profile?.photos?.[0]
                         const name = otherUser?.firstName ? `${otherUser.firstName}${otherUser.lastName ? ' ' + otherUser.lastName : ''}`

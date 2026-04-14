@@ -182,7 +182,17 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
         res.json({
             token,
-            user: { id: user._id, email: user.email, basicInfo: { basicInfoComplete: user.basicInfo?.basicInfoComplete ?? false } }
+            user: {
+                _id: user._id,
+                email: user.email,
+                accountStatus: user.accountStatus,
+                basicInfo: user.basicInfo,
+                profile: user.profile,
+                preferences: user.preferences,
+                settings: user.settings,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
         })
     } catch (err) {
         console.error('Login error:', err)

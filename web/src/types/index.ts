@@ -29,6 +29,7 @@ export interface PromptAnswer {
 }
 
 export interface Profile {
+    profileComplete: boolean
     bio: string
     photos: Photo[]
     promptAnswers: PromptAnswer[]
@@ -37,6 +38,7 @@ export interface Profile {
 }
 
 export interface Preferences {
+    preferencesComplete: boolean
     ageMin: number
     ageMax: number
     interestedInGenders: string[]
@@ -65,7 +67,6 @@ export interface FullUser {
     email: string
     accountStatus: string
     basicInfo: BasicInfo
-    verification: Verification
     profile: Profile
     preferences: Preferences
     settings: Settings
@@ -107,7 +108,7 @@ export interface ProfileData {
 // Auth
 export interface AuthResponse {
     token: string
-    user: User
+    user: FullUser
 }
 
 export interface RegisterResponse {

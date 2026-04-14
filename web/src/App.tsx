@@ -1,66 +1,52 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from './context/AuthContext'
-import type { ReactNode } from 'react'
+import { AuthProvider } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import PeoplePage from './pages/PeoplePage'
 import ChatsPage from './pages/ChatsPage'
 import AccountPage from './pages/AccountPage'
-import Navbar from './components/Navbar'
 import VerifyEmail from './pages/VerifyEmail'
 import SetupPage from './pages/SetupPage'
 import MessagePage from './pages/MessagePage'
 import ForgotPassword from './pages/ForgotPassword'
-
-function PrivateRoute({ children }: { children: ReactNode }) {
-  const { token } = useAuth()
-  return token ?<>{children}</> : <Navigate to="/login" replace />
-}
-
-function SetupRoute({ children }: { children: ReactNode }) {
-  const { token } = useAuth()
-  return token ? <>{children}</> : <Navigate to="/login" replace />
-}
-
-function AuthenticatedLayout({ children }: { children: ReactNode }) {
-  const { token } = useAuth()
-  if(!token) return <>{children}</>
-  return (
-    <>
-      <Navbar />
-      <main className='flex flex-col flex-1 pb-16 md:pb-0 md:pt-16 overflow-hidden'>{children}</main>
-    </>
-  )
-}
+import ProtectedRoute from './components/ProtectedRoute'
+import Layout from './components/Layout'
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+      <AuthProvider>
+        <Layout>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <Route path="/setup" element={
-          <SetupRoute><SetupPage /></SetupRoute>
-        } />
+            <Route path="/setup" element={
+              <ProtectedRoute requireSetup={false}>
+                <SetupPage />
+              </ProtectedRoute>
+            } />
 
-        <Route path='/*' element={
-          <PrivateRoute>
-            <AuthenticatedLayout>
-              <Routes>
-                <Route path="/people" element={<PeoplePage />} />
-                <Route path="/messages" element={<ChatsPage />} />
-                <Route path="/account" element={<AccountPage />} />
-                <Route path="/chat/:chatId" element={<MessagePage />} />
-              </Routes>
-            </AuthenticatedLayout>
-          </PrivateRoute>
-        } />
-        
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+            <Route path="/people" element={<ProtectedRoute>
+              <PeoplePage />
+            </ProtectedRoute>} />
+            <Route path="/chats" element={<ProtectedRoute>
+              <ChatsPage />
+            </ProtectedRoute>} />
+            <Route path="/chat/:chatId" element={<ProtectedRoute>
+              <MessagePage />
+            </ProtectedRoute>} />
+            <Route path="/account" element={<ProtectedRoute>
+              <AccountPage />
+            </ProtectedRoute>} />
+            
+            <Route path="/" element={<Navigate to="/people" replace />} />
+            <Route path="*" element={<Navigate to="/people" replace />} />
+          </Routes>
+        </Layout>
+      </AuthProvider>
     </BrowserRouter>
   )
 }
