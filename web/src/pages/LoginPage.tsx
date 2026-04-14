@@ -1,10 +1,16 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { api } from "../api"
 import axios from "axios"
 
-const RED = '#aa3947'
+const SLOGANS = [
+    "Find your knight in shining armor",
+    "Where UCF hearts meet",
+    "Your love story starts here",
+    "Connect with Knights who get you",
+    "Ready to look for love?"
+]
 
 export default function LoginPage() {
     const { login } = useAuth()
@@ -13,6 +19,21 @@ export default function LoginPage() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
+
+    const [sloganIndex, setSloganIndex] = useState(0)
+    const [isAnimating, setIsAnimating] = useState(false)
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsAnimating(true)
+            setTimeout(() => {
+                setSloganIndex((prev) => (prev + 1) % SLOGANS.length)
+                setIsAnimating(false)
+            }, 500)
+        }, 4000)
+
+        return () => clearInterval(interval)
+    }, [])
 
     async function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault()
@@ -38,18 +59,29 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="auth-page">
+        <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center relative overflow-hidden">
 
             {/* Background triangles */}
-            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <svg
+                className="absolute inset-0 w-full h-full pointer-events-none z-0"
+                viewBox="0 0 1000 1000"
+                preserveAspectRatio="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
             {/* top left */}
-            <polygon points="0,0 400,0 0,400" fill={`${RED}55`} />
+            <polygon
+                points="0,0 400,0 0,400"
+                className="fill-brand-500/30"
+            />
             {/* bottom right large */}
-            <polygon points="1000,1000 1000,400 800,1000" fill={`${RED}55`} />
+            <polygon
+                points="1000,1000 1000,400 800,1000"
+                className="fill-brand-500/30"
+            />
         </svg>
 
             {/* Content */}
-            <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className="relative z-10 w-full flex flex-col items-center">
 
                 {/* Logo */}
                 <img
@@ -59,52 +91,44 @@ export default function LoginPage() {
                     decoding="async"
                     width={400}
                     height={400}
-                    style={{
-                        width: '200px',
-                        height: '200px',
-                        objectFit: 'contain',
-                        marginBottom: '0.5rem'
-                    }}
+                    className="w-48 h-48 object-contain mb-2"
                 />
 
                 {/* App Name */}
-                <h1 style={{
-                    fontSize: '3rem',
-                    fontWeight: 'bold',
-                    color: RED,
-                    letterSpacing: '0.025em',
-                    marginBottom: '2rem'
-                }}>
+                <h1 className="text-5xl font-bold text-brand-500 tracking-wide mb-4">
                     UKnighted
                 </h1>
 
                 {/* Card */}
-                <div style={{
-                    width: '100%',
-                    maxWidth: '400px',
-                    padding: '0 2rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1rem'
-                }}>
+                <div className="h-16 mb-4 flex items-center justify-center overflow-hidden">
+                    <p
+                        className={`text-xl font-medium text-center bg-gradient-to-r from-brand-400 via-brand-500 to-brand-400 bg-clip-text text-transparent animate-bounce-subtle animate-magical animate-shimmer transition-all duration-500 ${
+                            isAnimating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
+                        }`}
+                        style={{
+                            textShadow: '0 0 20px rgba(170, 57, 71, 0.3)'
+                        }}
+                    >
+                        {SLOGANS[sloganIndex]}
+                    </p>
+                </div>
 
-                    {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+                <div className="w-full max-w-sm px-8 flex flex-col gap-4">
 
-                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {error && (
+                        <p className="text-error text-center text-sm bg-error/10 border border-error rounded-lg p-3">
+                            {error}
+                        </p>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                         <input
                             type="email"
                             placeholder="id@ucf.edu"
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             required
-                            style={{
-                                padding: '0.75rem 1.25rem',
-                                borderRadius: '25px',
-                                border: `1px solid ${RED}`,
-                                fontSize: '1rem',
-                                outline: 'none',
-                                width: '100%',
-                            }}
+                            className="px-5 py-3 rounded-full bg-surface border border-border text-foreground placeholder-muted focus:outline-none focus:border-brand-500 transition-colors text-base w-full"
                         />
 
                         <input
@@ -113,44 +137,28 @@ export default function LoginPage() {
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             required
-                            style={{
-                                padding: '0.75rem 1.25rem',
-                                borderRadius: '25px',
-                                border: `1px solid ${RED}`,
-                                fontSize: '1rem',
-                                outline: 'none',
-                                width: '100%',
-                            }}
+                            className="px-5 py-3 rounded-full bg-surface border border-border text-foreground placeholder-muted focus:outline-none focus:border-brand-500 transition-colors text-base w-full"
                         />
 
                         <button
                             type="submit"
                             disabled={loading}
-                            style={{
-                                padding: '0.75rem',
-                                borderRadius: '25px',
-                                border: 'none',
-                                backgroundColor: RED,
-                                color: 'white',
-                                fontSize: '1rem',
-                                fontWeight: 'bold',
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                opacity: loading ? 0.7 : 1,
-                                width: '100%',
-                            }}
+                            className="py-3 rounded-full bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-base font-bold disabled:opacity-60 disabled:cursor-not-allowed transition-colors w-full"
                         >
                             {loading ? 'Logging in...' : 'Log in'}
                         </button>
                     </form>
 
-                    <p style={{ textAlign: 'center', color: RED }}>
-                        Don't have an account? <Link to="/register" style={{ color: RED, fontWeight: 'bold' }}>Sign up</Link>
+                    <p className="text-center text-muted text-sm">
+                        Don't have an account? <Link to="/register" className="text-brand-500 hover:text-brand-400 font-bold">
+                            Sign up
+                        </Link>
                     </p>
 
-                    <p>
+                    <p className="text-center">
                         <Link
                             to="/forgot-password"
-                            className="text-red-400/70 text-lg"
+                            className="text-subtle text-sm hover:text-muted transition-colors"
                         >
                             Forgot password
                         </Link>

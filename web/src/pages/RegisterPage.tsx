@@ -3,8 +3,6 @@ import React, { useState } from "react"
 import { api } from "../api"
 import axios from "axios"
 
-const RED = '#aa3947'
-
 export default function RegisterPage() {
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
@@ -31,12 +29,17 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center relative overflow-hidden">
 
             {/* Background triangles */}
-            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="0,0 400,0 0,400" fill={`${RED}33`} />
-                <polygon points="1000,1000 1000,400 800,1000" fill={`${RED}33`} />
+            <svg
+                className="absolute inset-0 w-full h-full pointer-events-none z-0"
+                viewBox="0 0 1000 1000"
+                preserveAspectRatio="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <polygon points="0,0 400,0 0,400" className="fill-brand-500/20" />
+                <polygon points="1000,1000 1000,400 800,1000" className="fill-brand-500/20" />
             </svg>
 
             {/* Content */}
@@ -50,20 +53,14 @@ export default function RegisterPage() {
                 />
 
                 {/* App Name */}
-                <h1 style={{
-                    fontSize: '3rem',
-                    fontWeight: 'bold',
-                    color: RED,
-                    letterSpacing: '0.005em',
-                    marginBottom: '2rem'
-                }}>
+                <div className="text-5xl font-bold text-brand-500 tracking-tight mb-8">
                     Ready to look for love?
-                </h1>
+                </div>
 
                 {/* Card */}
                 <div className="w-full max-w-sm px-8 flex flex-col gap-4">
 
-                    {error && <p className="text-red-400 text-center text-sm">{error}</p>}
+                    {error && <p className="text-error text-center text-sm">{error}</p>}
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                         <input
@@ -72,7 +69,7 @@ export default function RegisterPage() {
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             required
-                            className="px-5 py-3 rounded-full bg-zinc-800 border border-zinc-600 text-white placeholder-zinc-400 focus:outline-none focus:border-red-800 text-base w-full"
+                            className="px-5 py-3 rounded-full bg-surface border border-border text-foreground placeholder-muted focus:outline-none focus:border-brand-500 transition-colors text-base w-full"
                         />
 
                         <input
@@ -81,26 +78,30 @@ export default function RegisterPage() {
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             required
-                            className="px-5 py-3 rounded-full bg-zinc-800 border border-zinc-600 text-white placeholder-zinc-400 focus:outline-none focus:border-red-800 text-base w-full"
+                            className="px-5 py-3 rounded-full bg-surface border border-border text-foreground placeholder-muted focus:outline-none focus:border-brand-500 transition-colors text-base w-full"
                         />
 
                         <button
                             type="submit"
                             disabled={loading}
-                            style={{ backgroundColor: RED }}
-                            className="py-3 rounded-full text-white text-base font-bold w-full disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="py-3 rounded-full bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-base font-bold disabled:opacity-60 disabled:cursor-not-allowed transition-colors w-full"
                         >
                             {loading ? 'Creating account...' : 'Register'}
                         </button>
                     </form>
 
-                    <p className="text-center text-zinc-400 text-sm">
+                    <p className="text-center text-muted text-sm">
                         Already have an account?{' '}
-                        <Link to="/login" style={{ color: RED }} className="font-bold">Log in</Link>
+                        <Link
+                            to="/login"
+                            className="text-brand-500 hover:text-brand-400 font-bold"
+                        >
+                            Log in
+                        </Link>
                     </p>
 
                     <p className="text-center">
-                        <Link to="/verify-email" className="text-zinc-500 text-sm hover:text-zinc-300 transition-colors">
+                        <Link to="/verify-email" className="text-subtle text-sm hover:text-muted transition-colors">
                             Need to verify your email?
                         </Link>
                     </p>
