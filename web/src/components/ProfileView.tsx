@@ -69,7 +69,10 @@ export default function ProfileView({ person }: ProfileViewProps) {
 
                         {photos.length > 1 && (
                             <button
-                                onClick={nextPhoto}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    nextPhoto()
+                                }}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition"
                             >
                                 <ChevronRight size={24} />
