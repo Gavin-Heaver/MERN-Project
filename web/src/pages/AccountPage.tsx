@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { api } from "../api"
-import type { FullUser } from '../types'
+import type { FullUser, ProfileViewData } from '../types'
 import { GENDER_OPTIONS, ALL_GENDERS, MAJOR_LIST, CLASS_YEAR_OPTIONS, PROMPT_LIST } from "../constants/profileOptions"
 import axios from "axios"
-import { ArrowLeft, ArrowRight, Check } from "lucide-react"
+import { ArrowLeft, ArrowRight, Check, Eye, X } from "lucide-react"
+import ProfileView from "../components/ProfileView"
 
 type Section = 'basicInfo' | 'profile' | 'preferences' | null
 
@@ -21,6 +22,7 @@ export default function AccountPage() {
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
     const [editing, setEditing] = useState<Section>(null)
+    const [previewOpen, setPreviewOpen] = useState(false)
     const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
 
     const [basicEdit, setBasicEdit] = useState({
@@ -274,6 +276,12 @@ export default function AccountPage() {
         })
     }
 
+    const profileViewData: ProfileViewData | null = user ? {
+        _id: user._id,
+        basicInfo: user.basicInfo,
+        profile: user.profile
+    } : null
+
     function handleLogout() {
         logout()
         navigate('/login')
@@ -290,6 +298,37 @@ export default function AccountPage() {
             <h1 className="text-xl font-bold text-white">Your Profile</h1>
             {error   && <p className="text-red-400 text-sm">{error}</p>}
             {success && <p className="text-green-400 text-sm">{success}</p>}
+
+            <button
+                onClick={() => setPreviewOpen(true)}
+                className="px-4 py-2 rounded-full border border-border text-foreground hover:border-brand-500 hover:text-brand-500 transition-colors flex items-center gap-2"
+            >
+                <Eye className="w-4 h-4" />
+                Preview Profile
+            </button>
+            {previewOpen && profileViewData && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={() => setPreviewOpen(false)}
+                >
+                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            onClick={() => setPreviewOpen(false)}
+                            className="absolute -top-4 -right-4 z-10 w-10 h-10 rounded-full bg-surface border border-border text-foreground flex items-center justify-center hover:bg-hover transition-colors shadow-lg"
+                        >
+                            <X size={20} />
+                        </button>
+                        
+                        <div className="max-h-[90vh] overflow-y-auto">
+                            <ProfileView person={profileViewData} />
+                        </div>
+                        
+                        <p className="text-center text-muted text-sm mt-4">
+                            This is how others see your profile
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white/10 rounded-xl p-4">
                 <div className="flex justify-between items-center mb-3">

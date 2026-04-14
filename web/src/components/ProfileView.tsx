@@ -36,11 +36,13 @@ export default function ProfileView({ person }: ProfileViewProps) {
                 >
                     <div
                         className="relative w-full h-full flex items-center justify-center"
-                        onClick={(e) => e.stopPropagation()}
                     >
                         <button
                             type="button"
-                            onClick={() => setGalleryOpen(false)}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                setGalleryOpen(false)
+                            }}
                             className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition"
                         >
                             <X size={22} />
@@ -48,7 +50,10 @@ export default function ProfileView({ person }: ProfileViewProps) {
 
                         {photos.length > 1 && (
                             <button
-                                onClick={prevPhoto}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    prevPhoto()
+                                }}
                                 className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition"
                             >
                                 <ChevronLeft size={24} />
@@ -59,6 +64,7 @@ export default function ProfileView({ person }: ProfileViewProps) {
                             src={currentPhoto.url}
                             alt="profile"
                             className="max-w-full max-h-full object-contain rounded-2xl"
+                            onClick={e => e.stopPropagation()}
                         />
 
                         {photos.length > 1 && (
