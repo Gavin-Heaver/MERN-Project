@@ -132,21 +132,18 @@ export default function SetupPage() {
                 {step === 'basic' && (
                     <>
                         <h1 className="text-xl font-bold text-white">Tell us about yourself</h1>
-
-                        <div className="flex gap-2">
-                            <input
-                                className="flex-1 rounded-xl p-3 bg-white/20 text-white placeholder-white/40 outline-none"
-                                placeholder="First name"
-                                value={firstName}
-                                onChange={e => setFirstName(e.target.value)}
-                            />
-                            <input
-                                className="flex-1 rounded-xl p-3 bg-white/20 text-white placeholder-white/40 outline-none"
-                                placeholder="Last name"
-                                value={lastName}
-                                onChange={e => setLastName(e.target.value)}
-                            />
-                        </div>
+                        <input
+                            className="flex-1 rounded-xl p-3 bg-white/20 text-white placeholder-white/40 outline-none"
+                            placeholder="First name"
+                            value={firstName}
+                            onChange={e => setFirstName(e.target.value)}
+                        />
+                        <input
+                            className="flex-1 rounded-xl p-3 bg-white/20 text-white placeholder-white/40 outline-none"
+                            placeholder="Last name"
+                            value={lastName}
+                            onChange={e => setLastName(e.target.value)}
+                        />
 
                         <input
                             type="number"

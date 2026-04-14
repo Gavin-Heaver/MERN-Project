@@ -20,10 +20,14 @@ export default function LoginPage() {
         try {
             const { token, user } = await api.auth.login({ email, password })
             login(token, user)
-            if (!user.basicInfo?.basicInfoComplete) {
+            if (
+                !user.basicInfo?.basicInfoComplete
+                || !user.profile.profileComplete
+                || !user.preferences.preferencesComplete
+            ) {
                 navigate('/setup')
             } else {
-                navigate('/people')
+                navigate('/messages')
             }
         } catch (err) {
             if (axios.isAxiosError(err)) {

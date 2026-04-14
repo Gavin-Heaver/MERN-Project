@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { useSocket } from "../hooks/useSocket"
 import { useEffect, useState } from "react"
-import type { Post, User } from "../types"
+import type { FullUser, Post } from "../types"
 import { api } from "../api"
 import axios from "axios"
 
@@ -105,7 +105,7 @@ export default function FeedPage() {
 }
 
 interface PostViewProps {
-    user: User | null
+    user: FullUser | null
     post: Post
     onDelete: (id: string) => void
 }
@@ -119,7 +119,7 @@ function PostView({ user, post, onDelete }: PostViewProps) {
                 <p>{post.body}</p>
                 <small>by {post.author.displayName}</small>
 
-                {post.author._id === user?.id && (
+                {post.author._id === user?._id && (
                     <div>
                         <div className="border-solid h-1 bg-white rounded m-2" />
                         <button className="border-solid border-gray-500 rounded" onClick={() => onDelete(post._id)}>

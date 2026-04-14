@@ -13,7 +13,7 @@ export function useSocket(): Socket | null {
         connected.current = true
 
         socket = io('/', { auth: { token } })
-        socket.on('connect', () => socket!.emit('user:online', user.id))
+        socket.on('connect', () => socket!.emit('user:online', user._id))
 
         return () => {
             socket?.disconnect()

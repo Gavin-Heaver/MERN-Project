@@ -41,7 +41,7 @@ export default function MessagePage() {
     }, [chatId])
 
     useEffect(() => {
-        if (!chatId || !user?.id) return
+        if (!chatId || !user?._id) return
 
         const socket = io(import.meta.env.VITE_API_URL ?? 'http://localhost:5001', {
             withCredentials: true,
@@ -52,7 +52,7 @@ export default function MessagePage() {
 
         socket.emit('messages:join', {
             conversationId: chatId,
-            userId: user.id
+            userId: user._id
         })
 
         socket.on('messages:join', (incomingMessage: Message) => {
@@ -65,18 +65,18 @@ export default function MessagePage() {
         return () => {
             socket.emit('message:leave', {
                 conversationId: chatId,
-                userId: user.id
+                userId: user._id
             })
             socket.disconnect()
             socketRef.current = null
         }
-    }, [chatId, user?.id])
+    }, [chatId, user?._id])
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
 
-    const otherUserDetails = conversation?.participantIds.find(u => u._id !== user!.id)
+    const otherUserDetails = conversation?.participantIds.find(u => u._id !== user!._id)
     const otherUser = otherUserDetails?.basicInfo
     const matchName = otherUser?.firstName
         ? `${otherUser.firstName}${otherUser.lastName ? ' ' + otherUser.lastName : ''}`
@@ -241,7 +241,7 @@ export default function MessagePage() {
                     <p className="text-white/50 text-center mt-8">No messages yet — say hello! 👋</p>
                 ) : (
                     messages.map(message => {
-                        const mine = message.senderId === user?.id
+                        const mine = message.senderId === user?._id
                         return (
                             <div
                                 key={message._id}

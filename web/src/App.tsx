@@ -23,8 +23,22 @@ function SetupRoute({ children }: { children: ReactNode }) {
 }
 
 function AuthenticatedLayout({ children }: { children: ReactNode }) {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   if(!token) return <>{children}</>
+
+  if (
+      !user?.basicInfo?.basicInfoComplete
+      || !user.profile.profileComplete
+      || !user.preferences.preferencesComplete
+  ) {
+
+  return (
+    <Route path="/setup" element={
+      <SetupRoute><SetupPage /></SetupRoute>
+    } />
+  )
+  }
+
   return (
     <>
       <Navbar />
