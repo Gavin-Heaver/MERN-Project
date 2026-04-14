@@ -152,28 +152,30 @@ export default function ProfileView({ person }: ProfileViewProps) {
                     </div>
                 </div>
 
-                {person.profile.bio && (
-                    <div className="px-4 pt-4 border-t">
-                        <p className="text-gray-700 text-sm leading-relaxed">{person.profile.bio}</p>
-                    </div>
-                )}
+                <div className="pb-2">
+                    {person.profile.bio && (
+                        <div className="px-4 pt-4 border-t">
+                            <p className="text-gray-700 text-sm leading-relaxed">{person.profile.bio}</p>
+                        </div>
+                    )}
 
-                {person.profile.datingIntentions && (
-                    <div className="px-4 pt-2">
-                        <p className="text-gray-400 text-xs">Looking for: {person.profile.datingIntentions}</p>
-                    </div>
-                )}
+                    {person.profile.datingIntentions && (
+                        <div className="px-4 pt-2">
+                            <p className="text-gray-400 text-xs">Looking for: {person.profile.datingIntentions}</p>
+                        </div>
+                    )}
 
-                {person.profile.promptAnswers.length > 0 && (
-                    <div className="p-4 flex flex-col gap-3">
-                        {person.profile.promptAnswers.slice(0, 3).map((p, i) => (
-                            <div key={i} className="bg-gray-50 rounded-xl p-3">
-                                <p className="text-xs text-gray-400 mb-1">{p.question}</p>
-                                <p className="text-sm text-gray-700">{p.answer}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                    {person.profile.promptAnswers.length > 0 && (
+                        <div className="p-4 flex flex-col gap-3">
+                            {person.profile.promptAnswers.slice(0, 3).map((p, i) => (
+                                <div key={i} className="bg-gray-50 rounded-xl p-3">
+                                    <p className="text-xs text-gray-400 mb-1">{p.question}</p>
+                                    <p className="text-sm text-gray-700">{p.answer}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </>
     )

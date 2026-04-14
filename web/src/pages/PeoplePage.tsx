@@ -107,7 +107,7 @@ export default function PeoplePage() {
 
             {matchedUser && (
                 <button
-                    onClick={() => navigate('/messages')}
+                    onClick={() => navigate('/chats')}
                     className="flex items-center gap-2 text-pink-500 font-semibold hover:underline"
                 >
                     View your matches <ArrowRightCircle /> 
