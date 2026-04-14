@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom"
 import React, { useState } from "react"
 import { api } from "../api"
 import axios from "axios"
+import SlogansView from "../components/SlogansView"
 
 export default function RegisterPage() {
     const navigate = useNavigate()
@@ -56,6 +57,8 @@ export default function RegisterPage() {
                 <div className="text-5xl font-bold text-brand-500 tracking-tight mb-8">
                     Ready to look for love?
                 </div>
+
+                <SlogansView />
 
                 {/* Card */}
                 <div className="w-full max-w-sm px-8 flex flex-col gap-4">

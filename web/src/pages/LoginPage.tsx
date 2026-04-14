@@ -1,16 +1,9 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { api } from "../api"
 import axios from "axios"
-
-const SLOGANS = [
-    "Find your knight in shining armor",
-    "Where UCF hearts meet",
-    "Your love story starts here",
-    "Connect with Knights who get you",
-    "Ready to look for love?"
-]
+import SlogansView from "../components/SlogansView"
 
 export default function LoginPage() {
     const { login } = useAuth()
@@ -19,21 +12,6 @@ export default function LoginPage() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
-
-    const [sloganIndex, setSloganIndex] = useState(0)
-    const [isAnimating, setIsAnimating] = useState(false)
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setIsAnimating(true)
-            setTimeout(() => {
-                setSloganIndex((prev) => (prev + 1) % SLOGANS.length)
-                setIsAnimating(false)
-            }, 500)
-        }, 4000)
-
-        return () => clearInterval(interval)
-    }, [])
 
     async function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault()
@@ -99,19 +77,7 @@ export default function LoginPage() {
                     UKnighted
                 </h1>
 
-                {/* Card */}
-                <div className="h-16 mb-4 flex items-center justify-center overflow-hidden">
-                    <p
-                        className={`text-xl font-medium text-center bg-gradient-to-r from-brand-400 via-brand-500 to-brand-400 bg-clip-text text-transparent animate-bounce-subtle animate-magical animate-shimmer transition-all duration-500 ${
-                            isAnimating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
-                        }`}
-                        style={{
-                            textShadow: '0 0 20px rgba(170, 57, 71, 0.3)'
-                        }}
-                    >
-                        {SLOGANS[sloganIndex]}
-                    </p>
-                </div>
+                <SlogansView />
 
                 <div className="w-full max-w-sm px-8 flex flex-col gap-4">
 
