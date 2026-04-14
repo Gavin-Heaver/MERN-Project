@@ -15,6 +15,8 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
   final TextEditingController _ageMaxCtrl = TextEditingController();
 
   // --- NEW: Checklist State Variables ---
+  bool _allSelected = false;
+  
   // This holds exactly what they check off (e.g., ['Male', 'Non-binary'])
   final List<String> _interestedInGenders = []; 
   
@@ -80,6 +82,35 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
     } finally {
       setState(() { _loading = false; });
     }
+  }
+
+  void _toggleAll(bool? selected) {
+    setState(() {
+      _allSelected = selected ?? false;
+      _interestedInGenders.clear();
+      if (_allSelected) {
+        // Add everything if "All" is checked
+        _interestedInGenders.addAll(_availableGenders);
+      }
+    });
+  }
+
+  // 3. Logic to handle individual checkboxes and auto-toggle "All"
+  void _toggleGender(String gender, bool? selected) {
+    setState(() {
+      if (selected == true) {
+        _interestedInGenders.add(gender);
+      } else {
+        _interestedInGenders.remove(gender);
+      }
+
+      // Auto-turn on "All" if every single gender is now picked
+      if (_interestedInGenders.length == _availableGenders.length) {
+        _allSelected = true;
+      } else {
+        _allSelected = false;
+      }
+    });
   }
 
   @override
@@ -158,6 +189,8 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
   
   // --- NEW: Custom Checklist Builder ---
   Widget _buildGenderChecklist() {
+    const Color crimson = Color.fromARGB(255, 170, 57, 71);
+
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[400]!),
@@ -165,24 +198,30 @@ class _PreferenceScreenState extends State<PreferenceScreen> {
       ),
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Column(
-        children: _availableGenders.map((gender) {
-          return CheckboxListTile(
-            title: Text(gender, style: const TextStyle(fontSize: 16)),
-            value: _interestedInGenders.contains(gender), // Checks the box if it's in our list
-            activeColor: const Color.fromARGB(255, 170, 57, 71), // UKnighted Crimson!
-            controlAffinity: ListTileControlAffinity.leading, // Puts the checkbox on the left
-            dense: true, 
-            onChanged: (bool? selected) {
-              setState(() {
-                if (selected == true) {
-                  _interestedInGenders.add(gender);
-                } else {
-                  _interestedInGenders.remove(gender);
-                }
-              });
-            },
-          );
-        }).toList(),
+        children: [
+          // The "All" Button
+          CheckboxListTile(
+            title: const Text("All", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            value: _allSelected,
+            activeColor: crimson,
+            controlAffinity: ListTileControlAffinity.leading,
+            dense: true,
+            onChanged: _toggleAll,
+          ),
+          const Divider(height: 1), // Visual separator
+          
+          // Individual Gender Buttons
+          ..._availableGenders.map((gender) {
+            return CheckboxListTile(
+              title: Text(gender, style: const TextStyle(fontSize: 16)),
+              value: _interestedInGenders.contains(gender),
+              activeColor: crimson,
+              controlAffinity: ListTileControlAffinity.leading,
+              dense: true,
+              onChanged: (bool? selected) => _toggleGender(gender, selected),
+            );
+          }).toList(),
+        ],
       ),
     );
   }
