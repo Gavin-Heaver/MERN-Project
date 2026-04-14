@@ -115,7 +115,7 @@ export default function MessagePage() {
         if (!chatId) return
         try {
             await api.matches.unmatch(chatId)
-            navigate('/messages')
+            navigate('/chats')
         } catch (err) {
             setError(axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? 'Failed to unmatch')
