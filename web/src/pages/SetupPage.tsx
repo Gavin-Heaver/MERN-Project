@@ -9,15 +9,17 @@ import {
     PROMPT_LIST,
     DATING_INTENTION_OPTIONS
 } from '../constants/profileOptions'
-import axios from "axios"
+import axios, { isAxiosError } from "axios"
+import { useAuth } from "../context/AuthContext"
 
-type Step = 'basic' | 'preferences' | 'profile'
+type Step = 'basic' | 'preferences' | 'profile' | 'photos'
 
-const STEPS: Step[] = ['basic', 'preferences', 'profile']
-const STEP_LABELS = ['About You', 'Preferences', 'Your Profile']
+const STEPS: Step[] = ['basic', 'preferences', 'profile', 'photos']
+const STEP_LABELS = ['About You', 'Preferences', 'Your Profile', 'Photos']
 
 export default function SetupPage() {
     const navigate = useNavigate()
+    const { refreshUser } = useAuth()
 
     const [step, setStep] = useState<Step>('basic')
     const [saving, setSaving] = useState(false)
@@ -37,6 +39,9 @@ export default function SetupPage() {
     const [bio, setBio] = useState('')
     const [datingIntentions, setDatingIntentions] = useState('')
     const [prompts, setPrompts] = useState<{ question: string; answer: string }[]>([])
+
+    const [photos, setPhotos] = useState<{ url: string; publicId: string }[]>([])
+    const [uploading, setUploading] = useState(false)
 
     const stepIndex = STEPS.indexOf(step)
 
@@ -67,6 +72,7 @@ export default function SetupPage() {
         setError(null)
         setSaving(true)
         try {
+            console.log(interestedInGenders)
             await api.users.updatePreferences({
                 ageMin,
                 ageMax,
@@ -94,11 +100,89 @@ export default function SetupPage() {
                 interestTagIds: [],
                 datingIntentions
             })
-            navigate('/people')
+            setStep('photos')
         } catch (err) {
             setError(axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? 'Failed to save')
                 : 'Failed to save'
+            )
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const files = e.target.files
+        if (!files || files.length === 0) return
+
+        setUploading(true)
+        setError(null)
+
+        try {
+            const file = files[0]
+            
+            if (!file.type.startsWith('image/')) {
+                setError('Please upload an image file')
+                return
+            }
+
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                setError('Image must be less than 5MB')
+                return
+            }
+
+            const formData = new FormData()
+            formData.append('photo', file)
+
+            const result = await api.profile.uploadPhoto(formData)
+            setPhotos(prev => [...prev, result])
+        } catch (err) {
+            setError(axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? 'Failed to upload photo')
+                : 'Failed to upload photo'
+            )
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    async function handleRemovePhoto(publicId: string) {
+        try {
+            await api.profile.deletePhoto(publicId)
+            setPhotos(prev => prev.filter(p => p.publicId !== publicId))
+        } catch (err) {
+            setError(
+                isAxiosError(err) ? (err.response?.data.message ?? 'Failed to remove photo') : 'Failed to remove photo'
+            )
+        }
+    }
+
+    async function handleCompleteSetup() {
+        if (photos.length === 0) {
+            setError('Please upload at least one photo')
+            return
+        }
+
+        setError(null)
+        setSaving(true)
+
+        try {
+            await api.users.updateProfile({
+                bio,
+                photos,
+                promptAnswers: prompts,
+                interestTagIds: [],
+                datingIntentions
+            })
+
+            await refreshUser()
+
+            navigate('/people')
+        } catch (err) {
+            setError(axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? 'Failed to complete setup')
+                : 'Failed to complete setup'
             )
         } finally {
             setSaving(false)
@@ -365,7 +449,81 @@ export default function SetupPage() {
                                 disabled={saving || !bio || !datingIntentions}
                                 className="flex-1 py-3 rounded-xl bg-pink-500 text-white font-semibold disabled:opacity-40 transition-opacity"
                             >
-                                {saving ? 'Saving...' : "Let's go! 🎉"}
+                                {saving ? 'Saving...' : "Continue →"}
+                            </button>
+                        </div>
+                    </>
+                )}
+
+                {step === 'photos' && (
+                    <>
+                        <h1 className="text-xl font-bold text-foreground">Add your photos</h1>
+                        <p className="text-muted text-sm">Upload at least one photo to continue</p>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            {photos.map((photo, i) => (
+                                <div key={photo.publicId} className="relative aspect-square rounded-xl overflow-hidden bg-surface-elevated border border-border">
+                                    <img 
+                                        src={photo.url} 
+                                        alt={`Photo ${i + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <button
+                                        onClick={() => handleRemovePhoto(photo.publicId)}
+                                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-neutral-900/80 text-white text-xs flex items-center justify-center hover:bg-neutral-900 transition-colors"
+                                    >
+                                        ✕
+                                    </button>
+                                    {i === 0 && (
+                                        <div className="absolute bottom-1 left-1 px-2 py-0.5 rounded-full bg-brand-500 text-white text-xs font-medium">
+                                            Primary
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {photos.length < 6 && (
+                                <label className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-brand-500 flex flex-col items-center justify-center cursor-pointer transition-colors bg-surface-elevated">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handlePhotoUpload}
+                                        disabled={uploading}
+                                        className="hidden"
+                                    />
+                                    {uploading ? (
+                                        <div className="text-muted text-xs">Uploading...</div>
+                                    ) : (
+                                        <>
+                                            <div className="text-3xl text-muted mb-1">+</div>
+                                            <div className="text-xs text-muted">Add Photo</div>
+                                        </>
+                                    )}
+                                </label>
+                            )}
+                        </div>
+
+                        <p className="text-subtle text-xs">
+                            • First photo will be your profile picture<br />
+                            • Maximum 6 photos<br />
+                            • Images must be less than 5MB
+                        </p>
+
+                        {error && <p className="text-error text-sm">{error}</p>}
+
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setStep('profile')}
+                                className="flex-1 py-3 rounded-xl border border-border text-muted text-sm hover:bg-hover transition-colors"
+                            >
+                                ← Back
+                            </button>
+                            <button
+                                onClick={handleCompleteSetup}
+                                disabled={saving || photos.length === 0}
+                                className="flex-1 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold disabled:opacity-40 transition-colors"
+                            >
+                                {saving ? 'Completing...' : "Let's go! 🎉"}
                             </button>
                         </div>
                     </>

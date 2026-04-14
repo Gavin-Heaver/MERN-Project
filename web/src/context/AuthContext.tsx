@@ -1,12 +1,14 @@
 import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import type { FullUser } from '../types'
+import { api } from "../api";
 
 interface AuthContextType {
     user: FullUser | null
     token: string | null
     login: (token: string, user: FullUser) => void
     logout: () => void
+    refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -34,8 +36,18 @@ export function AuthProvider({ children }: { children: ReactNode}) {
         setUser(null)
     }
 
+    const refreshUser = async () => {
+        try {
+            const updateUser = await api.users.getMe()
+            setUser(updateUser)
+            localStorage.setItem('user', JSON.stringify(updateUser))
+        } catch (err) {
+            console.error('Failed to refresh user:', err)
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout }}>
+        <AuthContext.Provider value={{ user, token, login, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     )

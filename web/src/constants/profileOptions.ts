@@ -89,7 +89,7 @@ export const MAJOR_LIST = [
 export const GENDER_OPTIONS = [
     "Male",
     "Female",
-    "Non-Binary",
+    "Non-binary",
     "Unspecified"
 ] as const
 

@@ -27,7 +27,7 @@ export default function LoginPage() {
             ) {
                 navigate('/setup')
             } else {
-                navigate('/messages')
+                navigate('/people')
             }
         } catch (err) {
             if (axios.isAxiosError(err)) {

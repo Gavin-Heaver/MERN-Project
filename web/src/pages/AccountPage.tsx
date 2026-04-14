@@ -212,6 +212,12 @@ export default function AccountPage() {
 
     async function handleDeletePhoto(photoId: string) {
         setError(null)
+
+        if (photos.length <= 1) {
+            setError('You must have at least one photo')
+            return
+        }
+
         try {
             await api.profile.deletePhoto(photoId)
             setUser(prev => prev ? {
@@ -374,11 +380,17 @@ export default function AccountPage() {
                                 )}
                                 <button
                                     onClick={() => {handleDeletePhoto(photo._id); setSelectedPhotoId(null)} }
-                                    className="text-xs text-white bg-red-500 px-2 py-1 rounded-full"
+                                    className="text-xs text-white bg-red-500 px-2 py-1 rounded-full disabled:bg-red-500/50 disabled:text-white/50"
+                                    disabled={photos.length === 1}
                                 >
                                     Delete
                                 </button>
                             </div>
+                            {photos.length === 1 &&
+                                <div className="mb-4 p-3 bg-warning/10 border border-warning rounded-lg text-warning text-sm">
+                                    You must have at lease one photo Add more photos before deleting this one.
+                                </div>
+                            }
                             <button
                                 onClick={() => setSelectedPhotoId(null)}
                                 className="text-white/40 text-xs text-center"
