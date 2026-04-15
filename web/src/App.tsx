@@ -11,6 +11,7 @@ import MessagePage from './pages/MessagePage'
 import ForgotPassword from './pages/ForgotPassword'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
+import ResetPassword from './pages/ResetPassword'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route path="/setup" element={
               <ProtectedRoute requireSetup={false}>

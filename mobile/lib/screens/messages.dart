@@ -128,6 +128,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             conversationId: chat['_id'],
                             otherUserId: otherUserId,
                             myUserId: _myUserId,
+                            photoUrl: photoUrl, // Pass the variable you already defined
                           ), 
                         ),
                       ).then((_) => _fetchData());

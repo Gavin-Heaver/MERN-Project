@@ -32,6 +32,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final List<String> _interestedInGenders = []; 
   final List<String> _availableGenders = ['Male', 'Female', 'Non-binary', 'Other'];
+
+  List<dynamic> _promptAnswers = [];
+  final List<String> _availablePrompts = [
+    "A green flag I look for is...",
+    "My love language is...",
+    "The way to win me over is...",
+    "I'm looking for someone who...",
+    "A fun fact about me is..."
+  ];
   
   // NEW: State variable to hold the user's uploaded photos
   List<dynamic> _photos = [];
@@ -85,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (fetchedGender != null && ['Male', 'Female', 'Non-binary', 'Other'].contains(fetchedGender)) _gender = fetchedGender;
 
         String? fetchedClass = basicInfo['classYear'];
-        if (fetchedClass != null && ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Grad Student'].contains(fetchedClass)) _classYear = fetchedClass;
+        if (fetchedClass != null && ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate'].contains(fetchedClass)) _classYear = fetchedClass;
 
         // 2. Load Profile (Bio & Photos)
         _bioController.text = profileData['bio'] ?? '';
@@ -94,7 +103,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _photos = profileData['photos'] ?? [];
         
         String? fetchedIntentions = profileData['datingIntentions'];
-        if (fetchedIntentions != null && ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'].contains(fetchedIntentions)) {
+        if (fetchedIntentions != null && ['Long-term Relationship', 'Short-term Relationship', 'New friends', 'Figuring it out', 'Prefer not to say'].contains(fetchedIntentions)) {
           _datingIntentions = fetchedIntentions;
         }
 
@@ -107,11 +116,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _interestedInGenders.addAll(List<String>.from(prefData['interestedInGenders']));
         }
 
+        _promptAnswers = List<dynamic>.from(profileData['promptAnswers'] ?? []);
+
         _isLoading = false; 
       });
     } catch (e) {
       print("Error loading profile: $e");
       setState(() => _isLoading = false);
+    }
+  }
+
+  void _addPrompt() {
+    if (_promptAnswers.length < 3) {
+      setState(() {
+        _promptAnswers.add({"question": _availablePrompts[0], "answer": ""});
+      });
     }
   }
 
@@ -186,6 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         bio: _bioController.text.trim(),
         photos: _photos, // Array tracked by backend photo endpoints now
         datingIntentions: _datingIntentions!, 
+        promptAnswers: _promptAnswers,
       );
       
       if (mounted) {
@@ -314,7 +334,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 10),
 
               // --- My Photos Grid ---
-              const Text("My Photos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text("My Photos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: crimson)),
               const SizedBox(height: 10),
               GridView.builder(
                 shrinkWrap: true, 
@@ -399,15 +419,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Divider(thickness: 1),
               const SizedBox(height: 10),
               _buildDropdown("Major", _majorController, _allMajors, (val) => setState(() => _majorController = val)),
-              _buildDropdown("Class Year", _classYear, ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Grad Student'], (val) => setState(() => _classYear = val)),
+              _buildDropdown("Class Year", _classYear, ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate'], (val) => setState(() => _classYear = val)),
               const SizedBox(height: 20),
 
               // --- More About Me Section ---
               const Text("More About Me", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: crimson)),
               const Divider(thickness: 1),
               const SizedBox(height: 10),
-              _buildDropdown("Dating Intentions", _datingIntentions, ['Long-term relationship', 'Short-term', 'New friends', 'Figuring it out'], (val) => setState(() => _datingIntentions = val)),
-              
+              _buildDropdown("Dating Intentions", _datingIntentions, ['Long-term Relationship', 'Short-term Relationship', 'New friends', 'Figuring it out', 'Prefer not to say'], (val) => setState(() => _datingIntentions = val)),
+
+              const SizedBox(height: 10),
+              const Text("My Prompts", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: crimson)),
+              const Divider(thickness: 1),
+              ..._promptAnswers.asMap().entries.map((entry) {
+                int idx = entry.key;
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDropdown(
+                            "Select Prompt", 
+                            _promptAnswers[idx]['question'], 
+                            _availablePrompts, 
+                            (val) => setState(() => _promptAnswers[idx]['question'] = val!)
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () => setState(() => _promptAnswers.removeAt(idx)),
+                        ),
+                      ],
+                    ),
+                    TextField(
+                      onChanged: (val) => _promptAnswers[idx]['answer'] = val,
+                      controller: TextEditingController(text: _promptAnswers[idx]['answer'])..selection = TextSelection.collapsed(offset: _promptAnswers[idx]['answer'].length),
+                      decoration: InputDecoration(
+                        hintText: "Your answer...",
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                  ],
+                );
+              }).toList(),
+
+              if (_promptAnswers.length < 3)
+                OutlinedButton.icon(
+                  onPressed: _addPrompt,
+                  icon: const Icon(Icons.add, color: crimson),
+                  label: const Text("Add Prompt", style: TextStyle(color: crimson)),
+                  style: OutlinedButton.styleFrom(side: const BorderSide(color: crimson)),
+                ),
+
               const SizedBox(height: 40),
 
               // --- Action Buttons ---

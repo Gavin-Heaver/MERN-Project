@@ -78,7 +78,7 @@ export default function PeoplePage() {
             {!current ? (
                 <div className="text-center flex flex-col items-center gap-3">
                     <p className="text-foreground">Check back later for more potential matches!</p>
-                    <p>In the meantime, <Link className="text-brand-450 underline" to={'/messages'}>Chat with your matches!</Link></p>
+                    <p>In the meantime, <Link className="text-brand-450 underline" to={'/chats'}>Chat with your matches!</Link></p>
                 </div>
             ) : (
                 <>
