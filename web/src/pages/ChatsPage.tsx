@@ -23,62 +23,103 @@ export default function ChatsPage() {
             .finally(() => setLoading(false))
     }, [])
 
-    if (loading) return <p className="p-4">Loading chats...</p>
-    if (error) return <p className="p-4 text-red-500">{error}</p>
+    if (loading) return (
+        <div className="flex items-center justify-center min-h-screen bg-background">
+            <p className="text-muted">Loading chats...</p>
+        </div>
+    )
+
+    if (error) return (
+        <div className="flex items-center justify-center min-h-screen bg-background">
+            <p className="text-error">{error}</p>
+        </div>
+    )
 
     return (
-        <div>
-            <h1 className='text-white p-4 text-xl font-bold'>Messages</h1>
+        <div className="min-h-screen bg-background relative overflow-hidden">
+
+            {/* Background triangles */}
+            <svg
+                className="absolute inset-0 w-full h-full pointer-events-none z-0"
+                viewBox="0 0 1000 1000"
+                preserveAspectRatio="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <polygon points="0,0 400,0 0,400" className="fill-brand-500/30" />
+                <polygon points="1000,1000 1000,400 800,1000" className="fill-brand-500/30" />
+            </svg>
+
+            {/* Header */}
+            <div className="relative z-10 px-4 py-8 border-b border-border">
+                <h1>
+                    Messages
+                </h1>
+            </div>
 
             {chats.length === 0 ? (
-                <p className="p-4 text-gray-400">
-                    No chats yet -{' '}
-                    <Link to="/people" className="text-pink-500 underline">
-                        match with someone
-                    </Link>{' '}
-                    to start taking!
-                </p>
+                <div className="relative z-10 flex flex-col items-center justify-center p-8 gap-2 mt-16">
+                    <p className="text-muted text-center">
+                        No chats yet —{' '}
+                        <Link to="/people" className="text-brand-500 hover:text-brand-400 font-bold transition-colors">
+                            match with someone
+                        </Link>{' '}
+                        to start talking!
+                    </p>
+                </div>
             ) : (
-                <div className="flex flex-col divide-y divide-white/10">
+                <div className="relative z-10 flex flex-col divide-y divide-border">
                     {chats.map(chat => {
                         const otherUserDetails = chat.participantIds.find(u => u._id !== user?._id)
                         const otherUser = otherUserDetails?.basicInfo
                         const mainPhoto = otherUserDetails?.profile?.photos.find(p => p.isPrimary) ?? otherUserDetails?.profile?.photos?.[0]
-                        const name = otherUser?.firstName ? `${otherUser.firstName}${otherUser.lastName ? ' ' + otherUser.lastName : ''}`
-                        : 'Unknown'
+                        const name = otherUser?.firstName
+                            ? `${otherUser.firstName}${otherUser.lastName ? ' ' + otherUser.lastName : ''}`
+                            : 'Unknown'
+                        const isUnread = !chat.lastMessagePreview
 
                         return (
                             <div
                                 key={chat._id}
                                 onClick={() => navigate(`/chat/${chat._id}`)}
-                                className="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/5 transition-colors"
+                                className="flex items-center gap-3 p-4 cursor-pointer hover:bg-hover transition-colors"
                             >
+                                {/* Avatar */}
                                 <div className="w-12 h-12 rounded-full overflow-hidden shrink-0">
                                     {mainPhoto ? (
                                         <img
-                                            src={mainPhoto.url} alt={name} className="w-full h-full object-cover"
+                                            src={mainPhoto.url}
+                                            alt={name}
+                                            className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <div className="w-full h-full bg-pink-400/30 flex items-center justify-center text-white font-bold text-lg">
+                                        <div className="w-full h-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-400 font-bold text-lg">
                                             {name[0].toUpperCase()}
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-white truncate">
+                                {/* Name + preview */}
+                                <div className="flex-1 min-w-0 text-center">
+                                    <p className="font-semibold text-foreground truncate">
                                         {name}
                                     </p>
-                                    <p className={`text-sm truncate ${chat.lastMessagePreview ? "text-gray-400" : "text-pink-400"}`}>
+                                    <p className={`text-sm truncate ${isUnread ? 'text-brand-400 font-medium' : 'text-muted'}`}>
                                         {chat.lastMessagePreview || 'Say hello!'}
                                     </p>
                                 </div>
 
-                                {chat.lastMessageAt && (
-                                    <p className="text-xs text-gray-500 shrink-0">
-                                        {new Date(chat.lastMessageAt).toLocaleDateString()}
-                                    </p>
-                                )}
+                                {/* Timestamp + unread dot */}
+                                <div className="flex flex-col items-end gap-1 shrink-0 w-20">
+                                    {chat.lastMessageAt && (
+                                        <p className={`text-xs ${isUnread ? 'text-brand-500 font-semibold' : 'text-subtle'}`}>
+                                            {new Date(chat.lastMessageAt).toLocaleDateString()}
+                                        </p>
+                                    )}
+                                    {isUnread && (
+                                        <div className="w-2.5 h-2.5 rounded-full bg-brand-500" />
+                                    )}
+                                </div>
+
                             </div>
                         )
                     })}
