@@ -27,7 +27,7 @@ export default function SlogansView() {
     return (
         <div className="h-16 mb-4 flex items-center justify-center overflow-hidden">
             <p
-                className={`text-xl font-medium text-center bg-gradient-to-r from-brand-400 via-brand-500 to-brand-400 bg-clip-text text-transparent animate-bounce-subtle animate-magical animate-shimmer transition-all duration-500 ${
+                className={`text-xl font-medium text-center bg-gradient-to-r from-brand-400 via-brand-500 to-brand-400 bg-clip-text text-transparent animate-magical transition-all duration-500 ${
                     isAnimating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
                 }`}
                 style={{

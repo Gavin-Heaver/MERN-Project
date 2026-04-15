@@ -194,6 +194,7 @@ static Future<void> savePreferences({
     required String bio,
     required List<dynamic> photos, // Changed from dynamic to accept existing photos
     required String datingIntentions,
+    required List<dynamic> promptAnswers,
   }) async {
     final res = await http.patch(
       Uri.parse('$_baseUrl/users/profile'), 
@@ -202,7 +203,7 @@ static Future<void> savePreferences({
         'bio': bio,
         'photos': photos, // Now sending the actual photo list
         'datingIntentions': datingIntentions, 
-        'promptAnswers': [],
+        'promptAnswers': promptAnswers,
       }),
     );
 

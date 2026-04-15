@@ -187,20 +187,37 @@ class _FeedScreenState extends State<FeedScreen> {
                             const SizedBox(height: 5),
                             Row(
                               children: [
-                                const Icon(Icons.info_outline, color: Colors.white70, size: 16),
-                                const SizedBox(width: 5),
                                 Text(
                                   basicInfo['gender'] ?? '',
                                   style: const TextStyle(color: Colors.white70, fontSize: 16),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 5),
                             Text(
                               profileData['bio'] ?? '',
                               style: const TextStyle(color: Colors.white, fontSize: 16),
                               maxLines: 3, overflow: TextOverflow.ellipsis,
                             ),
+                            const SizedBox(height: 5),
+                            ... (profileData['promptAnswers'] as List<dynamic>? ?? []).map((prompt) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 4.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      prompt['question'] ?? '',
+                                      style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      prompt['answer'] ?? '',
+                                      style: const TextStyle(color: Colors.white, fontSize: 13, fontStyle: FontStyle.italic),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           ],
                         ),
                       ),

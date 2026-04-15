@@ -7,13 +7,15 @@ class ChatScreen extends StatefulWidget {
   final String conversationId;
   final String otherUserId;
   final String myUserId;
+  final String? photoUrl; // Add this line
 
   const ChatScreen({
     super.key, 
     required this.chatName, 
     required this.conversationId, 
     required this.otherUserId,
-    required this.myUserId
+    required this.myUserId,
+    this.photoUrl, // Add this line
   });
 
   @override
@@ -118,7 +120,28 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: Colors.white,
         elevation: 1, 
         iconTheme: const IconThemeData(color: crimson),
-        title: Text(widget.chatName, style: const TextStyle(color: Colors.black87)),
+        title: Row( // Changed from a single Text widget to a Row
+          children: [
+            CircleAvatar( // Displays the primary photo
+              radius: 18,
+              backgroundColor: Colors.grey[200],
+              backgroundImage: widget.photoUrl != null 
+                  ? NetworkImage(widget.photoUrl!) 
+                  : null,
+              child: widget.photoUrl == null 
+                  ? const Icon(Icons.person, color: Colors.grey, size: 20) 
+                  : null,
+            ),
+            const SizedBox(width: 12), // Space between photo and name
+            Expanded(
+              child: Text(
+                widget.chatName, 
+                style: const TextStyle(color: Colors.black87, fontSize: 18),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
