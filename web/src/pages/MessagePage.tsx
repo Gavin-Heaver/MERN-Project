@@ -115,7 +115,7 @@ export default function MessagePage() {
         if (!chatId) return
         try {
             await api.matches.unmatch(chatId)
-            navigate('/chats')
+            navigate('/messages')
         } catch (err) {
             setError(axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? 'Failed to unmatch')
@@ -138,8 +138,7 @@ export default function MessagePage() {
             </svg>
 
             {/* Header */}
-                <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b border-border bg-background">                
-                    <div className="flex items-center gap-3">
+                <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b border-border bg-background">                <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate('/messages')}
                         className="text-muted hover:text-foreground transition-colors"
@@ -263,7 +262,7 @@ export default function MessagePage() {
             {/* Input */}
             <form
                 onSubmit={handleSend}
-                className="sticky bottom-0 z-10 flex items-center gap-2 px-4 py-3 border-t backdrop-blur-sm border-white/10"
+                className="relative z-10 flex items-center gap-2 px-4 py-3 border-t border-border"
             >
                 <input
                     type="text"
