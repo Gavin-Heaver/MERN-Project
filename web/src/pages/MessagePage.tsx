@@ -125,12 +125,12 @@ export default function MessagePage() {
     }
 
     return (
-        <div className="flex flex-col flex-1 overflow-hidden">
+        <div className="h-[calc(100vh-4rem)] flex flex-col bg-background">
 
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+            <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-border backdrop-blur-sm bg-surface/95 shrink-0">
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => navigate('/messages')}
+                        onClick={() => navigate('/chats')}
                         className="text-white/60 hover:text-white transition-colors"
                     >
                         <ArrowLeft />
@@ -266,7 +266,7 @@ export default function MessagePage() {
 
             <form
                 onSubmit={handleSend}
-                className="flex items-center gap-2 px-4 py-3 border-t border-white/10"
+                className="sticky bottom-0 z-10 flex items-center gap-2 px-4 py-3 border-t backdrop-blur-sm border-white/10"
             >
                 <input
                     type="text"

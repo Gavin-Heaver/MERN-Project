@@ -65,20 +65,27 @@ export default function ChatsPage() {
                                     )}
                                 </div>
 
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-white truncate">
-                                        {name}
-                                    </p>
-                                    <p className={`text-sm truncate ${chat.lastMessagePreview ? "text-gray-400" : "text-pink-400"}`}>
-                                        {chat.lastMessagePreview || 'Say hello!'}
-                                    </p>
+                                <div className="flex-1 min-w-0 flex items-center gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-white truncate">
+                                            {name}
+                                        </p>
+                                        <p className={`text-sm truncate ${chat.lastMessagePreview ? "text-gray-400" : "text-pink-400"}`}>
+                                            {chat.lastMessagePreview || 'Say hello!'}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                {chat.lastMessageAt && (
-                                    <p className="text-xs text-gray-500 shrink-0">
-                                        {new Date(chat.lastMessageAt).toLocaleDateString()}
-                                    </p>
-                                )}
+                                <div className="w-16 shrink-0 text-right">
+                                    {chat.lastMessageAt && (
+                                        <p className="text-xs text-gray-500 shrink-0">
+                                            {new Date(chat.lastMessageAt).toLocaleDateString([], {
+                                                month: 'short',
+                                                day: 'numeric'
+                                            })}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         )
                     })}
