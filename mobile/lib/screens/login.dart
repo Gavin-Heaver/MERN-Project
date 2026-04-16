@@ -6,6 +6,7 @@ import 'set_profile.dart';
 import 'set_preferences.dart';
 import '../services/api_service.dart';
 import 'code_verification_from_login.dart';
+import 'forgot_password.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -147,6 +148,28 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               const SizedBox(height: 20),
+
+                            TextButton(
+                onPressed: () {
+                 Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (_) => ForgotPasswordScreen( 
+                      )
+                    )
+                  );
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color.fromARGB(255, 170, 57, 71), 
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), 
+                ),
+                child: const Text(
+                  "Forgot Password",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
 
               //Verificaiton button
               TextButton(

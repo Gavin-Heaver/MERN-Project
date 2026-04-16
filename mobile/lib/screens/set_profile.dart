@@ -58,6 +58,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _onPhotoSlotTapped(int index) {
+    if (_localImages[index] == null) {
+      // Slot is empty, go straight to picking an image
+      _pickImage(index);
+    } else {
+      // Slot has an image, show options
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text("Change Photo"),
+                onTap: () {
+                  Navigator.pop(context); // Close the bottom sheet
+                  _pickImage(index);      // Re-trigger the picker for this slot
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text("Remove Photo", style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _localImages[index] = null; // Clear the slot
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _submit() async {
     // Check if at least the first photo (primary) is provided
     if (_localImages[0] == null) {
@@ -152,7 +191,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 itemBuilder: (context, index) {
                   final String? path = _localImages[index];
                   return GestureDetector(
-                    onTap: () => _pickImage(index),
+                    onTap: () => _onPhotoSlotTapped(index),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[200],

@@ -22,15 +22,17 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   Future<void> _fetchData() async {
     try {
-      // Get your own profile to identify which participant is "you"
       final profile = await ApiService.getUserProfile();
       _myUserId = profile['user']['_id'];
 
-      // Fetch the conversations list directly from the API
       final convos = await ApiService.getConversations();
 
       setState(() {
-        _conversations = convos;
+        // --- THE FIX: Filter out "Ghost" Conversations ---
+        // If the backend deleted the Match but forgot to delete the Conversation,
+        // matchId will be null. We just filter them out of the UI!
+        _conversations = convos.where((chat) => chat['matchId'] != null).toList();
+        
         _isLoading = false;
       });
     } catch (e) {
@@ -77,6 +79,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
               itemCount: _conversations.length,
               itemBuilder: (context, index) {
                 final chat = _conversations[index];
+
+                print("UKNIGHTED DEBUG - RAW CHAT: $chat");
                 
                 // participantIds is now a list of User objects due to backend .populate()
                 final participants = chat['participantIds'] as List<dynamic>? ?? [];
@@ -133,6 +137,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     : null,
                   onTap: () {
                     if (otherUserId.isNotEmpty) {
+                      
+                      // --- THE FIX: Bulletproof ID Extraction ---
+                      String extractedMatchId = '';
+                      final dynamic matchData = chat['matchId'];
+                      
+                      if (matchData != null) {
+                        if (matchData is Map<String, dynamic>) {
+                          // If it's a populated object, grab the _id
+                          extractedMatchId = matchData['_id']?.toString() ?? '';
+                        } else {
+                          // If it's just a raw string ID
+                          extractedMatchId = matchData.toString();
+                        }
+                      }
+                      // ------------------------------------------
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -142,6 +162,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             otherUserId: otherUserId,
                             myUserId: _myUserId,
                             photoUrl: photoUrl, 
+                            matchId: extractedMatchId, // Pass the clean string
                           ), 
                         ),
                       ).then((_) => _fetchData());
