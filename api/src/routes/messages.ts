@@ -124,7 +124,7 @@ router.post('/send-msg', authenticate, async (req: Request, res: Response): Prom
         await conversation.save();
 
         const io = req.app.get('io')
-        emitMessageToConversation(io, conversation._id.toString(), message)
+        emitMessageToConversation(io, conversation._id.toString(), message, toUserId)
 
         res.status(201).json(message);
     } catch (err) {

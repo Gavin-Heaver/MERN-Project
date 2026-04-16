@@ -25,9 +25,6 @@ export function registerSocketHandlers(io: Server): void {
             console.log(`User left conversation ${conversationId}`)
         })
 
-        socket.on('post:join', (postId: string) => socket.join(`post:${postId}`))
-        socket.on('post:leave', (postId: string) => socket.leave(`post:${postId}`))
-
         socket.on('disconnect', () => {
             console.log('Socket disconnected:', socket.id)
             if (socket.data.userId) {
@@ -37,7 +34,13 @@ export function registerSocketHandlers(io: Server): void {
     })
 }
 
-export function emitMessageToConversation(io: Server, conversationId: string, message: any) {
+export function emitMessageToConversation(io: Server, conversationId: string, message: any, recipientUserId: string) {
     io.to(`conversation:${conversationId}`).emit('message:new', message)
     console.log(`Emitted message to conversation ${conversationId}`)
+
+    io.to(`user:${recipientUserId}`).emit('conversation:update', {
+        conversationId,
+        lastMessageAt: message.createdAt,
+        lastMessagePreview: message.text.slice(0, 100)
+    })
 }

@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { api } from "../api"
 import type { Conversation } from "../types"
 import axios from "axios"
+import { io, type Socket } from "socket.io-client"
 
 export default function ChatsPage() {
     const { user } = useAuth()
@@ -12,6 +13,8 @@ export default function ChatsPage() {
     const [chats, setChats] = useState<Conversation[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<null | string>(null)
+
+    const socketRef = useRef<Socket | null>(null)
 
     useEffect(() => {
         api.messages.getConversations()
@@ -22,6 +25,72 @@ export default function ChatsPage() {
             })
             .finally(() => setLoading(false))
     }, [])
+
+    useEffect(() => {
+        if (!user?._id) return
+
+        const socketUrl = import.meta.env.DEV
+        ? '/'
+        : (import.meta.env.VITE_API_URL || 'http://localhost:3001')
+
+        const socket = io(socketUrl, {
+            withCredentials: true,
+            transports: ['polling', 'websocket'],
+            reconnection: true,
+            path: '/socket.io'
+        })
+
+        socketRef.current = socket
+
+        socket.on('connect', () => {
+            console.log('ChatsPage: Socket connected:', socket.id)
+
+            socket.emit('user:online', user._id)
+            console.log('ChatsPage: Joined user room', user._id)
+        })
+
+        socket.on('conversation:update', (data: {
+            conversationId: string
+            lastMessageAt: string
+            lastMessagePreview: string
+        }) => {
+            console.log('ChatsPage: Received conversation:update', data)
+
+            setChats(prev => {
+                const chatIndex = prev.findIndex(c => c._id === data.conversationId)
+
+                if (chatIndex === -1) {
+                    console.log('Conversation not found in list')
+                    return prev
+                }
+
+                const updatedChat = {
+                    ...prev[chatIndex],
+                    lastMessageAt: data.lastMessageAt,
+                    lastMessagePreview: data.lastMessagePreview
+                }
+
+                const newChats = [
+                    updatedChat,
+                    ...prev.slice(0, chatIndex),
+                    ...prev.slice(chatIndex + 1)
+                ]
+
+                console.log('Updated conversation list')
+                return newChats
+            })
+        })
+
+        socket.on('disconnect', (reason) => {
+            console.log('ChatsPage: Socket disconnected:', reason)
+        })
+
+        return () => {
+            console.log('ChatsPage: Cleaning up socket')
+            socket.disconnect()
+            socketRef.current = null
+        }
+    }, [user?._id])
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-screen bg-background">
