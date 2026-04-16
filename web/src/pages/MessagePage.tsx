@@ -115,7 +115,7 @@ export default function MessagePage() {
         if (!chatId) return
         try {
             await api.matches.unmatch(chatId)
-            navigate('/messages')
+            navigate('/chats')
         } catch (err) {
             setError(axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? 'Failed to unmatch')
@@ -125,7 +125,7 @@ export default function MessagePage() {
     }
 
     return (
-        <div className="flex flex-col h-full overflow-hidden bg-background">
+        <div className="h-[calc(100vh-4rem)] flex flex-col bg-background">
             {/* Background triangles */}
             <svg
                 className="fixed inset-0 w-full h-full pointer-events-none z-0"
@@ -138,17 +138,18 @@ export default function MessagePage() {
             </svg>
 
             {/* Header */}
-                <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b border-border bg-background">                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => navigate('/messages')}
-                        className="text-muted hover:text-foreground transition-colors"
-                    >
-                        <ArrowLeft />
-                    </button>
-                    <button
-                        onClick={() => setShowProfile(true)}
-                        className="w-9 h-9 rounded-full overflow-hidden shrink-0 focus:outline-none"
-                    >
+                <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b border-border bg-background">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/chats')}
+                            className="text-muted hover:text-foreground transition-colors"
+                        >
+                            <ArrowLeft />
+                        </button>
+                        <button
+                            onClick={() => setShowProfile(true)}
+                            className="w-9 h-9 rounded-full overflow-hidden shrink-0 focus:outline-none"
+                        >
                         {mainPhoto ? (
                             <img
                                 src={mainPhoto.url}
@@ -262,7 +263,7 @@ export default function MessagePage() {
             {/* Input */}
             <form
                 onSubmit={handleSend}
-                className="relative z-10 flex items-center gap-2 px-4 py-3 border-t border-border"
+                className="relative z-10 flex items-center gap-2 px-4 py-3 border-t border-border bg-background"
             >
                 <input
                     type="text"
