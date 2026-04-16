@@ -22,9 +22,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   Future<void> _fetchData() async {
     try {
+      // Get your own profile to identify which participant is "you"
       final profile = await ApiService.getUserProfile();
       _myUserId = profile['user']['_id'];
 
+      // Fetch the conversations list directly from the API
       final convos = await ApiService.getConversations();
 
       setState(() {
@@ -76,24 +78,35 @@ class _MessagesScreenState extends State<MessagesScreen> {
               itemBuilder: (context, index) {
                 final chat = _conversations[index];
                 
+                // participantIds is now a list of User objects due to backend .populate()
                 final participants = chat['participantIds'] as List<dynamic>? ?? [];
+                
+                // Find the other user who isn't you
                 final otherUser = participants.firstWhere(
                   (p) => p is Map && p['_id'] != _myUserId, 
                   orElse: () => null
                 );
                 
-                final String firstName = otherUser?['basicInfo']?['firstName'] ?? "UKnighted";
-                final String lastName = otherUser?['basicInfo']?['lastName'] ?? "User";
-                final String chatName = "$firstName $lastName";
-                final String otherUserId = otherUser?['_id'] ?? '';
+                if (otherUser == null) return const SizedBox.shrink();
 
-                // --- PHOTO EXTRACTION LOGIC ---
-                final List<dynamic> photos = otherUser?['profile']?['photos'] ?? [];
+                final String firstName = otherUser['basicInfo']?['firstName'] ?? "UKnighted";
+                final String lastName = otherUser['basicInfo']?['lastName'] ?? "User";
+                final String chatName = "$firstName $lastName";
+                final String otherUserId = otherUser['_id'] ?? '';
+
+                // Extract the primary photo URL
+                final List<dynamic> photos = otherUser['profile']?['photos'] ?? [];
                 final primaryPhoto = photos.firstWhere(
                   (p) => p['isPrimary'] == true, 
                   orElse: () => photos.isNotEmpty ? photos[0] : null
                 );
-                final String? photoUrl = primaryPhoto?['url'];
+                
+                String? photoUrl;
+                if (primaryPhoto != null) {
+                  photoUrl = primaryPhoto['url'].toString().startsWith('http') 
+                      ? primaryPhoto['url'] 
+                      : 'https://uknighted.onrender.com${primaryPhoto['url']}';
+                }
 
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
@@ -128,7 +141,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             conversationId: chat['_id'],
                             otherUserId: otherUserId,
                             myUserId: _myUserId,
-                            photoUrl: photoUrl, // Pass the variable you already defined
+                            photoUrl: photoUrl, 
                           ), 
                         ),
                       ).then((_) => _fetchData());
