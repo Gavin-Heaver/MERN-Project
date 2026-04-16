@@ -20,7 +20,6 @@ export default function MessagePage() {
     const [sending, setSending] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [showProfile, setShowProfile] = useState(false)
-    const [showConfirm, setShowConfirm] = useState(false)
 
     const bottomRef = useRef<HTMLDivElement>(null)
     const socketRef = useRef<Socket | null>(null)
@@ -120,19 +119,6 @@ export default function MessagePage() {
         }
     }
 
-    async function handleUnmatch() {
-        if (!chatId) return
-        try {
-            await api.matches.unmatch(chatId)
-            navigate('/chats')
-        } catch (err) {
-            setError(axios.isAxiosError(err)
-                ? (err.response?.data?.message ?? 'Failed to unmatch')
-                : 'Failed to unmatch'
-            )
-        }
-    }
-
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col bg-background">
             {/* Background triangles */}
@@ -183,51 +169,14 @@ export default function MessagePage() {
             {/* Profile modal */}
             {showProfile && otherUserDetails && (
                 <div
-                    onClick={() => { setShowProfile(false); setShowConfirm(false) }}
+                    onClick={() => { setShowProfile(false) }}
                     className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4"
                 >
                     <div
                         onClick={e => e.stopPropagation()}
-                        className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-3xl"
+                        className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-3xl bg-surface"
                     >
-                        <ProfileView person={otherUserDetails} />
-
-                        {!showConfirm ? (
-                            <div className="flex flex-col gap-2 p-3 bg-surface rounded-b-3xl">
-                                <button
-                                    onClick={() => setShowConfirm(true)}
-                                    className="w-full py-2 rounded-xl bg-error/20 text-error text-sm font-medium hover:bg-error/30 transition-colors"
-                                >
-                                    Unmatch
-                                </button>
-                                <button
-                                    onClick={() => setShowProfile(false)}
-                                    className="w-full py-2 text-muted text-sm hover:text-foreground transition-colors"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-3 p-4 bg-surface rounded-b-3xl">
-                                <p className="text-foreground text-sm text-center">
-                                    Unmatch with {matchName}? This can't be undone.
-                                </p>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setShowConfirm(false)}
-                                        className="flex-1 py-2 rounded-xl border border-border text-muted text-sm hover:text-foreground transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleUnmatch}
-                                        className="flex-1 py-2 rounded-xl bg-error text-white text-sm font-medium hover:opacity-90 transition-opacity"
-                                    >
-                                        Unmatch
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                        <ProfileView person={otherUserDetails} showUnmatch={true} close={() => setShowProfile(false)} />
                     </div>
                 </div>
             )}
