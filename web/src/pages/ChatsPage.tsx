@@ -120,7 +120,7 @@ export default function ChatsPage() {
 
             {/* Header */}
             <div className="relative z-10 px-4 py-8 border-b border-border">
-                <h1>
+                <h1 className="text-3xl font-bold text-foreground">
                     Messages
                 </h1>
             </div>
