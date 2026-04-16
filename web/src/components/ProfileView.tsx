@@ -1,16 +1,30 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, PersonStanding, X } from "lucide-react"
 import type { ProfileViewData } from "../types"
+import { api } from "../api"
+import { useNavigate } from "react-router-dom"
+import axios from "axios"
 
 interface ProfileViewProps {
     person: ProfileViewData
+    showUnmatch?: boolean
+    close?: (() => void) | null
 }
 
-export default function ProfileView({ person }: ProfileViewProps) {
+export default function ProfileView({ person, showUnmatch = false, close = null }: ProfileViewProps) {
+    const navigate = useNavigate()
+
     const photos = person.profile?.photos ?? []
     const hasPhotos = photos.length > 0
     const [photoIndex, setPhotoIndex] = useState(0)
     const [galleryOpen, setGalleryOpen] = useState(false)
+    const [showConfirm, setShowConfirm] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    const currentPhoto = hasPhotos ? photos[photoIndex] : null
+
+    function prevPhoto() { setPhotoIndex(i => (i === 0 ? photos.length - 1 : i - 1)) }
+    function nextPhoto() { setPhotoIndex(i => (i === photos.length - 1 ? 0 : i + 1)) }
 
     useEffect(() => {
         if (!galleryOpen) return
@@ -21,17 +35,35 @@ export default function ProfileView({ person }: ProfileViewProps) {
         return () => window.removeEventListener("keydown", onKey)
     }, [galleryOpen])
 
-    const currentPhoto = hasPhotos ? photos[photoIndex] : null
+    useEffect(() => {
+        function onArrowKey(e: KeyboardEvent) {
+            if (e.key === "ArrowLeft") prevPhoto()
+            if (e.key === "ArrowRight") nextPhoto()
+        }
 
-    function prevPhoto() { setPhotoIndex(i => (i === 0 ? photos.length - 1 : i - 1)) }
-    function nextPhoto() { setPhotoIndex(i => (i === photos.length - 1 ? 0 : i + 1)) }
+        window.addEventListener("keydown", onArrowKey)
+        return () => window.removeEventListener("keydown", onArrowKey)
+    })
+
+    async function handleUnmatch() {
+        if (!person._id) return
+        try {
+            await api.matches.unmatch(person._id)
+            navigate('/chats')
+        } catch (err) {
+            setError(axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? 'Failed to unmatch')
+                : 'Failed to unmatch'
+            )
+        }
+    }
 
     return (
         <>
             {/* Fullscreen gallery */}
             {galleryOpen && currentPhoto && (
                 <div
-                    className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+                    className="fixed inset-0 z-[100] bg-background flex items-center justify-center p-4"
                     onClick={() => setGalleryOpen(false)}
                 >
                     <div
@@ -98,9 +130,9 @@ export default function ProfileView({ person }: ProfileViewProps) {
                 </div>
             )}
 
-            <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className="w-full max-w-sm bg-neutral-800 text-foreground rounded-3xl shadow-2xl overflow-hidden">
 
-                <div className="relative h-96 bg-gray-200">
+                <div className="relative h-96 bg-neutral-800">
                     {currentPhoto ? (
                         <button
                             type="button"
@@ -143,7 +175,7 @@ export default function ProfileView({ person }: ProfileViewProps) {
                                 <div
                                     key={i}
                                     className={`h-2 rounded-full transition-all ${
-                                        i === photoIndex ? "w-6 bg-white" : "w-2 bg-white/50"
+                                        i === photoIndex ? "w-6 bg-foreground" : "w-2 bg-white/50"
                                     }`}
                                 />
                             ))}
@@ -164,7 +196,7 @@ export default function ProfileView({ person }: ProfileViewProps) {
                 <div className="pb-2">
                     {person.profile.bio && (
                         <div className="px-4 pt-4 border-t">
-                            <p className="text-gray-700 text-sm leading-relaxed">{person.profile.bio}</p>
+                            <p className="text-foreground text-sm leading-relaxed">{person.profile.bio}</p>
                         </div>
                     )}
 
@@ -177,14 +209,60 @@ export default function ProfileView({ person }: ProfileViewProps) {
                     {person.profile.promptAnswers.length > 0 && (
                         <div className="p-4 flex flex-col gap-3">
                             {person.profile.promptAnswers.slice(0, 3).map((p, i) => (
-                                <div key={i} className="bg-gray-50 rounded-xl p-3">
-                                    <p className="text-xs text-gray-400 mb-1">{p.question}</p>
-                                    <p className="text-sm text-gray-700">{p.answer}</p>
+                                <div key={i} className="bg-background rounded-xl p-3">
+                                    <p className="text-xs text-neutral-200 mb-1">{p.question}</p>
+                                    <p className="text-sm text-brand-400">{p.answer}</p>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
+
+                {showUnmatch &&
+                    <>
+                        <div className="h-1 bg-brand-200 mx-4 rounded-full" />
+
+                        {!showConfirm ? (
+                            <div className="flex flex-col gap-2 p-3 bg-surface rounded-b-3xl">
+                                {error && <div className="text-error">
+                                    {error}
+                                </div>}
+                                <button
+                                    onClick={() => setShowConfirm(true)}
+                                    className="w-full py-2 rounded-xl bg-error/20 text-error text-sm font-medium hover:bg-error/30 transition-colors"
+                                >
+                                    Unmatch
+                                </button>
+                                <button
+                                    onClick={() => close && close()}
+                                    className="w-full py-2 text-muted text-sm hover:text-foreground transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-3 p-4 bg-surface rounded-b-3xl">
+                                <p className="text-foreground text-sm text-center">
+                                    Unmatch with {person.basicInfo.firstName}? This can't be undone.
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setShowConfirm(false)}
+                                        className="flex-1 py-2 rounded-xl border border-border text-muted text-sm hover:text-foreground transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleUnmatch}
+                                        className="flex-1 py-2 rounded-xl bg-error text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                                    >
+                                        Unmatch
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                }
             </div>
         </>
     )
