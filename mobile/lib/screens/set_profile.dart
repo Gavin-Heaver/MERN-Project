@@ -121,6 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       // 3. THE FIX: Fetch the user's updated profile to get the photo list the backend just created
       final updatedProfile = await ApiService.getUserProfile();
+      if (!mounted) return;
       final List<dynamic> savedPhotos = updatedProfile['user']['profile']['photos'] ?? [];
 
       // 4. Save the full profile, passing the retrieved photos back to the server
@@ -130,6 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         datingIntentions: _datingIntentionCtrl,
         promptAnswers: _promptAnswers,
       );
+      if (!mounted) return;
 
       if (mounted) {
         Navigator.pushAndRemoveUntil(
