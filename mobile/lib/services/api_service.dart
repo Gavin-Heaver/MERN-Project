@@ -364,4 +364,99 @@ static Future<void> savePreferences({
       throw 'Photo upload failed. Status: ${response.statusCode}';
     }
   }
+
+  static Future<void> deletePhoto(String photoId) async {
+    final res = await http.delete(
+      Uri.parse('$_baseUrl/users/me/photos/$photoId'),
+      headers: await _headers(),
+    );
+
+    if (res.statusCode != 200) {
+      try {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        throw data['message'] ?? 'Failed to delete photo.';
+      } catch (e) {
+        throw 'Server error: ${res.statusCode}';
+      }
+    }
+  }
+
+  static Future<Map<String, dynamic>> getUserById(String userId) async {
+    final res = await http.get(
+      Uri.parse('$_baseUrl/users/$userId'),
+      headers: await _headers(),
+    );
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body)['user'];
+    }
+    throw 'Failed to load user profile';
+  }
+
+  // --- NEW: Unmatch with a user ---
+  static Future<void> unmatchUser(String matchId) async { 
+    // --- THE FIX: Let's see exactly what we are sending ---
+    print("UKNIGHTED DEBUG - Attempting to Unmatch ID: '$matchId'");
+    
+    if (matchId.isEmpty || matchId == 'null') {
+      throw "Frontend Error: The matchId is empty or null. The backend did not provide a valid ID.";
+    }
+
+    final res = await http.delete(
+      Uri.parse('$_baseUrl/interactions/$matchId'),
+      headers: await _headers(),
+    );
+
+    if (res.statusCode != 200) {
+      try {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        throw data['message'] ?? 'Failed to unmatch.';
+      } catch (e) {
+        throw 'Server error: ${res.statusCode}. Check backend console.';
+      }
+    }
+  }
+
+  static Future<void> forgotPassword({required String email}) async {
+    final res = await http.post(
+      Uri.parse('$_baseUrl/auth/forgot-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    if (res.statusCode != 200) {
+      try {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        throw data['message'] ?? 'Failed to send reset code.';
+      } catch (e) {
+        throw 'Server error: ${res.statusCode}.';
+      }
+    }
+  }
+
+  // --- NEW: Submit New Password with Code ---
+  static Future<void> resetPassword({
+    required String email, 
+    required String token, 
+    required String newPassword
+  }) async {
+    final res = await http.post(
+      Uri.parse('$_baseUrl/auth/reset-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'token': token,
+        'newPassword': newPassword,
+      }),
+    );
+
+    if (res.statusCode != 200) {
+      try {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        throw data['message'] ?? 'Failed to reset password.';
+      } catch (e) {
+        throw 'Server error: ${res.statusCode}.';
+      }
+    }
+  }
 }

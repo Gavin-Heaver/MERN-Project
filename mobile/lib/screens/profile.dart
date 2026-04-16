@@ -161,6 +161,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _onPhotoSlotTapped(bool hasPhoto, dynamic photo) {
+    if (!hasPhoto) {
+      // Slot is empty, upload a new one
+      _uploadNewPhoto();
+    } else {
+      // Show options for existing photo
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text("Change Photo"),
+                onTap: () async {
+                  Navigator.pop(context); // Close the menu
+                  
+                  // 1. Pick the new image
+                  final ImagePicker picker = ImagePicker();
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    imageQuality: 70, 
+                    maxWidth: 1080, maxHeight: 1080,
+                  );
+                  
+                  if (image != null) {
+                    setState(() => _isLoading = true);
+                    try {
+                      // 2. Delete the old photo from the server first to free up the slot
+                      await ApiService.deletePhoto(photo['_id']);
+                      // 3. Upload the new photo
+                      await ApiService.uploadPhoto(image.path);
+                      // 4. Refresh the UI
+                      await _fetchProfileData(); 
+                    } catch (e) {
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+                      setState(() => _isLoading = false);
+                    }
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text("Remove Photo", style: TextStyle(color: Colors.red)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  setState(() => _isLoading = true);
+                  try {
+                    // Tell the backend to delete this specific photo
+                    await ApiService.deletePhoto(photo['_id']);
+                    await _fetchProfileData();
+                  } catch (e) {
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+                    setState(() => _isLoading = false);
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
   // --- Save ALL changes ---
   Future<void> _saveChanges() async {
     int? parsedAge = int.tryParse(_ageController.text.trim());
@@ -360,7 +427,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   return GestureDetector(
                     // Allow tap to upload only if the slot is empty (for now)
-                    onTap: hasPhoto ? null : _uploadNewPhoto,
+                    onTap: () => _onPhotoSlotTapped(hasPhoto, photo),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[200], 
