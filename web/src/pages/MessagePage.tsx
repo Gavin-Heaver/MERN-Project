@@ -43,27 +43,40 @@ export default function MessagePage() {
     useEffect(() => {
         if (!chatId || !user?._id) return
 
-        const socket = io(import.meta.env.VITE_API_URL ?? 'http://localhost:5001', {
+        const socket = io(import.meta.env.VITE_API_URL ?? 'http://localhost:3001', {
             withCredentials: true,
-            transports: ['websocket']
+            transports: ['polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 1000
         })
 
         socketRef.current = socket
 
-        socket.emit('messages:join', {
-            conversationId: chatId,
-            userId: user._id
+        socket.on('connect', () => {
+            console.log('Socket connected:', socket.io)
+
+            socket.emit('conversation:join', {
+                conversationId: chatId,
+                userId: user._id
+            })
         })
 
-        socket.on('messages:join', (incomingMessage: Message) => {
+        socket.on('message:new', (incomingMessage: Message) => {
+            console.log('Received new message:', incomingMessage)
             setMessages(prev => {
-                if (prev.some(message => message._id)) return prev
+                if (prev.some(m => m._id === incomingMessage._id)) return prev
                 return [...prev, incomingMessage]
             })
         })
 
+        socket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error)
+        })
+
         return () => {
-            socket.emit('message:leave', {
+            socket.emit('conversation:leave', {
                 conversationId: chatId,
                 userId: user._id
             })
@@ -90,16 +103,12 @@ export default function MessagePage() {
         setSending(true)
         try {
             const sent = await api.messages.send(toUserId, newMessage.trim())
-            if (sent) {
-                setMessages(prev => {
-                    if (prev.some(message => message._id === sent._id)) return prev
-                    return [...prev, sent]
-                })
-                socketRef.current?.emit('messages:send', {
-                    conversationId: chatId,
-                    messages: sent
-                })
-            }
+
+            setMessages(prev => {
+                if (prev.some(m => m._id === sent._id)) return prev
+                return [...prev, sent]
+            })
+
             setNewMessage('')
         } catch (err) {
             setError(axios.isAxiosError(err)

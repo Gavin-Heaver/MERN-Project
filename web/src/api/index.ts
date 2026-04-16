@@ -7,8 +7,6 @@ import type {
     Post,
     InteractionResponse,
     Match,
-    Conversation,
-    Message,
     PotentialMatch
 } from '../types';
 
@@ -88,12 +86,18 @@ export const api = {
             client.delete<MessageResponse>(`/matches/${matchId}`).then(r => r.data),
     },
     messages: {
-        getConversations: () =>
-            client.get<{ conversations: Conversation[] }>('/messages/conversations').then(r => r.data.conversations),
-        getMessages: (conversationId: string) =>
-            client.get<{ conversation: Conversation; messages: Message[] }>(`/messages/${conversationId}`).then(r => r.data),
-        send: (toUserId: string, text: string) =>
-            client.post<{ message: Message }>('/messages/send-msg', { toUserId, text }).then(r => r.data.message),
+        getConversations: async () => {
+            const { data } = await client.get('/messages/conversations')
+            return data
+        },
+        getMessages: async (conversationId: string) =>{
+            const { data } = await client.get(`/messages/${conversationId}`)
+            return data
+        },
+        send: async (toUserId: string, text: string) => {
+            const { data } = await client.post('/messages/send-msg', { toUserId, text })
+            return data
+        },
     },
     posts: {
         getAll: () =>
