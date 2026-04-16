@@ -94,7 +94,7 @@ export default function LoginPage() {
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                         <input
                             type="email"
-                            placeholder="id@ucf.edu"
+                            placeholder="your@ucf.edu"
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             required
