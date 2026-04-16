@@ -42,7 +42,7 @@ export default function MessagePage() {
     useEffect(() => {
         if (!chatId || !user?._id) return
 
-        const socket = io(import.meta.env.VITE_API_URL ?? 'http://localhost:3001', {
+        const socket = io(import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:3001', {
             withCredentials: true,
             transports: ['polling', 'websocket'],
             reconnection: true,
