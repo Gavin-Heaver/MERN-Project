@@ -20,7 +20,12 @@ const app = express()
 const httpServer = createServer(app)
 
 const io = new Server(httpServer, {
-    cors: { origin: config.clientUrl, methods: ['GET', 'POST'] }
+    cors: {
+        origin: config.clientUrl || "http://localhost:5173",
+        methods: ['GET', 'POST'],
+        credentials: true,
+        allowedHeaders: ['*']
+    }
 })
 
 app.set('io', io)

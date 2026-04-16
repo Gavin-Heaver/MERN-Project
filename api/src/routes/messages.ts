@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import mongoose from "mongoose";
 import { authenticate } from "../middleware/auth";
+import { emitMessageToConversation } from "../sockets";
 
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
@@ -37,7 +38,7 @@ router.get('/conversations', authenticate, async (req: Request, res: Response): 
             .populate('matchId')
             .sort({ lastMessageAt: -1 });
 
-        res.json({ conversations });
+        res.json(conversations);
     } catch (err) {
         console.error('Get conversations error:', err);
         res.status(500).json({ message: 'Server error' });
@@ -122,7 +123,10 @@ router.post('/send-msg', authenticate, async (req: Request, res: Response): Prom
         conversation.lastMessagePreview = text.trim().slice(0, 100);
         await conversation.save();
 
-        res.status(201).json({ message });
+        const io = req.app.get('io')
+        emitMessageToConversation(io, conversation._id.toString(), message)
+
+        res.status(201).json(message);
     } catch (err) {
         console.error('Send message error:', err);
         res.status(500).json({ message: 'Server error' });
