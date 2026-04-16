@@ -20,24 +20,31 @@ class _MessagesScreenState extends State<MessagesScreen> {
     _fetchData();
   }
 
-  Future<void> _fetchData() async {
+Future<void> _fetchData() async {
     try {
       final profile = await ApiService.getUserProfile();
+      
+      // Check if the user navigated away while we were waiting for the profile
+      if (!mounted) return;
       _myUserId = profile['user']['_id'];
 
       final convos = await ApiService.getConversations();
 
+      // Check again if the user navigated away while we were waiting for the conversations
+      if (!mounted) return;
+
       setState(() {
-        // --- THE FIX: Filter out "Ghost" Conversations ---
-        // If the backend deleted the Match but forgot to delete the Conversation,
-        // matchId will be null. We just filter them out of the UI!
+        // Applying the filter for "Ghost" conversations as discussed
         _conversations = convos.where((chat) => chat['matchId'] != null).toList();
-        
         _isLoading = false;
       });
     } catch (e) {
       print("Error loading messages: $e");
-      setState(() => _isLoading = false);
+      
+      // Always check mounted before calling setState in a catch block as well
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
