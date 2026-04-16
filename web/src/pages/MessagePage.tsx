@@ -45,7 +45,7 @@ export default function MessagePage() {
 
         const socket = io(import.meta.env.VITE_API_URL ?? 'http://localhost:3001', {
             withCredentials: true,
-            transports: ['polling'],
+            transports: ['polling', 'websocket'],
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
