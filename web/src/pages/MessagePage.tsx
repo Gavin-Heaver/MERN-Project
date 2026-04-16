@@ -135,19 +135,30 @@ export default function MessagePage() {
 
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col bg-background">
+            {/* Background triangles */}
+            <svg
+                className="fixed inset-0 w-full h-full pointer-events-none z-0"
+                viewBox="0 0 1000 1000"
+                preserveAspectRatio="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <polygon points="0,0 400,0 0,400" className="fill-brand-500/30" />
+                <polygon points="1000,1000 1000,400 800,1000" className="fill-brand-500/30" />
+            </svg>
 
-            <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-border backdrop-blur-sm bg-surface/95 shrink-0">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => navigate('/chats')}
-                        className="text-white/60 hover:text-white transition-colors"
-                    >
-                        <ArrowLeft />
-                    </button>
-                    <button
-                        onClick={() => setShowProfile(true)}
-                        className="w-9 h-9 rounded-full overflow-hidden shrink-0 focus:outline-none"
-                    >
+            {/* Header */}
+                <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b border-border bg-background">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/chats')}
+                            className="text-muted hover:text-foreground transition-colors"
+                        >
+                            <ArrowLeft />
+                        </button>
+                        <button
+                            onClick={() => setShowProfile(true)}
+                            className="w-9 h-9 rounded-full overflow-hidden shrink-0 focus:outline-none"
+                        >
                         {mainPhoto ? (
                             <img
                                 src={mainPhoto.url}
@@ -155,39 +166,21 @@ export default function MessagePage() {
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full bg-pink-400/30 flex items-center justify-center text-white font-bold">
+                            <div className="w-full h-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-400 font-bold">
                                 {matchName[0]?.toUpperCase() ?? '?'}
                             </div>
                         )}
                     </button>
                     <button
                         onClick={() => setShowProfile(true)}
-                        className="text-white font-semibold hover:text-white/80 transition-colors"
+                        className="text-foreground font-semibold hover:text-muted transition-colors"
                     >
                         {matchName}
                     </button>
                 </div>
-
-                {/* <div className="relative">
-                    <button
-                        onClick={() => setMenuOpen(p => !p)}
-                        className="text-white/60 hover:text-white px-2 py-1 text-xl transition-colors"
-                    >
-                        <Menu />
-                    </button>
-                    {menuOpen && (
-                        <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl z-10 overflow-hidden min-w-32">
-                            <button
-                                onClick={() => { setShowConfirm(true); setMenuOpen(false) }}
-                                className="block w-full text-left px-4 py-2 text-red-500 text-sm hover:bg-red-50 transition-colors"
-                            >
-                                Unmatch
-                            </button>
-                        </div>
-                    )}
-                </div> */}
             </div>
 
+            {/* Profile modal */}
             {showProfile && otherUserDetails && (
                 <div
                     onClick={() => { setShowProfile(false); setShowConfirm(false) }}
@@ -200,35 +193,35 @@ export default function MessagePage() {
                         <ProfileView person={otherUserDetails} />
 
                         {!showConfirm ? (
-                            <div className="flex flex-col gap-2 p-3 bg-[#1a1a2e] rounded-b-3xl">
+                            <div className="flex flex-col gap-2 p-3 bg-surface rounded-b-3xl">
                                 <button
                                     onClick={() => setShowConfirm(true)}
-                                    className="w-full py-2 rounded-xl bg-red-500/20 text-red-400 text-sm font-medium"
+                                    className="w-full py-2 rounded-xl bg-error/20 text-error text-sm font-medium hover:bg-error/30 transition-colors"
                                 >
                                     Unmatch
                                 </button>
                                 <button
                                     onClick={() => setShowProfile(false)}
-                                    className="w-full py-2 text-white/40 text-sm"
+                                    className="w-full py-2 text-muted text-sm hover:text-foreground transition-colors"
                                 >
                                     Close
                                 </button>
                             </div>
                         ) : (
-                            <div className="flex flex-col gap-3 p-4 bg-[#1a1a2e] rounded-b-3xl">
-                                <p className="text-white text-sm text-center">
+                            <div className="flex flex-col gap-3 p-4 bg-surface rounded-b-3xl">
+                                <p className="text-foreground text-sm text-center">
                                     Unmatch with {matchName}? This can't be undone.
                                 </p>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setShowConfirm(false)}
-                                        className="flex-1 py-2 rounded-xl border border-white/20 text-white/60 text-sm"
+                                        className="flex-1 py-2 rounded-xl border border-border text-muted text-sm hover:text-foreground transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleUnmatch}
-                                        className="flex-1 py-2 rounded-xl bg-red-500 text-white text-sm font-medium"
+                                        className="flex-1 py-2 rounded-xl bg-error text-white text-sm font-medium hover:opacity-90 transition-opacity"
                                     >
                                         Unmatch
                                     </button>
@@ -240,14 +233,17 @@ export default function MessagePage() {
             )}
 
             {error && (
-                <p className="text-red-400 text-sm text-center py-2">{error}</p>
+                <p className="relative z-10 text-error text-sm text-center py-2 bg-error/10 border-b border-error/20">
+                    {error}
+                </p>
             )}
 
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+            {/* Messages */}
+            <div className="relative z-10 flex-1 overflow-y-auto p-4 flex flex-col gap-2">
                 {loading ? (
-                    <p className="text-white/50 text-center mt-8">Loading...</p>
+                    <p className="text-muted text-center mt-8">Loading...</p>
                 ) : messages.length === 0 ? (
-                    <p className="text-white/50 text-center mt-8">No messages yet — say hello! 👋</p>
+                    <p className="text-muted text-center mt-8">No messages yet — say hello! 👋</p>
                 ) : (
                     messages.map(message => {
                         const mine = message.senderId === user?._id
@@ -258,11 +254,11 @@ export default function MessagePage() {
                             >
                                 <div className={`max-w-[70%] px-4 py-2 rounded-2xl ${
                                     mine
-                                        ? 'bg-pink-500 text-white rounded-br-sm'
-                                        : 'bg-white/15 text-white rounded-bl-sm'
+                                        ? 'bg-brand-500 text-white rounded-br-sm'
+                                        : 'bg-surface text-foreground rounded-bl-sm'
                                 }`}>
                                     <p className="text-sm">{message.text}</p>
-                                    <p className={`text-xs mt-1 ${mine ? 'text-white/60' : 'text-white/40'}`}>
+                                    <p className={`text-xs mt-1 ${mine ? 'text-white/60' : 'text-muted'}`}>
                                         {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 </div>
@@ -273,21 +269,22 @@ export default function MessagePage() {
                 <div ref={bottomRef} />
             </div>
 
+            {/* Input */}
             <form
                 onSubmit={handleSend}
-                className="sticky bottom-0 z-10 flex items-center gap-2 px-4 py-3 border-t backdrop-blur-sm border-white/10"
+                className="relative z-10 flex items-center gap-2 px-4 py-3 border-t border-border bg-background"
             >
                 <input
                     type="text"
                     placeholder="Message..."
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
-                    className="flex-1 bg-white/10 text-white placeholder-white/40 rounded-full px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-pink-400"
+                    className="flex-1 bg-surface text-foreground placeholder-muted rounded-full px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-brand-500 border border-border transition-colors"
                 />
                 <button
                     type="submit"
                     disabled={!newMessage.trim() || sending}
-                    className="w-9 h-9 rounded-full bg-pink-500 flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
+                    className="w-9 h-9 rounded-full bg-brand-500 hover:bg-brand-600 flex items-center justify-center text-white disabled:opacity-40 transition-all"
                 >
                     <ArrowUp />
                 </button>
