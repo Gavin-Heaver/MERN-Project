@@ -48,7 +48,7 @@ export default function ProfileView({ person, showUnmatch = false, close = null 
     async function handleUnmatch() {
         if (!person._id) return
         try {
-            await api.matches.unmatch(person._id)
+            await api.interactions.unmatch(person._id)
             navigate('/chats')
         } catch (err) {
             setError(axios.isAxiosError(err)
