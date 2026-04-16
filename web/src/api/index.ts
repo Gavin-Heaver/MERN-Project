@@ -78,12 +78,12 @@ export const api = {
     interactions: {
         interact: (toUserId: string, type: 'like' | 'pass') =>
             client.post<InteractionResponse>('/interactions', { toUserId, type }).then(r => r.data),
+        unmatch: (otherUserId: string) =>
+            client.delete<MessageResponse>(`/interactions/unmatch/${otherUserId}`).then(r => r.data),
     },
     matches: {
         getAll: () =>
             client.get<{ matches: Match[] }>('/matches').then(r => r.data.matches),
-        unmatch: (matchId: string) =>
-            client.delete<MessageResponse>(`/matches/${matchId}`).then(r => r.data),
     },
     messages: {
         getConversations: async () => {

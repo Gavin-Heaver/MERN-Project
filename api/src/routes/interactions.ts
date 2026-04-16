@@ -6,6 +6,7 @@ import { User } from "../models/User";
 const Interaction = require('../models/Interaction');
 const Match = require('../models/Match');
 const Conversation = require('../models/Conversation');
+const Message = require('../models/Message');
 
 const router: Router = Router();
 
@@ -92,6 +93,63 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
         });
     } catch (err) {
         console.error('Create interaction error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.delete('/unmatch/:otherUserIdIn', authenticate, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const currentUserId = req.user.id
+        const { otherUserIdIn } = req.params
+        const otherUserId = otherUserIdIn as string
+
+        console.log(currentUserId, otherUserId, otherUserIdIn)
+
+        if (!currentUserId || !otherUserId) {
+            res.status(400).json({ message: 'Missing user IDs' })
+            return
+        }
+
+        let userAId = new mongoose.Types.ObjectId(currentUserId)
+        let userBId = new mongoose.Types.ObjectId(otherUserId)
+
+        if (String(userAId) > String(userBId)) {
+            const temp = userAId
+            userAId = userBId
+            userBId = temp
+        }
+
+        const match = await Match.findOne({
+            userAId,
+            userBId,
+            status: 'active'
+        })
+
+        if (!match) {
+            res.status(404).json({ message: 'Match not found' })
+            return
+        }
+
+        const conversation = await Conversation.findOne({
+            matchId: match._id,
+            status: 'active'
+        })
+
+        console.log('CONVO')
+        console.log(conversation)
+
+        if (conversation) {
+            const deletedMessages = await Message.deleteMany({
+                conversationId: conversation.id
+            })
+
+            await Conversation.findByIdAndDelete(conversation.id)
+        }
+
+        await Match.findByIdAndDelete(match._id);
+
+        res.json({ message: 'Unmatched successfully' });
+    } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
 });
