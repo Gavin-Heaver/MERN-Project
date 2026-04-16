@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 // Android emulator: http://10.0.2.2:3001/api
 // iOS simulator: http://localhost:3001/api
@@ -299,13 +300,14 @@ static Future<void> savePreferences({
   // ==========================================
 
   static Future<List<dynamic>> getConversations() async {
-    // Assumes your messages.ts is mounted at /api/message
     final res = await http.get(
       Uri.parse('$_baseUrl/messages/conversations'),
       headers: await _headers()
     );
+    
     if (res.statusCode == 200) {
-      return jsonDecode(res.body)['conversations'] as List<dynamic>;
+      // THE FIX: Remove ['conversations'] and cast the decoded body directly
+      return jsonDecode(res.body) as List<dynamic>;
     }
     throw 'Failed to load conversations';
   }
@@ -339,23 +341,27 @@ static Future<void> savePreferences({
     final token = await getToken();
     final request = http.MultipartRequest(
       'POST', 
-      Uri.parse('$_baseUrl/users/me/photos') // Matches endpoint in users.ts
+      Uri.parse('$_baseUrl/users/me/photos') 
     );
     
-    // Attach the JWT token for authentication
     request.headers['Authorization'] = 'Bearer $token';
     
-    // 'photo' must match upload.single('photo') in the backend
-    request.files.add(await http.MultipartFile.fromPath('photo', filePath));
+    // THE FIX: Explicitly define the MediaType so the backend multer filter accepts it
+    request.files.add(await http.MultipartFile.fromPath(
+      'photo', 
+      filePath,
+      contentType: MediaType('image', 'jpeg'), // Forces 'image/jpeg' MIME type
+    ));
 
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 201) {
-      return jsonDecode(response.body); // Returns {url, publicId, isPrimary}
+      return jsonDecode(response.body); 
     } else {
-      final errorData = jsonDecode(response.body);
-      throw errorData['message'] ?? 'Photo upload failed';
+      // If it still fails, let's print the real response to catch HTML errors
+      print("Upload Error Body: ${response.body}");
+      throw 'Photo upload failed. Status: ${response.statusCode}';
     }
   }
 }

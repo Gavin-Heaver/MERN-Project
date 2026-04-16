@@ -45,7 +45,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 50, // Reduced quality further to ensure 6 photos stay under total limits
+      imageQuality: 70, 
+      // THE FIX: Force the image to resize, guaranteeing it stays under 5MB
+      maxWidth: 1080,
+      maxHeight: 1080,
     );
     
     if (image != null) {

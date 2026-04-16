@@ -139,14 +139,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 80, // Compress to stay well under the 5MB backend limit
+      imageQuality: 70, 
+      // THE FIX: Force the image to resize
+      maxWidth: 1080,
+      maxHeight: 1080,
     );
     
     if (image != null) {
       setState(() => _isLoading = true);
       try {
         await ApiService.uploadPhoto(image.path);
-        // Refresh the profile data to grab the newly saved photo URL and display it
         await _fetchProfileData(); 
       } catch (e) {
         if (mounted) {
@@ -335,6 +337,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // --- My Photos Grid ---
               const Text("My Photos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: crimson)),
+              const Divider(thickness: 1),
               const SizedBox(height: 10),
               GridView.builder(
                 shrinkWrap: true, 
