@@ -98,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _submit() async {
-    // Check if at least the first photo (primary) is provided
+    // 1. Existing validations...
     if (_localImages[0] == null) {
       setState(() { _error = "Please upload at least the first photo."; });
       return; 
@@ -112,17 +112,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() { _error = null; _loading = true; });
 
     try {
-      // 1. Loop through all non-null image paths and upload them
+      // 2. Upload the images to the server
       for (String? path in _localImages) {
         if (path != null) {
           await ApiService.uploadPhoto(path);
         }
       }
 
-      // 2. Save the rest of the profile data
+      // 3. THE FIX: Fetch the user's updated profile to get the photo list the backend just created
+      final updatedProfile = await ApiService.getUserProfile();
+      final List<dynamic> savedPhotos = updatedProfile['user']['profile']['photos'] ?? [];
+
+      // 4. Save the full profile, passing the retrieved photos back to the server
       await ApiService.saveProfile(
         bio: _bioCtrl.text.trim(),
-        photos: [], // Backend array is already populated by the uploads above
+        photos: savedPhotos, // Use the list we just fetched
         datingIntentions: _datingIntentionCtrl,
         promptAnswers: _promptAnswers,
       );
