@@ -52,6 +52,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _fetchMessages({bool isAutoRefresh = false}) async {
     try {
       final messages = await ApiService.getMessages(widget.conversationId);
+      if (!mounted) return;
       
       if (messages.length != _messages.length) {
         if (mounted) {
@@ -247,6 +248,9 @@ class _ChatProfileScreenState extends State<ChatProfileScreen> {
   Future<void> _fetchUser() async {
     try {
       final userData = await ApiService.getUserById(widget.userId);
+
+      if (!mounted) return;
+
       setState(() {
         _user = userData;
         _isLoading = false;

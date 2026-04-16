@@ -73,6 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _fetchProfileData() async {
     try {
       final userData = await ApiService.getUserProfile();
+      if (!mounted) return;
       final userObj = userData['user'] ?? {};
       
       final basicInfo = userObj['basicInfo'] ?? {};
@@ -263,12 +264,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         major: _majorController!,
         classYear: _classYear!,
       );
+      if (!mounted) return;
 
       await ApiService.savePreferences(
         ageMin: minAge,
         ageMax: maxAge,
         interestedInGenders: _interestedInGenders,
       );
+      if (!mounted) return;
 
       await ApiService.saveProfile(
         bio: _bioController.text.trim(),
@@ -276,6 +279,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         datingIntentions: _datingIntentions!, 
         promptAnswers: _promptAnswers,
       );
+      if (!mounted) return;
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Everything updated successfully!"), backgroundColor: Colors.green));
@@ -283,7 +287,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
     } finally {
-      setState(() => _isSaving = false);
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 

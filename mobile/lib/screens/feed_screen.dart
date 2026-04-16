@@ -24,6 +24,9 @@ class _FeedScreenState extends State<FeedScreen> {
   Future<void> _fetchUsers() async {
     try {
       final users = await ApiService.getDiscoverUsers();
+
+      if (!mounted) return;
+
       setState(() {
         _profiles = users;
         _isLoading = false;
