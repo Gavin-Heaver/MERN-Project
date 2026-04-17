@@ -70,7 +70,7 @@ router.get('/discover', authenticate, async (req: Request, res: Response): Promi
         const currentUserId = new mongoose.Types.ObjectId(req.user?.id);
 
         // Get current user's preferences and basicInfo
-        const currentUser = await User.findById(currentUserId).select('preferences basicInfo');
+        const currentUser = await User.findById(currentUserId).select('preferences basicInfo accountStatus');
         if (!currentUser?.preferences || !currentUser?.basicInfo) {
             res.status(400).json({ message: 'Complete your profile and preferences first' });
             return;
