@@ -78,7 +78,7 @@ const userSchema = new mongoose.Schema(
         accountStatus:
         {
             type: String,
-            enum: ["active", "suspended", "deleted"],
+            enum: ["active", "inactive", "suspended"],
             default: "active"
         },
         verification:

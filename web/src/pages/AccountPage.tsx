@@ -5,7 +5,7 @@ import { api } from "../api"
 import type { FullUser, ProfileViewData } from '../types'
 import { GENDER_OPTIONS, ALL_GENDERS, MAJOR_LIST, CLASS_YEAR_OPTIONS, PROMPT_LIST } from "../constants/profileOptions"
 import axios from "axios"
-import { ArrowLeft, ArrowRight, Check, Eye, X } from "lucide-react"
+import { ArrowLeft, ArrowRight, Check, Circle, Eye, X } from "lucide-react"
 import ProfileView from "../components/ProfileView"
 
 type Section = 'basicInfo' | 'profile' | 'preferences' | null
@@ -19,6 +19,9 @@ export default function AccountPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [uploading, setUploading] = useState(false)
+    const [deleting, setDeleting] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const [togglingStatus, setTogglingStatus] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
     const [editing, setEditing] = useState<Section>(null)
@@ -165,6 +168,50 @@ export default function AccountPage() {
             setError(axios.isAxiosError(err) ? (err.response?.data?.message ?? errorMsg) : errorMsg)
         } finally {
             setSaving(false)
+        }
+    }
+
+    async function handleToggleStatus() {
+        if (!user) return
+
+        const newStatus = user.accountStatus === 'active' ? 'inactive' : 'active'
+        setTogglingStatus(true)
+        setError(null)
+
+        try {
+            await api.users.updateAccountStatus(newStatus)
+            setUser(prev => prev ? { ...prev, accountStatus: newStatus } : prev)
+            setSuccess(newStatus === 'active'
+                ? 'Account reactivated'
+                : 'Account deactivated. You can reactivate anytime.'
+            )
+        } catch (err) {
+            setError(axios.isAxiosError(err)
+                ? (err.response?.data.message ?? 'Failed to update status')
+                : 'Failed to update status'
+            )
+        } finally {
+            setTogglingStatus(false)
+        }
+    }
+
+    async function handleDeleteAccount() {
+        setDeleting(true)
+        setError(null)
+
+        try {
+            await api.users.deleteAccount()
+            logout()
+            navigate('/login', {
+                state: { message: 'Account deleted successfully' }
+            })
+        } catch (err) {
+            setError(axios.isAxiosError(err)
+                ? (err.response?.data.message ?? 'Failed to delete account')
+                : 'Failed to delete account'
+            )
+            setDeleting(false)
+            setShowDeleteConfirm(false)
         }
     }
 
@@ -674,16 +721,102 @@ export default function AccountPage() {
                 </div>
 
                 {/* ── ACCOUNT ── */}
-                <div className="bg-surface border border-border rounded-xl p-4 flex flex-col gap-2">
+                <div className="bg-surface border border-border rounded-xl p-4 flex flex-col gap-3">
                     <h2 className="font-semibold text-foreground mb-1">Account</h2>
                     <p className="text-muted text-sm">{user.email}</p>
+                    
+                    {/* Account Status Toggle */}
+                    <div className="flex items-center justify-between py-2 border-t border-border">
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-foreground">Status:</span>
+                                {user.accountStatus === 'active' 
+                                    ? (
+                                        <div className="flex items-center gap-1.5">
+                                            <Circle className="w-2 h-2 fill-green-500 text-green-500" />
+                                            <span className="text-sm text-green-600">Active - your profile is visible</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-1.5">
+                                            <Circle className="w-2 h-2 fill-red-500 text-red-500" />
+                                            <span className="text-sm text-red-600">Inactive - your profile is hidden</span>
+                                        </div>
+                                    )
+                                }
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleToggleStatus}
+                            disabled={togglingStatus}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 ${
+                                user.accountStatus === 'active' ? 'bg-brand-500' : 'bg-gray-400'
+                            }`}
+                        >
+                            <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    user.accountStatus === 'active' ? 'translate-x-6' : 'translate-x-1'
+                                }`}
+                            />
+                        </button>
+                    </div>
+
+                    {user.accountStatus === 'suspended' && (
+                        <p className="text-warning text-xs bg-warning/10 border border-warning/30 rounded-lg px-3 py-2">
+                            Your account is inactive. You won't appear in the swipe queue or be able to message matches.
+                        </p>
+                    )}
+
+                    {/* Log out button */}
                     <button
                         onClick={handleLogout}
-                        className="mt-2 w-full py-2 rounded-lg bg-error/20 text-error text-sm font-medium hover:bg-error/30 transition-colors"
+                        className="w-full py-2 rounded-lg bg-hover text-foreground text-sm font-medium hover:bg-border transition-colors"
                     >
                         Log out
                     </button>
+
+                    {/* Delete account button */}
+                    <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="w-full py-2 rounded-lg bg-error/20 text-error text-sm font-medium hover:bg-error/30 transition-colors"
+                    >
+                        Delete Account
+                    </button>
                 </div>
+
+                {/* Delete confirmation modal */}
+                {showDeleteConfirm && (
+                    <div 
+                        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                        onClick={() => !deleting && setShowDeleteConfirm(false)}
+                    >
+                        <div 
+                            className="bg-surface border border-border rounded-xl p-6 max-w-sm w-full"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <h3 className="text-lg font-bold text-foreground mb-2">Delete Account?</h3>
+                            <p className="text-muted text-sm mb-6">
+                                This will permanently delete your account, all your photos, matches, and messages. 
+                                This action cannot be undone.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    disabled={deleting}
+                                    className="flex-1 py-2 rounded-lg bg-hover text-foreground text-sm font-medium hover:bg-border transition-colors disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    disabled={deleting}
+                                    className="flex-1 py-2 rounded-lg bg-error text-white text-sm font-medium hover:bg-error/90 transition-colors disabled:opacity-50"
+                                >
+                                    {deleting ? 'Deleting...' : 'Delete Forever'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
             </div>
         </div>
