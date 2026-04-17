@@ -92,6 +92,7 @@ router.get('/discover', authenticate, async (req: Request, res: Response): Promi
         const users = await User.find({
             _id: { $nin: excludedIds },
 
+            'accountStatus': 'active',
             'basicInfo.gender': { $in: interestedInGenders },
             'basicInfo.age': { $gte: ageMin, $lte: ageMax },
             'preferences.interestedInGenders': { $in: [myGender] },
