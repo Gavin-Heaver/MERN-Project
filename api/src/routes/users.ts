@@ -76,6 +76,11 @@ router.get('/discover', authenticate, async (req: Request, res: Response): Promi
             return;
         }
 
+        if (currentUser.accountStatus !== 'active') {
+            res.json({ users: [] })
+            return
+        }
+
         const { ageMin, ageMax, interestedInGenders } = currentUser.preferences;
         const { gender: myGender, age: myAge } = currentUser.basicInfo;
 
@@ -345,6 +350,42 @@ router.get('/:id', authenticate, async (req: Request, res: Response): Promise<vo
         res.json({ user })
     } catch (err) {
         console.error('Get user by id error:', err)
+        res.status(500).json({ message: 'Server error' })
+    }
+})
+
+// PATCH /users/me/status
+router.patch('/me/status', authenticate, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user.id
+        const { accountStatus } = req.body
+
+        if (!userId) {
+            res.status(401).json({ message: 'Unauthorized' })
+            return
+        }
+
+        if(!['active', 'inactive'].includes(accountStatus)) {
+            res.status(400).json({ message: 'Invalid status. Use "active" or "inactive".' })
+            return
+        }
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $set: { accountStatus } },
+            { new: true, runValidators: true }
+        ).select('-password')
+
+        if (!user) {
+            res.status(404).json({ message: 'User not found' })
+            return
+        }
+
+        res.json({
+            message: `Account ${accountStatus === 'active' ? 'activated' : 'deactivated'}`,
+            accountStatus: user.accountStatus
+        })
+    } catch (err) {
         res.status(500).json({ message: 'Server error' })
     }
 })

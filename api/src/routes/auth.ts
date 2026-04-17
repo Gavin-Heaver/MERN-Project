@@ -167,13 +167,23 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         const valid = await user.comparePassword(password)
         if (!valid) { res.status(401).json({ message: 'Invalid credentials' }); return }
 
+        if (user.accountStatus === 'suspended') {
+            res.status(403).json({
+                message: 'Account is currently suspended. Contact the team for details'
+            })
+            return
+        }
+
         if (!user.verification?.emailVerified) {
             res.status(403).json({
             requiresVerification: true,
             email: user.email,
             message: "Verification required. Code sent."
             });
+
+            return
         }
+
         const token = jwt.sign(
             { id: user._id, email: user.email },
             config.jwtSecret,
@@ -352,15 +362,35 @@ router.delete('/delete-account', authenticate, async (req: Request, res: Respons
             return;
         }
 
+        const user = await User.findById(userId)
+        if (!user) {
+            res.status(404).json({ message: 'User not found' })
+            return
+        }
+
+        if (user.profile?.photos && user.profile.photos.length > 0) {
+            const { deletePhoto } = require('../lib/uploadPhoto')
+            for (const photo of user.profile.photos) {
+                try {
+                    await deletePhoto(photo.publicId)
+                } catch (err) {
+                    console.error(`Failed to delete photo ${photo.publicId}:`, err)
+                }
+            }
+        }
+
         // Find all matches involving this user
         const matches = await Match.find({
             $or: [{ userAId: userId }, { userBId: userId }]
         });
 
-        const matchIds = matches.map((match: any) => match._id);
-        const conversationIds = matches
-            .map((match: any) => match.conversationId)
-            .filter(Boolean);
+        const conversationIds = []
+        for (const match of matches) {
+            const conversation = await Conversation.findOne({ matchId: match._id })
+            if (conversation) {
+                conversationIds.push(conversation._id)
+            }
+        }
 
         // Delete all messages in those conversations
         if (conversationIds.length > 0) {
@@ -374,9 +404,9 @@ router.delete('/delete-account', authenticate, async (req: Request, res: Respons
         }
 
         // Delete all matches involving this user
-        if (matchIds.length > 0) {
+        if (matches.length > 0) {
             await Match.deleteMany({
-                _id: { $in: matchIds }
+                $or: [{ userAId: userId }, { userBId: userId }]
             });
         }
 

@@ -41,6 +41,10 @@ export const api = {
             client.get<{ user: FullUser }>('/users/me').then(r => r.data.user),
         updateMe: (data: Partial<{ bio: string }>) =>
             client.put<{ user: FullUser }>('/users/me', data).then(r => r.data.user),
+        updateAccountStatus: (accountStatus: 'active' | 'inactive') =>
+            client.patch<{ message: string; accountStatus: string }>('/users/me/status', { accountStatus }),
+        deleteAccount: () =>
+            client.delete<MessageResponse>('/auth/delete-account'),
         discover: () =>
             client.get<{ users: PotentialMatch[] }>('/users/discover').then(r => r.data.users),
         getById: (id: string) =>
