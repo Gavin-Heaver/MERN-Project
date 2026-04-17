@@ -258,7 +258,7 @@ export default function AccountPage() {
 
     // shared input classes
     const inputCls = "w-full rounded-lg px-3 py-2 bg-surface border border-border text-foreground placeholder-muted focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors text-sm"
-    const selectCls = "w-full rounded-lg px-3 py-2 bg-surface border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors text-sm"
+    const selectCls = "w-full rounded-full px-4 py-3 bg-surface border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors text-sm [&>option]:text-black [&>option]:bg-white"
 
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
