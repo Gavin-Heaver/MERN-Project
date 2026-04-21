@@ -58,7 +58,9 @@ export default function ForgotPassword() {
                             to="/login"
                             className="text-brand-500 hover:text-brand-400 font-medium"
                         >
-                            <ArrowLeft /> Back to login
+                            <div className="flex flex-row">
+                                <ArrowLeft /> Back to login
+                            </div>
                         </Link>
                     </>
                 ) : (
